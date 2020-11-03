@@ -32,17 +32,17 @@ end
 
 function _init()
  init_physics()
- plr=init_player()
+ p=init_player()
 end
 
 function _update60()
- update_player(plr)
+ update_player(p)
 end
 
 function _draw()
  cls()
  map(0,0)
- draw_player(plr)
+ draw_player(p)
  
  --print debug if set
  if debug then print(debug) end
@@ -69,11 +69,11 @@ function init_entity(
 end
 
 function update_entity(e)
- --apply gravity
+ --gravity/inertia
  e.dy+=g
  e.dx*=i
 
- --check collision up / down
+ --vertical map collisions
  if e.dy>0 then
   e.dy=mid(
    -e.max_dy,e.dy,e.max_dy
@@ -89,7 +89,7 @@ function update_entity(e)
   end
  end
 
- --check collision left / right
+ --horizontal map collisions
  if e.dx<0 then
   e.dx=mid(
    -e.max_dx,e.dx,e.max_dx
@@ -108,10 +108,10 @@ function update_entity(e)
   end
  end
  
- --apply flip
  e.flp=e.dx<0
+ --flip
 
- --apply velocity
+ --apply accelerate
  e.x+=e.dx
  e.y+=e.dy
 end
@@ -123,10 +123,9 @@ end
 --player
 
 function init_player()
- p = init_entity(1,8,8,2,3)
+ local p=init_entity(1,8,8,2,3)
  p.accx=0.2
- p.accy=2.5
- p.anim=0
+ p.accy=2.8
  return p
 end
 
@@ -144,16 +143,16 @@ function handle_input(p)
  end
 
  if btn(⬅️) then
-  p.dx-=plr.accx
+  p.dx-=p.accx
  end
 
  if btn(➡️) then
-  p.dx+=plr.accx
+  p.dx+=p.accx
  end
 end
 
 function update_sprite(p)
- --determine state form dx/dy
+ --determine state from dx/dy
 	local state="idle"
 	if abs(p.dx)>0.1 then
 	 state="running"
