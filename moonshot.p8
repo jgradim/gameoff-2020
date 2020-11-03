@@ -94,6 +94,9 @@ function update_entity(e)
    e.dx=0
   end
  end
+ 
+ --apply flip
+ e.flp=e.dx<0
 
  --apply velocity
  e.x+=e.dx
@@ -101,7 +104,7 @@ function update_entity(e)
 end
 
 function draw_entity(e)
-	spr(e.sp,e.x,e.y,e.w,e.h)
+	spr(e.sp,e.x,e.y,1,1,e.flp)
 end
 -->8
 --player
@@ -121,12 +124,10 @@ function update_player(p)
 
  if btn(⬅️) then
   p.dx-=plr.accx
-  p.flp=true
  end
 
  if btn(➡️) then
   p.dx+=plr.accx
-  p.flp=false
  end
 
  update_entity(p)
