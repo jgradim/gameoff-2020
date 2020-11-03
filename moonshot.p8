@@ -109,15 +109,23 @@ end
 --player
 
 function init_player()
- p = init_entity(1,1,1,2,3)
- p.accx=0.3
- p.accy=0.5
+ p = init_entity(1,8,8,2,3)
+ p.accx=0.2
+ p.accy=2.5
+ p.anim=0
  return p
 end
 
 function update_player(p)
- -- input
- if btn(⬆️) then
+ handle_input(p)
+
+ update_entity(p)
+ 
+ update_sprite(p)
+end
+
+function handle_input(p)
+ if btn(⬆️) and p.dy == 0 then
   p.dy-=p.accy
  end
 
@@ -128,8 +136,40 @@ function update_player(p)
  if btn(➡️) then
   p.dx+=plr.accx
  end
+end
 
- update_entity(p)
+function update_sprite(p)
+ --determine state form dx/dy
+	local state="idle"
+	if abs(p.dx)>0.1 then
+	 state="running"
+	end
+	if abs(p.dy) > 0 then
+		if p.dy<-1 then
+		 state="jumping"
+		elseif p.dy>1 then
+		 state="falling"
+		else
+		 state="floating"
+		end
+ end
+	
+	--update sprite based on state
+ if state=="idle" then
+ 	p.sp=1
+ elseif state=="running" then
+ 	if time()-p.anim>.1 then
+ 		p.sp=1+(p.sp+1)%4
+ 		--todo:remove p.anim?
+ 		p.anim=time()
+ 	end
+ elseif state=="jumping" then
+  p.sp=4
+ elseif state=="floating" then
+  p.sp=5
+ elseif state=="falling" then
+  p.sp=6
+ end
 end
 
 function draw_player(p)
