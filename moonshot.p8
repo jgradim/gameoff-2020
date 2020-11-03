@@ -84,7 +84,7 @@ function update_entity(e)
    e.y-=((e.y+e.h+1)%8)-1
   end
  elseif e.dy<0 then
-  if collide_map(e,"⬆️",0) then
+  if collide_map(e,"⬆️",1) then
    e.dy=0
   end
  end
@@ -196,8 +196,13 @@ end
 --utils
 
 function collide_map(obj,aim,flag)
- --obj = table needs x,y,w,h
- --aim = ⬅️,➡️,⬆️,⬇️
+ --[[
+ obj={x,y,w,h}
+ aim=⬅️,➡️,⬆️,⬇️
+ flag=
+  0-stands on (eg: floor)
+  1-bumps into (eg: wall)
+ ]]
 
  local x=obj.x
  local y=obj.y
