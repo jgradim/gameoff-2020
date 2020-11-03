@@ -59,7 +59,7 @@ function update_entity(e)
  e.dy+=g
  e.dx*=i
 
- --check collision up and down
+ --check collision up / down
  if e.dy>0 then
   e.dy=mid(
    -e.max_dy,e.dy,e.max_dy
@@ -75,7 +75,7 @@ function update_entity(e)
   end
  end
 
- --check collision left and right
+ --check collision left / right
  if e.dx<0 then
   e.dx=mid(
    -e.max_dx,e.dx,e.max_dx
@@ -89,7 +89,6 @@ function update_entity(e)
   	-e.max_dx,e.dx,e.max_dx
   )
   
-
   if collide_map(e,"➡️",1) then
    e.dx=0
   end
@@ -154,22 +153,32 @@ function collide_map(obj,aim,flag)
  local y2=0
 
  if aim=="⬅️" then
-   x1=x-1  y1=y
-   x2=x    y2=y+h-1
+   x1=x-1
+   y1=y
+   x2=x
+   y2=y+h-1
  elseif aim=="➡️" then
-   x1=x+w-1  y1=y
-   x2=x+w    y2=y+h-1
+   x1=x+w-1
+   y1=y
+   x2=x+w
+   y2=y+h-1
  elseif aim=="⬆️" then
-   x1=x+2    y1=y-1
-   x2=x+w-3  y2=y
+   x1=x+2
+   y1=y-1
+   x2=x+w-3
+   y2=y
  elseif aim=="⬇️" then
-   x1=x+2    y1=y+h
-   x2=x+w-3  y2=y+h
+   x1=x+2
+   y1=y+h
+   x2=x+w-3
+   y2=y+h
  end
 
  --pixels to tiles
- x1/=8  y1/=8
- x2/=8  y2/=8
+ x1/=8
+ y1/=8
+ x2/=8
+ y2/=8
 
  return fget(mget(x1,y1), flag)
  or fget(mget(x1,y2), flag)
