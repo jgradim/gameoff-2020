@@ -7,7 +7,7 @@ __lua__
 
 function init_physics()
  --gravity
- g=0.02
+ g=0.2
  --acceleration
  a=1.1
  --inertia
@@ -41,19 +41,46 @@ function init_player()
   h=8,
   dx=0,
   dy=0,
+  acch=1,
+  accv=1,
+  frct=0.3,
   max_dx=2,
   max_dy=3,
   flp=false,
   sp=1,
   update=function()
+
    --apply gravity
    plr.dy=mid(
     -plr.max_dy,
     plr.dy+g,
     plr.max_dy
    )
-   
-   
+
+   -- Apply frct to dx
+   if plr.dx != 0 then
+     if plr.flp then -- going left
+       plr.dx=mid(-plr.max_dx, plr.dx + plr.frct, 0)
+     else
+       plr.dx=mid(0, plr.dx - plr.frct, plr.max_dx)
+     end
+   end
+
+   -- Input
+   if btn(⬆️) then
+    plr.dy-=plr.accv
+   end
+
+   if btn(⬅️) then
+    plr.dx-=plr.acch
+    plr.flp=true
+   end
+
+   if btn(➡️) then
+    plr.dx+=plr.acch
+    plr.flp=false
+   end
+
    --check collision up and down
    if plr.dy>0 then
     plr.falling=true
