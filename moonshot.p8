@@ -175,17 +175,13 @@ function update_sprite(p)
  if state=="idle" then
  	p.sp=1
  elseif state=="running" then
- 	if time()-p.anim>.1 then
- 		p.sp=1+(p.sp+1)%4
- 		--todo:remove p.anim?
- 		p.anim=time()
- 	end
+ 	p.sp=2+(t()*10)%3
  elseif state=="jumping" then
-  p.sp=4
+  p.sp=3
  elseif state=="floating" then
-  p.sp=5
+  p.sp=1
  elseif state=="falling" then
-  p.sp=6
+  p.sp=1
  end
 end
 
