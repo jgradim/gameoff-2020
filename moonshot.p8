@@ -1,7 +1,21 @@
 pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
---readme
+--[[readme
+
+# todo
+
+--level
+--particle systems
+--better collisions
+--double jump?
+--follower
+--large levels?
+----camera
+--cleanup/optim code sections
+
+]]
+
 -->8
 --variables / state
 
