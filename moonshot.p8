@@ -108,8 +108,12 @@ function update_entity(e)
   end
  end
  
- e.flp=e.dx<0
  --flip
+ if e.dx<0 then
+ 	e.flp=true
+ elseif e.dx>0 then
+ 	e.flp=false
+ end
 
  --apply accelerate
  e.x+=e.dx
