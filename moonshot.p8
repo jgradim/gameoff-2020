@@ -11,161 +11,154 @@ function init_physics()
  --acceleration
  a=1.1
  --inertia
- i=0.5
+ i=0.8
 end
 -->8
 --loop
 
 function _init()
  init_physics()
- init_player()
+ plr=init_player()
 end
 
 function _update60()
- plr.update()
+ update_player(plr)
 end
 
 function _draw()
  cls()
  map(0,0)
- plr.draw()
+ draw_player(plr)
+end
+-->8
+--entity
+
+function init_entity(
+ sp,w,h,max_dx,max_dy
+)
+ return {
+ 	sp=sp,
+  x=0,
+  y=0,
+  w=w,
+  h=h,
+  dx=0,
+  dy=0,
+  frct=0.3,
+  max_dx=max_dx,
+  max_dy=max_dy,
+  flp=false,
+ }
+end
+
+function update_entity(e)
+ --apply gravity
+ e.dy+=g
+ e.dx*=i
+
+ --check collision up and down
+ if e.dy>0 then
+  e.dy=mid(
+   -e.max_dy,e.dy,e.max_dy
+  )
+
+  if collide_map(e,"⬇️",0) then
+   e.dy=0
+   e.y-=((e.y+e.h+1)%8)-1
+  end
+ elseif e.dy<0 then
+  if collide_map(e,"⬆️",0) then
+   e.dy=0
+  end
+ end
+
+ --check collision left and right
+ if e.dx<0 then
+  e.dx=mid(
+   -e.max_dx,e.dx,e.max_dx
+  )
+
+  if collide_map(e,"⬅️",1) then
+   e.dx=0
+  end
+ elseif e.dx>0 then
+  e.dx=mid(
+  	-e.max_dx,e.dx,e.max_dx
+  )
+  
+
+  if collide_map(e,"➡️",1) then
+   e.dx=0
+  end
+ end
+
+ --apply velocity
+ e.x+=e.dx
+ e.y+=e.dy
+end
+
+function draw_entity(e)
+	spr(e.sp,e.x,e.y,e.w,e.h)
 end
 -->8
 --player
 
 function init_player()
- plr={
-  x=0,
-  y=0,
-  w=8,
-  h=8,
-  dx=0,
-  dy=0,
-  acch=1,
-  accv=1,
-  frct=0.3,
-  max_dx=2,
-  max_dy=3,
-  flp=false,
-  sp=1,
-  update=function()
-
-   --apply gravity
-   plr.dy=mid(
-    -plr.max_dy,
-    plr.dy+g,
-    plr.max_dy
-   )
-
-   -- Apply frct to dx
-   if plr.dx != 0 then
-     if plr.flp then -- going left
-       plr.dx=mid(-plr.max_dx, plr.dx + plr.frct, 0)
-     else
-       plr.dx=mid(0, plr.dx - plr.frct, plr.max_dx)
-     end
-   end
-
-   -- Input
-   if btn(⬆️) then
-    plr.dy-=plr.accv
-   end
-
-   if btn(⬅️) then
-    plr.dx-=plr.acch
-    plr.flp=true
-   end
-
-   if btn(➡️) then
-    plr.dx+=plr.acch
-    plr.flp=false
-   end
-
-   --check collision up and down
-   if plr.dy>0 then
-    plr.falling=true
-    plr.landed=false
-    plr.jumping=false
-
-    plr.dy=mid(
-     -plr.max_dy,
-     plr.dy,
-     plr.max_dy
-    )
-
-    if collide_map(plr,"down",0) then
-     plr.landed=true
-     plr.falling=false
-     plr.dy=0
-     plr.y-=((plr.y+plr.h+1)%8)-1
-    end
-   elseif plr.dy<0 then
-    plr.jumping=true
-    if collide_map(plr,"up",1) then
-     plr.dy=0
-    end
-   end
-
-   --check collision left and right
-   if plr.dx<0 then
-    plr.dx=mid(
-     -plr.max_dx,
-     plr.dx,
-     plr.max_dx
-    )
-
-    if collide_map(plr,"left",1) then
-     plr.dx=0
-    end
-   elseif plr.dx>0 then
-    plr.dx=mid(
-     -plr.max_dx,
-     plr.dx,
-     plr.max_dx
-    )
-
-    if collide_map(plr,"right",1) then
-     plr.dx=0
-    end
-   end
-
-   --apply velocity
-   plr.x+=plr.dx
-   plr.y+=plr.dy
-  end,
-  draw=function()
-   spr(
-    plr.sp,
-    plr.x,plr.y,
-    plr.w,plr.h
-   )
-  end
- }
+ p = init_entity(1,1,1,2,3)
+ p.accx=0.3
+ p.accy=0.5
+ return p
 end
 
+function update_player(p)
+ -- input
+ if btn(⬆️) then
+  p.dy-=p.accy
+ end
+
+ if btn(⬅️) then
+  p.dx-=plr.accx
+  p.flp=true
+ end
+
+ if btn(➡️) then
+  p.dx+=plr.accx
+  p.flp=false
+ end
+
+ update_entity(p)
+end
+
+function draw_player(p)
+	draw_entity(p)
+end
 -->8
 --utils
 
 function collide_map(obj,aim,flag)
  --obj = table needs x,y,w,h
- --aim = left,right,up,down
+ --aim = ⬅️,➡️,⬆️,⬇️
 
- local x=obj.x  local y=obj.y
- local w=obj.w  local h=obj.h
+ local x=obj.x
+ local y=obj.y
+ local w=obj.w
+ local h=obj.h
 
- local x1=0  local y1=0
- local x2=0  local y2=0
+ local x1=0
+ local y1=0
+ local x2=0
+ local y2=0
 
- if aim=="left" then
+ if aim=="⬅️" then
    x1=x-1  y1=y
    x2=x    y2=y+h-1
- elseif aim=="right" then
+ elseif aim=="➡️" then
    x1=x+w-1  y1=y
    x2=x+w    y2=y+h-1
- elseif aim=="up" then
+ elseif aim=="⬆️" then
    x1=x+2    y1=y-1
    x2=x+w-3  y2=y
- elseif aim=="down" then
+ elseif aim=="⬇️" then
    x1=x+2    y1=y+h
    x2=x+w-3  y2=y+h
  end
