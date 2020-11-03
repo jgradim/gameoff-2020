@@ -29,6 +29,9 @@ function _draw()
  cls()
  map(0,0)
  draw_player(plr)
+ 
+ --print debug if set
+ if debug then print(debug) end
 end
 -->8
 --entity
