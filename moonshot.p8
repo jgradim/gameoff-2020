@@ -7,7 +7,7 @@ __lua__
 
 function init_physics()
  --gravity
- g=0.02
+ g=0.2
  --acceleration
  a=1.1
  --inertia
@@ -29,7 +29,6 @@ function _draw()
  cls()
  map(0,0)
  plr.draw()
- if debug then print(debug) end
 end
 -->8
 --player
@@ -42,19 +41,46 @@ function init_player()
   h=8,
   dx=0,
   dy=0,
+  acch=1,
+  accv=1,
+  frct=0.3,
   max_dx=2,
   max_dy=3,
   flp=false,
   sp=1,
   update=function()
+
    --apply gravity
    plr.dy=mid(
     -plr.max_dy,
     plr.dy+g,
     plr.max_dy
    )
-   
-   
+
+   -- Apply frct to dx
+   if plr.dx != 0 then
+     if plr.flp then -- going left
+       plr.dx=mid(-plr.max_dx, plr.dx + plr.frct, 0)
+     else
+       plr.dx=mid(0, plr.dx - plr.frct, plr.max_dx)
+     end
+   end
+
+   -- Input
+   if btn(⬆️) then
+    plr.dy-=plr.accv
+   end
+
+   if btn(⬅️) then
+    plr.dx-=plr.acch
+    plr.flp=true
+   end
+
+   if btn(➡️) then
+    plr.dx+=plr.acch
+    plr.flp=false
+   end
+
    --check collision up and down
    if plr.dy>0 then
     plr.falling=true
@@ -102,7 +128,7 @@ function init_player()
      plr.dx=0
     end
    end
-   
+
    --apply velocity
    plr.x+=plr.dx
    plr.y+=plr.dy
@@ -120,10 +146,6 @@ end
 -->8
 --utils
 
-function direction(x)
- return x==0 and 0 or sgn(x)
-end
-
 function collide_map(obj,aim,flag)
  --obj = table needs x,y,w,h
  --aim = left,right,up,down
@@ -131,26 +153,26 @@ function collide_map(obj,aim,flag)
  local x=obj.x  local y=obj.y
  local w=obj.w  local h=obj.h
 
- local x1=0	 local y1=0
+ local x1=0  local y1=0
  local x2=0  local y2=0
 
  if aim=="left" then
    x1=x-1  y1=y
    x2=x    y2=y+h-1
  elseif aim=="right" then
-   x1=x+w-1    y1=y
-   x2=x+w  y2=y+h-1
+   x1=x+w-1  y1=y
+   x2=x+w    y2=y+h-1
  elseif aim=="up" then
    x1=x+2    y1=y-1
    x2=x+w-3  y2=y
  elseif aim=="down" then
-   x1=x+2      y1=y+h
-   x2=x+w-3    y2=y+h
+   x1=x+2    y1=y+h
+   x2=x+w-3  y2=y+h
  end
 
  --pixels to tiles
- x1/=8    y1/=8
- x2/=8    y2/=8
+ x1/=8  y1/=8
+ x2/=8  y2/=8
 
  return fget(mget(x1,y1), flag)
  or fget(mget(x1,y2), flag)
