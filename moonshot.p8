@@ -33,17 +33,20 @@ end
 function _init()
  init_physics()
  p=init_player()
+ _init_fxs()
 end
 
 function _update60()
  update_player(p)
+ _update_fxs()
 end
 
 function _draw()
  cls()
  map(0,0)
+ _draw_fxs()
  draw_player(p)
- 
+
  --print debug if set
  if debug then print(debug) end
 end
@@ -102,12 +105,12 @@ function update_entity(e)
   e.dx=mid(
   	-e.max_dx,e.dx,e.max_dx
   )
-  
+
   if collide_map(e,"➡️",1) then
    e.dx=0
   end
  end
- 
+
  --flip
  if e.dx<0 then
  	e.flp=true
@@ -136,9 +139,11 @@ end
 function update_player(p)
  handle_input(p)
 
+ update_state(p)
  update_entity(p)
- 
+
  update_sprite(p)
+ fire_sfx(p)
 end
 
 function handle_input(p)
@@ -155,33 +160,49 @@ function handle_input(p)
  end
 end
 
-function update_sprite(p)
+function update_state(p)
  --determine state from dx/dy
-	local state="idle"
+	p.state="idle"
 	if abs(p.dx)>0.1 then
-	 state="running"
+	 p.state="running"
 	end
 	if abs(p.dy) > 0 then
 		if p.dy<-1 then
-		 state="jumping"
+		 p.state="jumping"
 		elseif p.dy>1 then
-		 state="falling"
+		 p.state="falling"
 		else
-		 state="floating"
+		 p.state="floating"
 		end
  end
-	
+end
+
+function update_sprite(p)
+
 	--update sprite based on state
- if state=="idle" then
+ if p.state=="idle" then
  	p.sp=1
- elseif state=="running" then
+ elseif p.state=="running" then
  	p.sp=2+(t()*10)%3
- elseif state=="jumping" then
+ elseif p.state=="jumping" then
   p.sp=3
- elseif state=="floating" then
+ elseif p.state=="floating" then
   p.sp=1
- elseif state=="falling" then
+ elseif p.state=="falling" then
   p.sp=1
+ end
+end
+
+function fire_sfx(p)
+ if p.state == 'jumping' then
+   local x_off = 0
+   if p.flp then x_off = 8 end
+   rocket:sched(
+     p.x + x_off,
+     p.y+8,
+     -p.dx,
+     -p.dy
+   )
  end
 end
 
@@ -243,6 +264,94 @@ function collide_map(obj,aim,flag)
  or fget(mget(x2,y1), flag)
  or fget(mget(x2,y2), flag)
 end
+-->8
+-- Particles
+function class(super, cls)
+ cls.meta = {__index=super}
+ return setmetatable(cls, cls.meta)
+end
+
+function _init_fxs()
+  particles={}
+end
+
+function _update_fxs()
+ for f in all(particles) do
+  f.t+=1
+  if f.life <= f.t then
+   del(particles, f)
+  else
+   f:update()
+  end
+ end
+end
+
+function _draw_fxs()
+ for f in all(particles) do f:draw() end
+end
+
+base_sfx = {
+ t=0,
+ c=0,
+ r=1,
+ dx=0,
+ dy=0,
+ dr=0,
+ colors={},
+ sfx=nil,
+
+ sched=function(cls, ...)
+  if cls.sfx then sfx(cls.sfx) end
+
+  for i=1,cls.amount do
+    f = cls:gen_particle(...)
+    f.t = 0
+    assert(f.life, "particle must know how many frames it'll live")
+    assert(f.x, "particle must know its x")
+    assert(f.y, "particle must know its y")
+
+    add(particles, setmetatable(f, {__index=cls}))
+   end
+ end,
+
+ curr_color=function(f)
+  return f.colors[ceil(f.t*#f.colors/f.life)]
+ end,
+
+ draw=function(f)
+  circfill(f.x, f.y, f.r, f.c)
+ end,
+
+ update=function(f)
+  f.x+=f.dx
+  f.y+=f.dy
+  f.r+=f.dr
+  f.c=f:curr_color()
+ end,
+}
+
+
+rocket =  class(base_sfx, {
+ width = 3,
+ colors = {8,9,10,5},
+ amount = 3,
+
+ gen_particle=function(
+   cls,
+   x,
+   y,
+   dx,
+   dy
+ )
+  local w = cls.width
+  return {
+   x=x-w/2+rnd(w),
+   y=y-w/2+rnd(w),
+   life=6+rnd(3),
+  }
+ end,
+})
+
 __gfx__
 00000000000000000000000000666600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000006666000066660006611c60006666000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
