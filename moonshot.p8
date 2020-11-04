@@ -333,7 +333,7 @@ rocket =  class(base_sfx, {
   local x_off = 0
   if p.flp then x_off = 8 end
   cls:sched(
-    p.x + x_off,
+    p.x+x_off,
     p.y+8,
     -p.dx,
     -p.dy
@@ -352,7 +352,22 @@ rocket =  class(base_sfx, {
    x=x-w/2+rnd(w),
    y=y-w/2+rnd(w),
    life=6+rnd(3),
+   dx=dx,
+   dy=dy,
   }
+ end,
+
+ update=function(f)
+  f.x+=f.dx
+  f.y+=f.dy
+  f.r+=f.dr
+  f.c=f:curr_color()
+
+  if mget(f.x\8, f.y\8) ~= 0 then
+   f.r=0
+   f.dx=0
+   f.dy=0
+  end
  end,
 })
 
