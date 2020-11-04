@@ -2,189 +2,163 @@ pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
 --particles demo
---by nerdy teachers
-
+--by pkoch
+--stolen from nerdy teachers
 --adapted from lazydev academy's breakout#37 tutorial
 
-effects = {
- particles={},
+function _init()
+ _init_fxs()
 
- sched=function(self)
-  return add(effects, self)
+ p = {x=53, y=53, r=2, c=7}
+end
+
+function _update60()
+ _update_fxs()
+
+ if btn(0) then p.x-=1 end
+ if btn(1) then p.x+=1 end
+ if btn(2) then p.y-=1 end
+ if btn(3) then p.y+=1 end
+
+ if btn(4) then
+  fire:sched(p.x,p.y)
+ end
+
+ if btnp(5) then
+  explosion:sched(p.x,p.y)
+ end
+
+ if btn(0) or btn(1) or btn(2) or btn(3) then
+  trail:sched(p.x,p.y)
+ end
+end
+
+function _draw()
+ cls()
+
+  _draw_fxs()
+
+ circfill(p.x,p.y,p.r,p.c)
+end
+-->8
+-- Particles
+function class(super, cls)
+ cls.meta = {__index=super}
+ return setmetatable(cls, cls.meta)
+end
+
+function _init_fxs()
+  particles={}
+end
+
+function _update_fxs()
+ for f in all(particles) do
+  f.t+=1
+  if f.life <= f.t then
+   del(particles, f)
+  else
+   f:update()
+  end
+ end
+end
+
+function _draw_fxs()
+ for f in all(particles) do f:draw() end
+end
+
+base_sfx = {
+ t=0,
+ c=0,
+ r=1,
+ dx=0,
+ dy=0,
+ dr=0,
+ colors={},
+
+ sched=function(cls, ...)
+  sfx(cls.sfx)
+
+  for i=1,cls.amount do
+    f = cls:gen_particle(...)
+    f.t = 0
+    assert(f.life, "particle must know how many frames it'll live")
+    assert(f.x, "particle must know its x")
+    assert(f.y, "particle must know its y")
+
+    add(particles, setmetatable(f, {__index=cls}))
+   end
  end,
 
- update=function(self)
-  print("updating effect")
+ curr_color=function(f)
+  return f.colors[ceil(f.t*#f.colors/f.life)]
+ end,
+
+ draw=function(f)
+  circfill(f.x, f.y, f.r, f.c)
+ end,
+
+ update=function(f)
+  f.x+=f.dx
+  f.y+=f.dy
+  f.r+=f.dr
+  f.c=f:curr_color()
  end,
 }
 
-trail = {
+trail = class(base_sfx, {
  sfx=0,
  width=1.5,
  colors={12,13,1},
  amount=2,
- sched=function(self, x, y)
-   sfx(self.sfx)
 
-   local w = self.width
-   for i=1, self.amount do
-        add_fx(
-            x-w/2+rnd(w),
-            y-w/2+rnd(w),
-            40+rnd(30),-- die
-            0,         -- dx
-            0,         -- dy
-            false,     -- gravity
-            false,     -- grow
-            false,     -- shrink
-            1,         -- radius
-            self.colors
-        )
-    end
- end,
-}
+ gen_particle=function(cls, x,y)
+  local w = cls.width
+  return {
+   x=x-w/2+rnd(w),
+   y=y-w/2+rnd(w),
+   life=40+rnd(30),
+  }
+ end
+})
 
-fire = {
+fire =  class(base_sfx, {
  sfx = 2,
  width = 3,
  colors = {8,9,10,5},
  amount = 3,
+ r = 3,
+ dx=0,
+ dy=-.5,
+ dr=-.1,
 
- sched=function(self, x, y)
-    sfx(self.sfx)
-
-    local w = self.width
-    for _=1, self.amount do
-        add_fx(
-            x-w/2+rnd(w),
-            y-w/2+rnd(w),
-            30+rnd(10),
-            0,         -- dx
-            -.5,       -- dy
-            false,     -- gravity
-            false,     -- grow
-            true,      -- shrink
-            2,         -- radius
-            self.colors
-        )
-    end
+ gen_particle=function(cls, x,y)
+  local w = cls.width
+  return {
+   x=x-w/2+rnd(w),
+   y=y-w/2+rnd(w),
+   life=30+rnd(10),
+  }
  end,
-}
+})
 
-explosion = {
-  sfx = 1,
-  size = 5,
-  colors = {8,9,6,5},
-  amount = 5,
+explosion =  class(base_sfx, {
+ sfx = 1,
+ colors={8,9,6,5},
+ amount=5,
+ r=5,
+ dr=-0.1,
 
-  sched=function(self, x, y)
-    sfx(self.sfx)
-
-    for i=1, self.amount do
-        --settings
-        add_fx(
-            x,         -- x
-            y,         -- y
-            30+rnd(25),-- die
-            rnd(2)-1,  -- dx
-            rnd(2)-1,  -- dy
-            false,     -- gravity
-            false,     -- grow
-            true,      -- shrink
-            self.size,         -- radius
-            self.colors    -- color_table
-        )
-    end
-  end,
-}
-
-p = {x=53, y=53, r=2, c=7}
-
-function _update60()
-    update_fx()
-    if btn(0) then p.x-=1 end
-    if btn(1) then p.x+=1 end
-    if btn(2) then p.y-=1 end
-    if btn(3) then p.y+=1 end
-
-    if btn(4) then
-      fire:sched(p.x, p.y)
-    end
-
-    if btnp(5) then
-        explosion:sched(p.x,p.y)
-    end
-
-    if btn(0) or btn(1) or btn(2) or btn(3) then
-        trail:sched(p.x, p.y)
-    end
-end
-
-function _draw()
-    cls()
-
-    draw_fx()
-
-    circfill(p.x,p.y,p.r,p.c)
-end
-
--->8
--- core particle functions
-
-function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
-    add(effects,{
-        x=x,
-        y=y,
-        t=0,
-        die=die,
-        dx=dx,
-        dy=dy,
-        grav=grav,
-        grow=grow,
-        shrink=shrink,
-        r=r,
-        c=0,
-        c_table=c_table
-    })
-end
-
-function update_fx()
-    for fx in all(effects) do
-        --lifetime
-        fx.t+=1
-        if fx.t>fx.die then del(effects,fx) end
-
-        --color depends on lifetime and num colors
-        if fx.t/fx.die < 1/#fx.c_table then
-            fx.c=fx.c_table[1]
-
-        elseif fx.t/fx.die < 2/#fx.c_table then
-            fx.c=fx.c_table[2]
-
-        elseif fx.t/fx.die < 3/#fx.c_table then
-            fx.c=fx.c_table[3]
-
-        else
-            fx.c=fx.c_table[4]
-        end
-
-        --physics
-        if fx.grav then fx.dy+=.5 end
-        if fx.grow then fx.r+=.1 end
-        if fx.shrink then fx.r-=.1 end
-
-        --move
-        fx.x+=fx.dx
-        fx.y+=fx.dy
-
-    end
-end
-
-function draw_fx()
- for fx in all(effects) do
-  circfill(fx.x,fx.y,fx.r,fx.c)
- end
-end
+ gen_particle=function(cls, x,y)
+  local w = cls.width
+  return {
+    x=x,
+    y=y,
+    life=30+rnd(15),
+    dx=rnd(2)-1,
+    dy=rnd(2)-1,
+  }
+ end,
+})
 
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
