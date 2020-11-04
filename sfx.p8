@@ -6,68 +6,133 @@ __lua__
 
 --adapted from lazydev academy's breakout#37 tutorial
 
-function _init()
-    --particles
-    effects = {}
+effects = {
+ particles={},
 
-    --effects settings
-    trail_width = 1.5
-    trail_colors = {12,13,1}
-    trail_amount = 2
+ sched=function(self)
+  return add(effects, self)
+ end,
 
-    fire_width = 3
-    fire_colors = {8,9,10,5}
-    fire_amount = 3
+ update=function(self)
+  print("updating effect")
+ end,
+}
 
-    explode_size = 5
-    explode_colors = {8,9,6,5}
-    explode_amount = 5
+trail = {
+ sfx=0,
+ width=1.5,
+ colors={12,13,1},
+ amount=2,
+ sched=function(self, x, y)
+   sfx(self.sfx)
 
-    --player
-    player = {x=53, y=53, r=2, c=7}
+   local w = self.width
+   for i=1, self.amount do
+        add_fx(
+            x-w/2+rnd(w),
+            y-w/2+rnd(w),
+            40+rnd(30),-- die
+            0,         -- dx
+            0,         -- dy
+            false,     -- gravity
+            false,     -- grow
+            false,     -- shrink
+            1,         -- radius
+            self.colors
+        )
+    end
+ end,
+}
 
-    --sfx
-    trail_sfx = 0
-    explode_sfx = 1
-    fire_sfx = 2
-end
+fire = {
+ sfx = 2,
+ width = 3,
+ colors = {8,9,10,5},
+ amount = 3,
+
+ sched=function(self, x, y)
+    sfx(self.sfx)
+
+    local w = self.width
+    for _=1, self.amount do
+        add_fx(
+            x-w/2+rnd(w),
+            y-w/2+rnd(w),
+            30+rnd(10),
+            0,         -- dx
+            -.5,       -- dy
+            false,     -- gravity
+            false,     -- grow
+            true,      -- shrink
+            2,         -- radius
+            self.colors
+        )
+    end
+ end,
+}
+
+explosion = {
+  sfx = 1,
+  size = 5,
+  colors = {8,9,6,5},
+  amount = 5,
+
+  sched=function(self, x, y)
+    sfx(self.sfx)
+
+    for i=1, self.amount do
+        --settings
+        add_fx(
+            x,         -- x
+            y,         -- y
+            30+rnd(25),-- die
+            rnd(2)-1,  -- dx
+            rnd(2)-1,  -- dy
+            false,     -- gravity
+            false,     -- grow
+            true,      -- shrink
+            self.size,         -- radius
+            self.colors    -- color_table
+        )
+    end
+  end,
+}
+
+p = {x=53, y=53, r=2, c=7}
 
 function _update60()
     update_fx()
-    if btn(0) then player.x-=1 end
-    if btn(1) then player.x+=1 end
-    if btn(2) then player.y-=1 end
-    if btn(3) then player.y+=1 end
+    if btn(0) then p.x-=1 end
+    if btn(1) then p.x+=1 end
+    if btn(2) then p.y-=1 end
+    if btn(3) then p.y+=1 end
 
     if btn(4) then
-        fire(player.x,player.y,fire_width,fire_colors,fire_amount)
-        sfx(fire_sfx)
+      fire:sched(p.x, p.y)
     end
+
     if btnp(5) then
-        explode(player.x,player.y,explode_size,explode_colors,explode_amount)
-        sfx(explode_sfx)
+        explosion:sched(p.x,p.y)
     end
 
     if btn(0) or btn(1) or btn(2) or btn(3) then
-        trail(player.x,player.y,trail_width,trail_colors,trail_amount)
-        sfx(trail_sfx)
+        trail:sched(p.x, p.y)
     end
 end
 
 function _draw()
     cls()
-    --particles
+
     draw_fx()
 
-    --player
-    circfill(player.x,player.y,player.r,player.c)
+    circfill(p.x,p.y,p.r,p.c)
 end
 
 -->8
 -- core particle functions
 
 function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
-    local fx={
+    add(effects,{
         x=x,
         y=y,
         t=0,
@@ -80,8 +145,7 @@ function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
         r=r,
         c=0,
         c_table=c_table
-    }
-    add(effects,fx)
+    })
 end
 
 function update_fx()
@@ -112,84 +176,15 @@ function update_fx()
         --move
         fx.x+=fx.dx
         fx.y+=fx.dy
+
     end
 end
 
 function draw_fx()
-    for fx in all(effects) do
-        --draw pixel for size 1, draw circle for larger
-        if fx.r<=1 then
-            pset(fx.x,fx.y,fx.c)
-        else
-            circfill(fx.x,fx.y,fx.r,fx.c)
-        end
-    end
+ for fx in all(effects) do
+  circfill(fx.x,fx.y,fx.r,fx.c)
+ end
 end
-
--->8
---example particle effects
-
--- motion trail effect
-function trail(x,y,w,c_table,num)
-
-    for i=0, num do
-        --settings
-        add_fx(
-            x+rnd(w)-w/2,  -- x
-            y+rnd(w)-w/2,  -- y
-            40+rnd(30),  -- die
-            0,         -- dx
-            0,         -- dy
-            false,     -- gravity
-            false,     -- grow
-            false,     -- shrink
-            1,         -- radius
-            c_table    -- color_table
-        )
-    end
-end
-
--- explosion effect
-function explode(x,y,r,c_table,num)
-    for i=0, num do
-
-        --settings
-        add_fx(
-            x,         -- x
-            y,         -- y
-            30+rnd(25),-- die
-            rnd(2)-1,  -- dx
-            rnd(2)-1,  -- dy
-            false,     -- gravity
-            false,     -- grow
-            true,      -- shrink
-            r,         -- radius
-            c_table    -- color_table
-        )
-    end
-end
-
--- fire effect
-function fire(x,y,w,c_table,num)
-    for i=0, num do
-        --settings
-        add_fx(
-            x+rnd(w)-w/2,  -- x
-            y+rnd(w)-w/2,  -- y
-            30+rnd(10),-- die
-            0,         -- dx
-            -.5,       -- dy
-            false,     -- gravity
-            false,     -- grow
-            true,      -- shrink
-            2,         -- radius
-            c_table    -- color_table
-        )
-    end
-end
-
---twinkle effect
-
 
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
