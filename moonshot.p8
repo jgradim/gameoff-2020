@@ -195,14 +195,7 @@ end
 
 function fire_sfx(p)
  if p.state == 'jumping' then
-   local x_off = 0
-   if p.flp then x_off = 8 end
-   rocket:sched(
-     p.x + x_off,
-     p.y+8,
-     -p.dx,
-     -p.dy
-   )
+  rocket:on_player(p)
  end
 end
 
@@ -335,6 +328,17 @@ rocket =  class(base_sfx, {
  width = 3,
  colors = {8,9,10,5},
  amount = 3,
+
+ on_player=function(cls, p)
+  local x_off = 0
+  if p.flp then x_off = 8 end
+  cls:sched(
+    p.x + x_off,
+    p.y+8,
+    -p.dx,
+    -p.dy
+  )
+ end,
 
  gen_particle=function(
    cls,
