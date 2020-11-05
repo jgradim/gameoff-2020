@@ -263,9 +263,9 @@ function collide_map(obj,aim,flag)
 end
 -->8
 -- particles
-function class(super, cls)
- cls.meta = {__index=super}
- return setmetatable(cls, cls.meta)
+function class(super, kls)
+ kls.meta = {__index=super}
+ return setmetatable(kls, kls.meta)
 end
 
 function _init_fxs()
@@ -297,18 +297,18 @@ base_sfx = {
  colors={},
  sfx=nil,
 
- sched=function(cls, ...)
-  if cls.sfx then sfx(cls.sfx) end
+ sched=function(kls, ...)
+  if kls.sfx then sfx(kls.sfx) end
 
-  for i=1,cls.amount do
-    f = cls:gen_particle(...)
-    cls:add_particle(f)
+  for i=1,kls.amount do
+    f = kls:gen_particle(...)
+    kls:add_particle(f)
    end
  end,
 
- add_particle=function(cls, f)
+ add_particle=function(kls, f)
   f.t = 0
-  f = setmetatable(f, {__index=cls})
+  f = setmetatable(f, {__index=kls})
   assert(f.life, "particle must know how many frames it'll live")
   assert(f.x, "particle must know its x")
   assert(f.y, "particle must know its y")
@@ -337,10 +337,10 @@ rocket =  class(base_sfx, {
  colors = {8,9,10,5},
  amount = 3,
 
- on_player=function(cls, p)
+ on_player=function(kls, p)
   local x_off = 0
   if p.flp then x_off = 8 end
-  cls:sched(
+  kls:sched(
     p.x+x_off,
     p.y+8,
     -p.dx,
@@ -349,13 +349,13 @@ rocket =  class(base_sfx, {
  end,
 
  gen_particle=function(
-   cls,
+   kls,
    x,
    y,
    dx,
    dy
  )
-  local w = cls.width
+  local w = kls.width
   return {
    x=x-w/2+rnd(w),
    y=y-w/2+rnd(w),
@@ -385,24 +385,24 @@ land =  class(base_sfx, {
  life=20,
  dy=-0.3,
 
- on_player=function(cls, p)
-  cls:sched(p.x+4,p.y+8)
+ on_player=function(kls, p)
+  kls:sched(p.x+4,p.y+8)
  end,
 
- sched=function(cls, x, y)
-  cls:add_particle({
+ sched=function(kls, x, y)
+  kls:add_particle({
     x=x,
     y=y,
     dx=-0.3,
   })
 
-  cls:add_particle({
+  kls:add_particle({
     x=x,
     y=y,
     dx=0,
   })
 
-  cls:add_particle({
+  kls:add_particle({
     x=x,
     y=y,
     dx=0.3,
