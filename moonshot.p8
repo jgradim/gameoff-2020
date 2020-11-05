@@ -17,7 +17,7 @@ __lua__
 ]]
 
 -->8
---variables/state
+--globals
 
 --gravity
 g=0.2
@@ -25,6 +25,75 @@ g=0.2
 a=1.1
 --inertia
 i=0.8
+
+--have super extend kls
+function class(super,kls)
+ kls.meta={__index=super}
+ return setmetatable(
+  kls,kls.meta
+ )
+end
+
+--bitmask comparison
+function bc(flag,mask)
+ return flag&mask==mask
+end
+
+--check if obj collides with map
+function collide_map(
+ obj,aim,flag
+)
+ --[[
+ obj={x,y,w,h}
+ aim=⬅️,➡️,⬆️,⬇️
+ flag=
+  0-stands on (eg: floor)
+  1-bumps into (eg: wall)
+ ]]
+
+ local x=obj.x
+ local y=obj.y
+ local w=obj.w
+ local h=obj.h
+
+ local x1=0
+ local y1=0
+ local x2=0
+ local y2=0
+
+ if aim=="⬅️" then
+   x1=x-1
+   y1=y
+   x2=x
+   y2=y+h-1
+ elseif aim=="➡️" then
+   x1=x+w-1
+   y1=y
+   x2=x+w
+   y2=y+h-1
+ elseif aim=="⬆️" then
+   x1=x+2
+   y1=y-1
+   x2=x+w-3
+   y2=y
+ elseif aim=="⬇️" then
+   x1=x+2
+   y1=y+h
+   x2=x+w-3
+   y2=y+h
+ end
+
+ --pixels to tiles
+ x1/=8
+ y1/=8
+ x2/=8
+ y2/=8
+
+ return fget(mget(x1,y1),flag)
+ or fget(mget(x1,y2),flag)
+ or fget(mget(x2,y1),flag)
+ or fget(mget(x2,y2),flag)
+end
 -->8
 --loop
 
@@ -236,73 +305,6 @@ end
 
 function draw_player(p)
  draw_entity(p)
-end
--->8
---utils
-
-function class(super,kls)
- kls.meta={__index=super}
- return setmetatable(
-  kls,kls.meta
- )
-end
-
-function bc(flag,mask)
- --bitmask comparison
- return flag&mask==mask
-end
-
-function collide_map(obj,aim,flag)
- --[[
- obj={x,y,w,h}
- aim=⬅️,➡️,⬆️,⬇️
- flag=
-  0-stands on (eg: floor)
-  1-bumps into (eg: wall)
- ]]
-
- local x=obj.x
- local y=obj.y
- local w=obj.w
- local h=obj.h
-
- local x1=0
- local y1=0
- local x2=0
- local y2=0
-
- if aim=="⬅️" then
-   x1=x-1
-   y1=y
-   x2=x
-   y2=y+h-1
- elseif aim=="➡️" then
-   x1=x+w-1
-   y1=y
-   x2=x+w
-   y2=y+h-1
- elseif aim=="⬆️" then
-   x1=x+2
-   y1=y-1
-   x2=x+w-3
-   y2=y
- elseif aim=="⬇️" then
-   x1=x+2
-   y1=y+h
-   x2=x+w-3
-   y2=y+h
- end
-
- --pixels to tiles
- x1/=8
- y1/=8
- x2/=8
- y2/=8
-
- return fget(mget(x1,y1),flag)
- or fget(mget(x1,y2),flag)
- or fget(mget(x2,y1),flag)
- or fget(mget(x2,y2),flag)
 end
 -->8
 --particles
