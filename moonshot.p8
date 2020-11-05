@@ -262,7 +262,7 @@ function collide_map(obj,aim,flag)
  or fget(mget(x2,y2), flag)
 end
 -->8
--- Particles
+-- particles
 function class(super, cls)
  cls.meta = {__index=super}
  return setmetatable(cls, cls.meta)
