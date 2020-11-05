@@ -17,7 +17,7 @@ __lua__
 ]]
 
 -->8
---variables / state
+--variables/state
 
 --gravity
 g=0.2
@@ -138,7 +138,7 @@ function init_player(on_input)
 end
 
 function update_player(p)
- p.on_input(p, btn(), btnp())
+ p.on_input(p,btn(),btnp())
 
  update_state(p)
  update_entity(p)
@@ -185,7 +185,8 @@ end
 function on_input_glide(p,b,bp)
 	on_input_jump(p,b,bp)
 	
-	if bc(b,4) and p.dy > -glide_f then
+	if bc(b,4)
+	and p.dy>-glide_f then
 	 p.dy-=glide_f+(rnd(0.5))
 	end
 end
@@ -197,7 +198,7 @@ function update_state(p)
  if abs(p.dx)>0.1 then
   p.state="running"
  end
- if abs(p.dy) > 0 then
+ if abs(p.dy)>0 then
   if p.dy<-1 then
    p.state="jumping"
   elseif p.dy>1 then
@@ -209,7 +210,6 @@ function update_state(p)
 end
 
 function update_sprite(p)
-
  --update sprite based on state
  if p.state=="idle" then
   p.sp=1
@@ -225,11 +225,11 @@ function update_sprite(p)
 end
 
 function fire_sfx(p)
- if p.state == "jumping"
- or p.state == "gliding" then
+ if p.state=="jumping"
+ or p.state=="gliding" then
   rocket:on_player(p)
  end
- if p.prev_state == 'falling' and p.state != 'falling' then
+ if p.prev_state=="falling" and p.state != 'falling' then
   land:on_player(p)
  end
 end
@@ -240,9 +240,11 @@ end
 -->8
 --utils
 
-function class(super, c)
- c.meta = {__index=super}
- return setmetatable(c, c.meta)
+function class(super,kls)
+ kls.meta={__index=super}
+ return setmetatable(
+  kls,kls.meta
+ )
 end
 
 function bc(flag,mask)
@@ -297,13 +299,13 @@ function collide_map(obj,aim,flag)
  x2/=8
  y2/=8
 
- return fget(mget(x1,y1), flag)
- or fget(mget(x1,y2), flag)
- or fget(mget(x2,y1), flag)
- or fget(mget(x2,y2), flag)
+ return fget(mget(x1,y1),flag)
+ or fget(mget(x1,y2),flag)
+ or fget(mget(x2,y1),flag)
+ or fget(mget(x2,y2),flag)
 end
 -->8
--- particles
+--particles
 
 function init_fxs()
   particles={}
@@ -312,8 +314,8 @@ end
 function update_fxs()
  for f in all(particles) do
   f.t+=1
-  if f.life <= f.t then
-   del(particles, f)
+  if f.life<=f.t then
+   del(particles,f)
   else
    f:update()
   end
@@ -321,10 +323,12 @@ function update_fxs()
 end
 
 function draw_fxs()
- for f in all(particles) do f:draw() end
+ for f in all(particles) do
+  f:draw()
+ end
 end
 
-base_sfx = {
+base_sfx={
  t=0,
  c=0,
  r=1,
@@ -334,30 +338,37 @@ base_sfx = {
  colors={},
  sfx=nil,
 
- sched=function(kls, ...)
-  if kls.sfx then sfx(kls.sfx) end
+ sched=function(kls,...)
+  if kls.sfx then
+  	sfx(kls.sfx)
+  end
 
   for i=1,kls.amount do
-    f = kls:gen_particle(...)
+    f=kls:gen_particle(...)
     kls:add_particle(f)
    end
  end,
 
- add_particle=function(kls, f)
+ add_particle=function(kls,f)
   f.t = 0
-  f = setmetatable(f, {__index=kls})
-  assert(f.life, "particle must know how many frames it'll live")
-  assert(f.x, "particle must know its x")
-  assert(f.y, "particle must know its y")
-  return add(particles, f)
+  f = setmetatable(
+   f,
+   {__index=kls}
+  )
+  assert(f.life,"particle must know how many frames it'll live")
+  assert(f.x,"particle must know its x")
+  assert(f.y,"particle must know its y")
+  return add(particles,f)
  end,
 
  curr_color=function(f)
-  return f.colors[ceil(f.t*#f.colors/f.life)]
+  return f.colors[
+   ceil(f.t*#f.colors/f.life)
+  ]
  end,
 
  draw=function(f)
-  circfill(f.x, f.y, f.r, f.c)
+  circfill(f.x,f.y,f.r,f.c)
  end,
 
  update=function(f)
@@ -369,14 +380,14 @@ base_sfx = {
 }
 
 
-rocket =  class(base_sfx, {
- width = 3,
- colors = {8,9,10,5},
- amount = 3,
+rocket=class(base_sfx,{
+ width=3,
+ colors={8,9,10,5},
+ amount=3,
 
- on_player=function(kls, p)
-  local x_off = 0
-  if p.flp then x_off = 8 end
+ on_player=function(kls,p)
+  local x_off=0
+  if p.flp then x_off=8 end
   kls:sched(
     p.x+x_off,
     p.y+8,
@@ -408,7 +419,7 @@ rocket =  class(base_sfx, {
   f.r+=f.dr
   f.c=f:curr_color()
 
-  if mget(f.x\8, f.y\8) ~= 0 then
+  if mget(f.x\8,f.y\8) ~= 0 then
    f.r=0
    f.dx=0
    f.dy=0
@@ -417,16 +428,16 @@ rocket =  class(base_sfx, {
 })
 
 
-land =  class(base_sfx, {
- colors = {7, 6, 13},
+land=class(base_sfx, {
+ colors={7,6,13},
  life=20,
  dy=-0.3,
 
- on_player=function(kls, p)
+ on_player=function(kls,p)
   kls:sched(p.x+4,p.y+8)
  end,
 
- sched=function(kls, x, y)
+ sched=function(kls,x,y)
   kls:add_particle({
     x=x,
     y=y,
