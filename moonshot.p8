@@ -57,7 +57,7 @@ function init_entity(
  sp,w,h,max_dx,max_dy
 )
  return {
- 	sp=sp,
+  sp=sp,
   x=0,
   y=0,
   w=w,
@@ -103,7 +103,7 @@ function update_entity(e)
   end
  elseif e.dx>0 then
   e.dx=mid(
-  	-e.max_dx,e.dx,e.max_dx
+   -e.max_dx,e.dx,e.max_dx
   )
 
   if collide_map(e,"➡️",1) then
@@ -113,9 +113,9 @@ function update_entity(e)
 
  --flip
  if e.dx<0 then
- 	e.flp=true
+  e.flp=true
  elseif e.dx>0 then
- 	e.flp=false
+  e.flp=false
  end
 
  --apply accelerate
@@ -124,7 +124,7 @@ function update_entity(e)
 end
 
 function draw_entity(e)
-	spr(e.sp,e.x,e.y,1,1,e.flp)
+ spr(e.sp,e.x,e.y,1,1,e.flp)
 end
 -->8
 --player
@@ -162,29 +162,29 @@ end
 
 function update_state(p)
  --determine state from dx/dy
-	p.prev_state=p.state or "idle"
-	p.state="idle"
-	if abs(p.dx)>0.1 then
-	 p.state="running"
-	end
-	if abs(p.dy) > 0 then
-		if p.dy<-1 then
-		 p.state="jumping"
-		elseif p.dy>1 then
-		 p.state="falling"
-		else
-		 p.state="floating"
-		end
+ p.prev_state=p.state or "idle"
+ p.state="idle"
+ if abs(p.dx)>0.1 then
+  p.state="running"
+ end
+ if abs(p.dy) > 0 then
+  if p.dy<-1 then
+   p.state="jumping"
+  elseif p.dy>1 then
+   p.state="falling"
+  else
+   p.state="floating"
+  end
  end
 end
 
 function update_sprite(p)
 
-	--update sprite based on state
+ --update sprite based on state
  if p.state=="idle" then
- 	p.sp=1
+  p.sp=1
  elseif p.state=="running" then
- 	p.sp=2+(t()*10)%3
+  p.sp=2+(t()*10)%3
  elseif p.state=="jumping" then
   p.sp=3
  elseif p.state=="floating" then
@@ -204,7 +204,7 @@ function fire_sfx(p)
 end
 
 function draw_player(p)
-	draw_entity(p)
+ draw_entity(p)
 end
 -->8
 --utils
