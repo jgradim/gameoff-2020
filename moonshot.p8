@@ -162,6 +162,7 @@ end
 
 function update_state(p)
  --determine state from dx/dy
+	p.prev_state=p.state or "idle"
 	p.state="idle"
 	if abs(p.dx)>0.1 then
 	 p.state="running"
@@ -196,6 +197,9 @@ end
 function fire_sfx(p)
  if p.state == 'jumping' then
   rocket:on_player(p)
+ end
+ if p.prev_state == 'falling' and p.state != 'falling' then
+  land:on_player(p)
  end
 end
 
@@ -298,13 +302,17 @@ base_sfx = {
 
   for i=1,cls.amount do
     f = cls:gen_particle(...)
-    f.t = 0
-    assert(f.life, "particle must know how many frames it'll live")
-    assert(f.x, "particle must know its x")
-    assert(f.y, "particle must know its y")
-
-    add(particles, setmetatable(f, {__index=cls}))
+    cls:add_particle(f)
    end
+ end,
+
+ add_particle=function(cls, f)
+  f.t = 0
+  f = setmetatable(f, {__index=cls})
+  assert(f.life, "particle must know how many frames it'll live")
+  assert(f.x, "particle must know its x")
+  assert(f.y, "particle must know its y")
+  return add(particles, f)
  end,
 
  curr_color=function(f)
@@ -368,6 +376,37 @@ rocket =  class(base_sfx, {
    f.dx=0
    f.dy=0
   end
+ end,
+})
+
+
+land =  class(base_sfx, {
+ colors = {7, 6, 13},
+ life=20,
+ dy=-0.3,
+
+ on_player=function(cls, p)
+  cls:sched(p.x+4,p.y+8)
+ end,
+
+ sched=function(cls, x, y)
+  cls:add_particle({
+    x=x,
+    y=y,
+    dx=-0.3,
+  })
+
+  cls:add_particle({
+    x=x,
+    y=y,
+    dx=0,
+  })
+
+  cls:add_particle({
+    x=x,
+    y=y,
+    dx=0.3,
+  })
  end,
 })
 
