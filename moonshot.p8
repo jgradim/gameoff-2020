@@ -19,20 +19,17 @@ __lua__
 -->8
 --variables / state
 
-function init_physics()
- --gravity
- g=0.2
- --acceleration
- a=1.1
- --inertia
- i=0.8
-end
+--gravity
+g=0.2
+--acceleration
+a=1.1
+--inertia
+i=0.8
 -->8
 --loop
 
 function _init()
- init_physics()
- p=init_player()
+ p=init_player(on_input_glide)
  _init_fxs()
 end
 
@@ -129,15 +126,19 @@ end
 -->8
 --player
 
-function init_player()
- local p=init_entity(1,8,8,2,3)
- p.accx=0.2
- p.accy=2.8
- return p
+walk_f=0.2
+jump_f=2.8
+glide_f=g*1.1
+
+function init_player(on_input)
+ return class(
+  init_entity(1,8,8,2,3),{
+   on_input=on_input
+  })
 end
 
 function update_player(p)
- handle_input(p)
+ p.on_input(p, btn(), btnp())
 
  update_state(p)
  update_entity(p)
@@ -146,18 +147,47 @@ function update_player(p)
  fire_sfx(p)
 end
 
-function handle_input(p)
- if btn(⬆️) and p.dy == 0 then
-  p.dy-=p.accy
+function on_input_base(p,b)
+ --1=left
+ --2=right
+ if bc(b,1) then
+  p.dx-=walk_f
+ elseif bc(b,2) then
+  p.dx+=walk_f
  end
+end
 
- if btn(⬅️) then
-  p.dx-=p.accx
+function on_input_jump(p,b,bp)
+ on_input_base(p,b)
+ 
+ --4=up
+ if bc(bp,4) and p.dy==0 then
+  p.dy-=jump_f
  end
+end
 
- if btn(➡️) then
-  p.dx+=p.accx
+function on_input_2_jump(p,b,bp)
+ on_input_base(p,b)
+ 
+ --4=up
+ if bc(bp,4) then
+  if not p.j or p.dy==0 then
+   p.j=0
+  else
+   p.j+=1
+  end
+  if p.j<2 then
+  	p.dy=max(p.dy-jump_f,-jump_f)
+  end
  end
+end
+
+function on_input_glide(p,b,bp)
+	on_input_jump(p,b,bp)
+	
+	if bc(b,4) and p.dy > -glide_f then
+	 p.dy-=glide_f+(rnd(0.5))
+	end
 end
 
 function update_state(p)
@@ -173,7 +203,7 @@ function update_state(p)
   elseif p.dy>1 then
    p.state="falling"
   else
-   p.state="floating"
+   p.state="gliding"
   end
  end
 end
@@ -187,7 +217,7 @@ function update_sprite(p)
   p.sp=2+(t()*10)%3
  elseif p.state=="jumping" then
   p.sp=3
- elseif p.state=="floating" then
+ elseif p.state=="gliding" then
   p.sp=1
  elseif p.state=="falling" then
   p.sp=1
@@ -195,7 +225,8 @@ function update_sprite(p)
 end
 
 function fire_sfx(p)
- if p.state == 'jumping' then
+ if p.state == "jumping"
+ or p.state == "gliding" then
   rocket:on_player(p)
  end
  if p.prev_state == 'falling' and p.state != 'falling' then
@@ -208,6 +239,16 @@ function draw_player(p)
 end
 -->8
 --utils
+
+function class(super, c)
+ c.meta = {__index=super}
+ return setmetatable(c, c.meta)
+end
+
+function bc(flag,mask)
+ --bitmask comparison
+ return flag&mask==mask
+end
 
 function collide_map(obj,aim,flag)
  --[[
@@ -263,10 +304,6 @@ function collide_map(obj,aim,flag)
 end
 -->8
 -- particles
-function class(super, kls)
- kls.meta = {__index=super}
- return setmetatable(kls, kls.meta)
-end
 
 function _init_fxs()
   particles={}
