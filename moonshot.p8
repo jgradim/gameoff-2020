@@ -30,18 +30,18 @@ i=0.8
 
 function _init()
  p=init_player(on_input_glide)
- _init_fxs()
+ init_fxs()
 end
 
 function _update60()
  update_player(p)
- _update_fxs()
+ update_fxs()
 end
 
 function _draw()
  cls()
  map(0,0)
- _draw_fxs()
+ draw_fxs()
  draw_player(p)
 
  --print debug if set
@@ -305,11 +305,11 @@ end
 -->8
 -- particles
 
-function _init_fxs()
+function init_fxs()
   particles={}
 end
 
-function _update_fxs()
+function update_fxs()
  for f in all(particles) do
   f.t+=1
   if f.life <= f.t then
@@ -320,7 +320,7 @@ function _update_fxs()
  end
 end
 
-function _draw_fxs()
+function draw_fxs()
  for f in all(particles) do f:draw() end
 end
 
