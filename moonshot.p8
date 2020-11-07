@@ -13,6 +13,7 @@ __lua__
 --large levels?
 ----camera
 --cleanup/optim code sections
+--use map flag to pick start x,y
 
 ]]
 
