@@ -35,6 +35,25 @@ function class(super,kls)
  )
 end
 
+function handle_input(obj)
+ --[[
+  obj={⬅️,➡️,⬆️,⬇️,🅾️,❎}
+ ]]
+ --button index=number+1
+ --https://pico-8.fandom.com/wiki/btn
+ btns={
+  "⬅️","➡️","⬆️","⬇️","🅾️","❎"
+ }
+ for i=1,#btns do
+  if btn(i-1) then
+   h=obj[btns[i]]
+   if h then
+    h(obj,btnp(i-1))
+   end
+  end
+ end
+end
+
 --bitmask comparison
 function bc(flag,mask)
  return flag&mask==mask
@@ -105,6 +124,7 @@ function _init()
 end
 
 function _update60()
+ handle_input(p)
  update_player(p)
  update_fxs()
 end
@@ -183,20 +203,30 @@ walk_f=0.2
 jump_f=2.8
 glide_f=g*1.1
 
-function init_player(on_input)
+function init_player()
  return class(
   init_entity(8,8,2,3),{
    sp=1,
    flp=false,
    state="idle",
    prev_state="idle",
-   on_input=on_input
+   
+   ⬅️=function(self,first)
+    self.dx-=walk_f
+   end,
+   
+   ➡️=function(self,first)
+    self.dx+=walk_f
+   end,
+
+   ⬆️=function(self,first)
+    --default behavior
+    double_jump(p,first)
+   end,
   })
 end
 
-function update_player(p)
- p.on_input(p,btn(),btnp())
-
+function update_player(p) 
  update_entity(p)
  
  --state
@@ -245,46 +275,27 @@ function update_player(p)
  end
 end
 
-function on_input_base(p,b)
- --1=left
- --2=right
- if bc(b,1) then
-  p.dx-=walk_f
- elseif bc(b,2) then
-  p.dx+=walk_f
- end
-end
-
-function on_input_jump(p,b,bp)
- on_input_base(p,b)
- 
- --4=up
- if bc(bp,4) and p.dy==0 then
+function jump(p, first)
+ if first and p.dy==0 then
   p.dy-=jump_f
  end
 end
 
-function on_input_2_jump(p,b,bp)
- on_input_base(p,b)
- 
- --4=up
- if bc(bp,4) then
-  if not p.j or p.dy==0 then
-   p.j=0
+function double_jump(p, first)
+ if first then
+  if not p._j or p.dy==0 then
+   p._j=0
   else
-   p.j+=1
+   p._j+=1
   end
-  if p.j<2 then
+  if p._j<2 then
    p.dy=-jump_f
   end
  end
 end
 
-function on_input_glide(p,b,bp)
- on_input_jump(p,b,bp)
- p.glide=
-  bc(b,4) and p.dy>-glide_f
-
+function glide(p, first)
+ p.glide=first and p.dy>-glide_f
  if p.glide then
   p.dy-=glide_f+(rnd(0.5))
  end
