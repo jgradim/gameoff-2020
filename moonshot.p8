@@ -62,25 +62,25 @@ function collide_map(
  local y2=0
 
  if aim=="⬅️" then
-   x1=x-1
-   y1=y
-   x2=x
-   y2=y+h-1
+  x1=x-1
+  y1=y
+  x2=x
+  y2=y+h-1
  elseif aim=="➡️" then
-   x1=x+w-1
-   y1=y
-   x2=x+w
-   y2=y+h-1
+  x1=x+w-1
+  y1=y
+  x2=x+w
+  y2=y+h-1
  elseif aim=="⬆️" then
-   x1=x+2
-   y1=y-1
-   x2=x+w-3
-   y2=y
+  x1=x+2
+  y1=y-1
+  x2=x+w-3
+  y2=y
  elseif aim=="⬇️" then
-   x1=x+2
-   y1=y+h
-   x2=x+w-3
-   y2=y+h
+  x1=x+2
+  y1=y+h
+  x2=x+w-3
+  y2=y+h
  end
 
  --pixels to tiles
@@ -94,6 +94,7 @@ function collide_map(
  or fget(mget(x2,y1),flag)
  or fget(mget(x2,y2),flag)
 end
+
 -->8
 --loop
 
@@ -246,18 +247,18 @@ function on_input_2_jump(p,b,bp)
    p.j+=1
   end
   if p.j<2 then
-  	p.dy=max(p.dy-jump_f,-jump_f)
+   p.dy=max(p.dy-jump_f,-jump_f)
   end
  end
 end
 
 function on_input_glide(p,b,bp)
-	on_input_jump(p,b,bp)
-	
-	if bc(b,4)
-	and p.dy>-glide_f then
-	 p.dy-=glide_f+(rnd(0.5))
-	end
+ on_input_jump(p,b,bp)
+
+ if bc(b,4)
+ and p.dy>-glide_f then
+  p.dy-=glide_f+(rnd(0.5))
+ end
 end
 
 function update_state(p)
@@ -306,6 +307,7 @@ end
 function draw_player(p)
  draw_entity(p)
 end
+
 -->8
 --particles
 
@@ -342,20 +344,19 @@ base_sfx={
 
  sched=function(kls,...)
   if kls.sfx then
-  	sfx(kls.sfx)
+   sfx(kls.sfx)
   end
 
   for i=1,kls.amount do
-    f=kls:gen_particle(...)
-    kls:add_particle(f)
-   end
+   f=kls:gen_particle(...)
+   kls:add_particle(f)
+  end
  end,
 
  add_particle=function(kls,f)
   f.t = 0
   f = setmetatable(
-   f,
-   {__index=kls}
+   f,{__index=kls}
   )
   assert(f.life,"particle must know how many frames it'll live")
   assert(f.x,"particle must know its x")
@@ -381,7 +382,6 @@ base_sfx={
  end,
 }
 
-
 rocket=class(base_sfx,{
  width=3,
  colors={8,9,10,5},
@@ -391,19 +391,19 @@ rocket=class(base_sfx,{
   local x_off=0
   if p.flp then x_off=8 end
   kls:sched(
-    p.x+x_off,
-    p.y+8,
-    -p.dx,
-    -p.dy
+   p.x+x_off,
+   p.y+8,
+   -p.dx,
+   -p.dy
   )
  end,
 
  gen_particle=function(
-   kls,
-   x,
-   y,
-   dx,
-   dy
+  kls,
+  x,
+  y,
+  dx,
+  dy
  )
   local w = kls.width
   return {
@@ -441,21 +441,21 @@ land=class(base_sfx, {
 
  sched=function(kls,x,y)
   kls:add_particle({
-    x=x,
-    y=y,
-    dx=-0.3,
+   x=x,
+   y=y,
+   dx=-0.3,
   })
 
   kls:add_particle({
-    x=x,
-    y=y,
-    dx=0,
+   x=x,
+   y=y,
+   dx=0,
   })
 
   kls:add_particle({
-    x=x,
-    y=y,
-    dx=0.3,
+   x=x,
+   y=y,
+   dx=0.3,
   })
  end,
 })
