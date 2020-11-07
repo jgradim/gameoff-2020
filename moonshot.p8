@@ -122,20 +122,17 @@ end
 --entity
 
 function init_entity(
- sp,w,h,max_dx,max_dy
+ w,h,max_dx,max_dy
 )
  return {
-  sp=sp,
   x=0,
   y=0,
   w=w,
   h=h,
   dx=0,
   dy=0,
-  frct=0.3,
   max_dx=max_dx,
   max_dy=max_dy,
-  flp=false,
  }
 end
 
@@ -175,20 +172,9 @@ function update_entity(e)
   -e.max_dy,e.dy,e.max_dy
  )
 
- --flip
- if e.dx<0 then
-  e.flp=true
- elseif e.dx>0 then
-  e.flp=false
- end
-
  --apply acceleration
  e.x+=e.dx
  e.y+=e.dy
-end
-
-function draw_entity(e)
- spr(e.sp,e.x,e.y,1,1,e.flp)
 end
 -->8
 --player
@@ -199,7 +185,11 @@ glide_f=g*1.1
 
 function init_player(on_input)
  return class(
-  init_entity(1,8,8,2,3),{
+  init_entity(8,8,2,3),{
+   sp=1,
+   flp=false,
+   state="idle",
+   prev_state="idle",
    on_input=on_input
   })
 end
@@ -207,11 +197,53 @@ end
 function update_player(p)
  p.on_input(p,btn(),btnp())
 
- update_state(p)
  update_entity(p)
-
- update_sprite(p)
- fire_sfx(p)
+ 
+ --state
+ p.prev_state=p.state
+ p.state="idle"
+ if abs(p.dx)>0.1 then
+  p.state="running"
+ end
+ if abs(p.dy)>0 then
+  if p.dy<-1 then
+   p.state="jumping"
+  elseif p.dy>1 then
+   p.state="falling"
+  else
+   p.state="gliding"
+  end
+ end
+ 
+ --flip
+ if p.dx<0 then
+  p.flp=true
+ elseif p.dx>0 then
+  p.flp=false
+ end
+ 
+ --sprite
+ if p.state=="idle" then
+  p.sp=1
+ elseif p.state=="running" then
+  p.sp=2+(t()*10)%3
+ elseif p.state=="jumping" then
+  p.sp=3
+ elseif p.state=="gliding" then
+  p.sp=1
+ elseif p.state=="falling" then
+  p.sp=1
+ end
+ 
+ --fire effects
+ if p.state=="jumping"
+ or p.state=="gliding" then
+  rocket:on_player(p)
+ end
+ if p.prev_state=="falling" 
+ and p.state != "falling" then
+  land:on_player(p)
+ end
 end
 
 function on_input_base(p,b)
@@ -258,51 +290,8 @@ function on_input_glide(p,b,bp)
  end
 end
 
-function update_state(p)
- --determine state from dx/dy
- p.prev_state=p.state or "idle"
- p.state="idle"
- if abs(p.dx)>0.1 then
-  p.state="running"
- end
- if abs(p.dy)>0 then
-  if p.dy<-1 then
-   p.state="jumping"
-  elseif p.dy>1 then
-   p.state="falling"
-  else
-   p.state="gliding"
-  end
- end
-end
-
-function update_sprite(p)
- --update sprite based on state
- if p.state=="idle" then
-  p.sp=1
- elseif p.state=="running" then
-  p.sp=2+(t()*10)%3
- elseif p.state=="jumping" then
-  p.sp=3
- elseif p.state=="gliding" then
-  p.sp=1
- elseif p.state=="falling" then
-  p.sp=1
- end
-end
-
-function fire_sfx(p)
- if p.state=="jumping"
- or p.state=="gliding" then
-  rocket:on_player(p)
- end
- if p.prev_state=="falling" and p.state != 'falling' then
-  land:on_player(p)
- end
-end
-
 function draw_player(p)
- draw_entity(p)
+ spr(p.sp,p.x,p.y,1,1,p.flp)
 end
 
 -->8
