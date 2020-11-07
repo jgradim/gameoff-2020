@@ -54,11 +54,6 @@ function handle_input(obj)
  end
 end
 
---bitmask comparison
-function bc(flag,mask)
- return flag&mask==mask
-end
-
 --check if obj collides with map
 function collide_map(
  obj,aim,flag
@@ -119,13 +114,25 @@ end
 --loop
 
 function _init()
- p=init_player(on_input_glide)
+ p=init_player()
+ npcs={}
+ add(npcs,init_npc(
+  jump,
+  {1,0,12,5,8,9}
+ ))
+ add(npcs,init_npc(
+  glide,
+  {8,11,10,15,12,13}
+ ))
  init_fxs()
 end
 
 function _update60()
  handle_input(p)
  update_player(p)
+ for i=1,#npcs do
+  update_npc(npcs[i])
+ end
  update_fxs()
 end
 
@@ -133,6 +140,9 @@ function _draw()
  cls()
  map(0,0)
  draw_fxs()
+ for i=1,#npcs do
+  draw_npc(npcs[i])
+ end
  draw_player(p)
 
  --print debug if set
@@ -220,7 +230,6 @@ function init_player()
    end,
 
    ⬆️=function(self,first)
-    --default behavior
     double_jump(p,first)
    end,
   })
@@ -457,6 +466,31 @@ land=class(base_sfx, {
  end,
 })
 
+-->8
+--npc
+
+function init_npc(⬆️,color_map)
+ return class(
+  init_player(),{
+   ⬆️=⬆️,
+   color_map=color_map
+  })
+end
+
+function update_npc(n)
+ update_player(n)
+end
+
+function draw_npc(n)
+ for i=1,#n.color_map,2 do
+  pal(
+   n.color_map[i],
+   n.color_map[i+1]
+  )
+ end
+ draw_player(n)
+ pal()
+end
 __gfx__
 00000000000000000000000000666600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000006666000066660006611c60006666000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
