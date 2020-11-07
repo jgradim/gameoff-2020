@@ -275,7 +275,7 @@ function on_input_2_jump(p,b,bp)
    p.j+=1
   end
   if p.j<2 then
-   p.dy=max(p.dy-jump_f,-jump_f)
+   p.dy=-jump_f
   end
  end
 end
