@@ -146,10 +146,6 @@ function update_entity(e)
 
  --vertical map collisions
  if e.dy>0 then
-  e.dy=mid(
-   -e.max_dy,e.dy,e.max_dy
-  )
-
   if collide_map(e,"⬇️",0) then
    e.dy=0
    e.y-=((e.y+e.h+1)%8)-1
@@ -162,22 +158,22 @@ function update_entity(e)
 
  --horizontal map collisions
  if e.dx<0 then
-  e.dx=mid(
-   -e.max_dx,e.dx,e.max_dx
-  )
-
   if collide_map(e,"⬅️",1) then
    e.dx=0
   end
  elseif e.dx>0 then
-  e.dx=mid(
-   -e.max_dx,e.dx,e.max_dx
-  )
-
   if collide_map(e,"➡️",1) then
    e.dx=0
   end
  end
+ 
+ --clamp acceleration
+ e.dx=mid(
+  -e.max_dx,e.dx,e.max_dx
+ )
+ e.dy=mid(
+  -e.max_dy,e.dy,e.max_dy
+ )
 
  --flip
  if e.dx<0 then
@@ -186,7 +182,7 @@ function update_entity(e)
   e.flp=false
  end
 
- --apply accelerate
+ --apply acceleration
  e.x+=e.dx
  e.y+=e.dy
 end
