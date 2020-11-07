@@ -206,12 +206,12 @@ function update_player(p)
   p.state="running"
  end
  if abs(p.dy)>0 then
-  if p.dy<-1 then
+  if p.glide then
+   p.state="gliding"
+  elseif p.dy<-1 then
    p.state="jumping"
   elseif p.dy>1 then
    p.state="falling"
-  else
-   p.state="gliding"
   end
  end
  
@@ -236,8 +236,7 @@ function update_player(p)
  end
  
  --fire effects
- if p.state=="jumping"
- or p.state=="gliding" then
+ if p.state=="gliding" then
   rocket:on_player(p)
  end
  if p.prev_state=="falling" 
@@ -283,9 +282,10 @@ end
 
 function on_input_glide(p,b,bp)
  on_input_jump(p,b,bp)
+ p.glide=
+  bc(b,4) and p.dy>-glide_f
 
- if bc(b,4)
- and p.dy>-glide_f then
+ if p.glide then
   p.dy-=glide_f+(rnd(0.5))
  end
 end
