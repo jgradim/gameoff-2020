@@ -308,7 +308,7 @@ end
 function glide(p, first)
  p.glide = first or p.dy>0
  if p.glide then
-   p.dy-=glide_f+(rnd(0.5))
+  p.dy-=glide_f+(rnd(0.5))
  end
 end
 
