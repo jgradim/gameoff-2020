@@ -25,7 +25,7 @@ g=0.2
 --acceleration
 a=1.1
 --inertia
-i=0.8
+inertia=0.8
 
 --have super extend kls
 function class(super,kls)
@@ -173,7 +173,7 @@ end
 function update_entity(e)
  --gravity/inertia
  e.dy+=g
- e.dx*=i
+ e.dx*=inertia
 
  --vertical map collisions
  if e.dy>0 then
