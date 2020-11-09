@@ -287,21 +287,23 @@ function update_player(p)
 end
 
 function jump(p, first)
- if first and p.dy==0 then
+ if not first then return end
+
+ if p.dy==0 then
   p.dy-=jump_f
  end
 end
 
 function double_jump(p, first)
- if first then
-  if not p._j or p.dy==0 then
-   p._j=0
-  else
-   p._j+=1
-  end
-  if p._j<2 then
-   p.dy=-jump_f
-  end
+ if not first then return end
+
+ if not p._j or p.dy==0 then
+  p._j=0
+ else
+  p._j+=1
+ end
+ if p._j<2 then
+  p.dy=-jump_f
  end
 end
 
