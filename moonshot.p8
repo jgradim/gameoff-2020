@@ -124,20 +124,24 @@ function _init()
   glide,
   {8,11,10,15,12,13}
  ))
+ init_bg_fxs()
  init_fxs()
 end
 
+fps=60
 function _update60()
  handle_input(p)
  update_player(p)
  for i=1,#npcs do
   update_npc(npcs[i])
  end
+ update_bg_fxs()
  update_fxs()
 end
 
 function _draw()
  cls()
+ draw_bg_fxs()
  map(0,0)
  draw_fxs()
  for i=1,#npcs do
@@ -315,7 +319,68 @@ function draw_player(p)
 end
 
 -->8
---particles
+--bg_fxs
+
+function init_bg_fxs()
+ bg_particles={}
+ for i=1,100 do
+   bg_fx:add_particle({
+     x=rnd(128),
+     y=rnd(128),
+     life=30+rnd(90)*fps,
+   })
+ end
+end
+
+function update_bg_fxs()
+ for f in all(bg_particles) do
+  f.t+=1
+  f.t%=f.life
+
+  f:update()
+ end
+end
+
+function draw_bg_fxs()
+ for f in all(bg_particles) do
+  f:draw()
+ end
+end
+
+bg_fx={
+ t=0,
+ c=0,
+ r=0,
+ dr=0,
+ colors={7,6},
+
+ add_particle=function(kls,f)
+  f.t = 1
+  f = setmetatable(
+    f,
+    {__index=kls}
+  )
+  return add(bg_particles,f)
+ end,
+
+ curr_color=function(f)
+  return f.colors[
+   ceil(f.t*#f.colors/f.life)
+  ]
+ end,
+
+ update=function(f)
+  f.r+=f.dr
+  f.c=f:curr_color()
+ end,
+
+ draw=function(f)
+  circfill(f.x,f.y,f.r,f.c)
+ end,
+}
+
+-->8
+--fxs
 
 function init_fxs()
  particles={}
