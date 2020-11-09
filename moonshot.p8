@@ -338,7 +338,7 @@ function draw_fxs()
  end
 end
 
-base_sfx={
+base_fx={
  t=0,
  c=0,
  r=1,
@@ -388,7 +388,7 @@ base_sfx={
  end,
 }
 
-rocket=class(base_sfx,{
+rocket=class(base_fx,{
  width=3,
  colors={8,9,10,5},
  amount=3,
@@ -436,7 +436,7 @@ rocket=class(base_sfx,{
 })
 
 
-land=class(base_sfx, {
+land=class(base_fx, {
  colors={7,6,13},
  life=20,
  dy=-0.3,
