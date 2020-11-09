@@ -193,7 +193,7 @@ function update_entity(e)
    e.dx=0
   end
  end
- 
+
  --clamp acceleration
  e.dx=mid(
   -e.max_dx,e.dx,e.max_dx
@@ -220,11 +220,11 @@ function init_player()
    flp=false,
    state="idle",
    prev_state="idle",
-   
+
    ⬅️=function(self,first)
     self.dx-=walk_f
    end,
-   
+
    ➡️=function(self,first)
     self.dx+=walk_f
    end,
@@ -235,9 +235,9 @@ function init_player()
   })
 end
 
-function update_player(p) 
+function update_player(p)
  update_entity(p)
- 
+
  --state
  p.prev_state=p.state
  p.state="idle"
@@ -253,14 +253,14 @@ function update_player(p)
    p.state="falling"
   end
  end
- 
+
  --flip
  if p.dx<0 then
   p.flp=true
  elseif p.dx>0 then
   p.flp=false
  end
- 
+
  --sprite
  if p.state=="idle" then
   p.sp=1
@@ -273,12 +273,12 @@ function update_player(p)
  elseif p.state=="falling" then
   p.sp=1
  end
- 
+
  --fire effects
  if p.state=="gliding" then
   rocket:on_player(p)
  end
- if p.prev_state=="falling" 
+ if p.prev_state=="falling"
  and p.state != "falling" then
   land:on_player(p)
  end
@@ -318,7 +318,7 @@ end
 --particles
 
 function init_fxs()
-  particles={}
+ particles={}
 end
 
 function update_fxs()
