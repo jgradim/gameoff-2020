@@ -233,9 +233,7 @@ function init_player()
     self.dx+=walk_f
    end,
 
-   ⬆️=function(self,first)
-    double_jump(p,first)
-   end,
+   ⬆️=glide
   })
 end
 
