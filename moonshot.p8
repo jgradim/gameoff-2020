@@ -215,7 +215,7 @@ end
 
 walk_f=0.2
 jump_f=2.8
-glide_f=g*1.1
+glide_f=g*2
 
 function init_player()
  return class(
@@ -308,9 +308,9 @@ function double_jump(p, first)
 end
 
 function glide(p, first)
- p.glide=first and p.dy>-glide_f
+ p.glide = first or p.dy>0
  if p.glide then
-  p.dy-=glide_f+(rnd(0.5))
+   p.dy-=glide_f+(rnd(0.5))
  end
 end
 
