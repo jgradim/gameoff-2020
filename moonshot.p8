@@ -247,7 +247,8 @@ function update_player(p)
  --state
  p.prev_state=p.state
  p.state="idle"
- if abs(p.dx)>0.1 then
+ if p.dy==0
+ and abs(p.dx)>0.1 then
   p.state="running"
  end
  if abs(p.dy)>0 then
