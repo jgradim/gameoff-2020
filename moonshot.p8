@@ -329,8 +329,8 @@ function init_bg_fxs()
  bg_particles={}
  for i=1,100 do
    bg_fx:add_particle({
-     x=rnd(128),
-     y=rnd(128),
+     x=rnd(128)\1,
+     y=rnd(128)\1,
      life=30+rnd(90)*fps,
    })
  end
