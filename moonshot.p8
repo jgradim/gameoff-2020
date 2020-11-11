@@ -354,6 +354,7 @@ end
 bg_fx={
  t=0,
  c=0,
+ dx=-1/fps,
  colors={7,6},
 
  add_particle=function(kls,f)
@@ -372,6 +373,8 @@ bg_fx={
  end,
 
  update=function(f)
+  f.x+=f.dx
+  f.x%=128
   f.c=f:curr_color()
  end,
 
