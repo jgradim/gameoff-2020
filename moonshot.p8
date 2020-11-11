@@ -328,13 +328,8 @@ end
 
 function init_bg_fxs()
  bg_particles={}
- for i=1,100 do
-   bg_fx:add_particle({
-     x=rnd(128)\1,
-     y=rnd(128)\1,
-     life=30+rnd(90)*fps,
-   })
- end
+ far_star:add_plane()
+ near_star:add_plane()
 end
 
 function update_bg_fxs()
@@ -355,8 +350,18 @@ end
 bg_fx={
  t=0,
  c=0,
- dx=-1/fps,
- colors={7,6},
+ dx=0,
+ colors={1},
+
+ add_plane=function(kls)
+  for i=1,75 do
+   kls:add_particle({
+     x=rnd(128)\1,
+     y=rnd(128)\1,
+     life=30+rnd(90)*fps,
+   })
+  end
+ end,
 
  add_particle=function(kls,f)
   f.t = 1
@@ -383,6 +388,16 @@ bg_fx={
   pset(f.x,f.y,f.c)
  end,
 }
+
+far_star = class(bg_fx, {
+ colors={5,6},
+ dx=-1/fps,
+})
+
+near_star = class(bg_fx, {
+ colors={7,15},
+ dx=-6/fps,
+})
 
 -->8
 --fxs
