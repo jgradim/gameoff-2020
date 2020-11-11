@@ -354,8 +354,6 @@ end
 bg_fx={
  t=0,
  c=0,
- r=0,
- dr=0,
  colors={7,6},
 
  add_particle=function(kls,f)
@@ -374,12 +372,11 @@ bg_fx={
  end,
 
  update=function(f)
-  f.r+=f.dr
   f.c=f:curr_color()
  end,
 
  draw=function(f)
-  circfill(f.x,f.y,f.r,f.c)
+  pset(f.x,f.y,f.c)
  end,
 }
 
