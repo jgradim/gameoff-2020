@@ -117,15 +117,10 @@ end
 
 function _init()
  p=init_player()
- npcs={}
- add(npcs,init_npc(
-  jump,
-  {1,0,12,5,8,9}
- ))
- add(npcs,init_npc(
-  glide,
-  {8,11,10,15,12,13}
- ))
+ npcs={
+  init_npc(jump,{1,0,12,5,8,9}),
+  init_npc(glide,{8,11,10,15,12,13}),
+ }
  init_bg_fxs()
  init_fxs()
  init_lights(0,0)
@@ -134,26 +129,25 @@ end
 fps=60
 function _update60()
  handle_input(p)
+
  update_player(p)
- for i=1,#npcs do
-  update_npc(npcs[i])
- end
+ foreach(npcs, update_npc)
+
  update_bg_fxs()
  update_fxs()
 end
 
 function _draw()
  cls()
+
  draw_bg_fxs()
  map(0,0)
  draw_lights()
  draw_fxs()
- for i=1,#npcs do
-  draw_npc(npcs[i])
- end
+
+ foreach(npcs, draw_npc)
  draw_player(p)
 
- --print debug if set
  if debug then print(debug) end
 end
 -->8
@@ -555,11 +549,10 @@ land=class(base_fx, {
 --npc
 
 function init_npc(⬆️,color_map)
- return class(
-  init_player(),{
-   ⬆️=⬆️,
-   color_map=color_map
-  })
+ return class(init_player(),{
+  ⬆️=⬆️,
+  color_map=color_map
+ })
 end
 
 function update_npc(n)
