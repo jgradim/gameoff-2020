@@ -540,7 +540,7 @@ rocket=class(base_fx,{
   f.r+=f.dr
   f.c=f:curr_color()
 
-  if mget(f.x\8,f.y\8) ~= 0 then
+  if fget(mget(f.x\8,f.y\8), 0) then
    f.r=0
    f.dx=0
    f.dy=0
