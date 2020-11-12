@@ -184,7 +184,6 @@ function update_entity(e)
  elseif e.dy<0 then
   if collide_map(e,"⬆️",1) then
    e.dy=0
-   p.glide=false
   end
  end
 
@@ -238,25 +237,33 @@ function init_player()
   })
 end
 
-function update_player(p)
- update_entity(p)
-
- --state
+function update_state(p)
  p.prev_state=p.state
  p.state="idle"
- if p.dy==0
- and abs(p.dx)>0.1 then
-  p.state="running"
+
+ if p.glide then
+  p.state="gliding"
+  return
  end
- if abs(p.dy)>0 then
-  if p.glide then
-   p.state="gliding"
-  elseif p.dy<-1 then
+
+ if p.dy==0 then
+  if p.dx ~= 0 then
+   printh(p.dx)
+   p.state="running"
+  end
+ else
+  if p.dy<-1 then
    p.state="jumping"
   elseif p.dy>1 then
    p.state="falling"
   end
  end
+end
+
+function update_player(p)
+ update_entity(p)
+
+ update_state(p)
 
  --flip
  if p.dx<0 then
@@ -305,10 +312,13 @@ function glide(p, tap)
   p.dy=-jump_f
   return
  end
- if not p.glide and p.dy~=0 then
-  p.glide = true
+
+ if not p.glide and p.dy<0 then
+  return
  end
- p.dy-=g+0.1
+
+ p.glide = true
+ p.dy-=g+0.25
 end
 
 function draw_player(p)
