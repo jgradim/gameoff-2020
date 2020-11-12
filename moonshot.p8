@@ -100,18 +100,15 @@ function collide_map(
   y2=y+h
  end
 
- --pixels to tiles
- x1/=8
- y1/=8
- x2/=8
- y2/=8
-
- return fget(mget(x1,y1),flag)
- or fget(mget(x1,y2),flag)
- or fget(mget(x2,y1),flag)
- or fget(mget(x2,y2),flag)
+ return flag_on(x1,y1,flag)
+ or flag_on(x1,y2,flag)
+ or flag_on(x2,y1,flag)
+ or flag_on(x2,y2,flag)
 end
 
+function flag_on(x, y, flag)
+ return fget(mget(x\8,y\8),flag)
+end
 -->8
 --loop
 
@@ -538,7 +535,7 @@ rocket=class(base_fx,{
   f.r+=f.dr
   f.c=f:curr_color()
 
-  if fget(mget(f.x\8,f.y\8), 0) then
+  if flag_on(f.x,f.y,0) then
    f.r=0
    f.dx=0
    f.dy=0
