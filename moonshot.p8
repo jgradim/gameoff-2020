@@ -464,13 +464,8 @@ base_fx={
  dy=0,
  dr=0,
  colors={},
- sfx=nil,
 
  sched=function(kls,...)
-  if kls.sfx then
-   sfx(kls.sfx)
-  end
-
   for i=1,kls.amount do
    f=kls:gen_particle(...)
    kls:add_particle(f)
