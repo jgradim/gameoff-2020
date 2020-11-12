@@ -191,18 +191,18 @@ function update_entity(e)
    e.y-=((e.y+e.h+1)%8)-1
   end
  elseif e.dy<0 then
-  if collide_map(e,"⬆️",1) then
+  if collide_map(e,"⬆️",0) then
    e.dy=0
   end
  end
 
  --horizontal map collisions
  if e.dx<0 then
-  if collide_map(e,"⬅️",1) then
+  if collide_map(e,"⬅️",0) then
    e.dx=0
   end
  elseif e.dx>0 then
-  if collide_map(e,"➡️",1) then
+  if collide_map(e,"➡️",0) then
    e.dx=0
   end
  end
