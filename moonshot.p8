@@ -27,7 +27,7 @@ g=0.2
 --acceleration
 a=1.1
 --inertia
-inertia=0.8
+inertia=0.75
 
 --have super extend kls
 function class(super,kls)
@@ -169,6 +169,15 @@ function init_entity(
  }
 end
 
+function discmid(a, b, c, step)
+  local v = mid(a,b,c)
+  v = v - sgn(v) * (v%step)
+  if abs(v) < step then
+   v = 0
+  end
+  return v
+end
+
 function update_entity(e)
  --gravity/inertia
  e.dy+=g
@@ -198,22 +207,24 @@ function update_entity(e)
   end
  end
 
- --clamp acceleration
- e.dx=mid(
-  -e.max_dx,e.dx,e.max_dx
- )
- e.dy=mid(
-  -e.max_dy,e.dy,e.max_dy
- )
-
  --apply acceleration
  e.x+=e.dx
  e.y+=e.dy
+
+ --clamp acceleration
+ e.dx=discmid(
+  -e.max_dx,e.max_dx,
+  e.dx, 0x0.001
+ )
+ e.dy=discmid(
+  -e.max_dy,e.max_dy,
+  e.dy, 0x0.001
+ )
 end
 -->8
 --player
 
-walk_f=0.2
+walk_f=0.5
 jump_f=2.8
 glide_f=g*2
 
@@ -248,7 +259,6 @@ function update_state(p)
 
  if p.dy==0 then
   if p.dx ~= 0 then
-   printh(p.dx)
    p.state="running"
   end
  else
