@@ -178,11 +178,13 @@ function update_entity(e)
  if e.dy>0 then
   if collide_map(e,"⬇️",0) then
    e.dy=0
+   p.glide=false
    e.y-=((e.y+e.h+1)%8)-1
   end
  elseif e.dy<0 then
   if collide_map(e,"⬆️",1) then
    e.dy=0
+   p.glide=false
   end
  end
 
@@ -298,11 +300,15 @@ function double_jump(p, first)
  end
 end
 
-function glide(p, first)
- p.glide = first or p.dy>0
- if p.glide then
-  p.dy-=glide_f+(rnd(0.5))
+function glide(p, tap)
+ if not p.glide and p.dy==0 then
+  p.dy=-jump_f
+  return
  end
+ if not p.glide and p.dy~=0 then
+  p.glide = true
+ end
+ p.dy-=g+0.1
 end
 
 function draw_player(p)
