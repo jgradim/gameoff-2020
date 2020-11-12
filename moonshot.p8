@@ -133,6 +133,7 @@ function _update60()
  update_player(p)
  foreach(npcs, update_npc)
 
+ fire_fxs()
  update_bg_fxs()
  update_fxs()
 end
@@ -274,15 +275,6 @@ function update_player(p)
  elseif p.state=="falling" then
   p.sp=1
  end
-
- --fire effects
- if p.state=="gliding" then
-  rocket:on_player(p)
- end
- if p.prev_state=="falling"
- and p.state != "falling" then
-  land:on_player(p)
- end
 end
 
 function jump(p, first)
@@ -398,6 +390,22 @@ near_star = class(bg_fx, {
 
 function init_fxs()
  particles={}
+end
+
+
+function fire_fxs()
+ foreach(
+  {p,unpack(npcs)},
+  function(p)
+   if p.state=="gliding" then
+    rocket:on_player(p)
+   end
+   if p.prev_state=="falling"
+   and p.state != "falling" then
+    land:on_player(p)
+   end
+  end
+ )
 end
 
 function update_fxs()
