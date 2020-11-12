@@ -503,7 +503,7 @@ base_fx={
 
 rocket=class(base_fx,{
  width=3,
- colors={8,9,10,5},
+ colors={8,9,10,6},
  amount=6,
 
  on_player=function(kls,p)
