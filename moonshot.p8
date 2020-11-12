@@ -126,8 +126,8 @@ function _init()
  init_lights(0,0)
 end
 
-fps=60
-function _update60()
+fps=30
+function _update()
  handle_input(p)
 
  update_player(p)
