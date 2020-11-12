@@ -504,7 +504,7 @@ base_fx={
 rocket=class(base_fx,{
  width=3,
  colors={8,9,10,5},
- amount=3,
+ amount=6,
 
  on_player=function(kls,p)
   local x_off=0
@@ -529,8 +529,6 @@ rocket=class(base_fx,{
    x=x-w/2+rnd(w),
    y=y-w/2+rnd(w),
    life=6+rnd(3),
-   dx=dx,
-   dy=dy,
   }
  end,
 
