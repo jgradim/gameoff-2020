@@ -416,8 +416,13 @@ function fire_fxs()
    if p.state=="gliding" then
     rocket:on_player(p)
    end
-   if p.prev_state=="falling"
-   and p.state != "falling" then
+   if (
+    p.prev_state=="falling"
+    or p.prev_state=="gliding"
+   ) and (
+    p.state == "idle"
+    or p.state == "running"
+   ) then
     land:on_player(p)
    end
   end
