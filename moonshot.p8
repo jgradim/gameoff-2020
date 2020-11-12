@@ -187,7 +187,7 @@ function update_entity(e)
  if e.dy>0 then
   if collide_map(e,"⬇️",0) then
    e.dy=0
-   p.glide=false
+   e.glide=false
    e.y-=((e.y+e.h+1)%8)-1
   end
  elseif e.dy<0 then
