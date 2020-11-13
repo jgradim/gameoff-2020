@@ -37,23 +37,25 @@ function class(super,kls)
  )
 end
 
-function handle_input(obj)
+function handle_input()
  --[[
-  obj={⬅️,➡️,⬆️,⬇️,🅾️,❎}
+  p={⬅️,➡️,⬆️,⬇️,🅾️,❎}
  ]]
  --button index=number+1
  --https://pico-8.fandom.com/wiki/btn
  btns={
   "⬅️","➡️","⬆️","⬇️","🅾️","❎"
  }
- for i=1,#btns do
-  if btn(i-1) then
-   h=obj[btns[i]]
-   if h then
-    h(obj,btnp(i-1))
+ foreach({pa,pb},function(p)
+  for i=1,#btns do
+   if btn(i-1,p.n) then
+    h=p[btns[i]]
+    if h then
+     h(p,btnp(i-1))
+    end
    end
   end
- end
+ end)
 end
 
 --check if obj collides with map
@@ -120,11 +122,9 @@ end
 --loop
 
 function _init()
- p=init_player()
- npcs={
-  init_npc(jump,{1,0,12,5,8,9}),
-  init_npc(glide,{8,11,10,15,12,13}),
- }
+ pa=init_player(0,25,25)
+ pb=init_player(1,55,55, {1,0,12,5,8,9})
+
  init_bg_fxs()
  init_fxs()
  init_lights(0,0)
@@ -132,10 +132,9 @@ end
 
 fps=30
 function _update()
- handle_input(p)
+ handle_input()
 
- update_player(p)
- foreach(npcs, update_npc)
+ foreach({pa,pb}, update_player)
 
  star:update()
 
@@ -153,8 +152,7 @@ function _draw()
  draw_fxs()
 
  star:draw()
- foreach(npcs, draw_npc)
- draw_player(p)
+ foreach({pa,pb}, draw_player)
 
  if debug then print(debug) end
 end
@@ -235,10 +233,13 @@ walk_f=0.5
 jump_f=2.8
 glide_f=g*2
 
-function init_player()
+function init_player(n,x,y,color_map)
  return class(
   init_entity(25,25,2,3),{
+   n=n,
    sp=1,
+   color_map=color_map or {},
+   score=0,
    flp=false,
    state="idle",
    prev_state="idle",
@@ -339,7 +340,16 @@ function glide(p, tap)
 end
 
 function draw_player(p)
+ for i=1,#p.color_map,2 do
+  pal(
+   p.color_map[i],
+   p.color_map[i+1]
+  )
+ end
+
  spr(p.sp,p.x,p.y,1,1,p.flp)
+
+ pal()
 end
 
 -->8
@@ -427,9 +437,7 @@ end
 
 
 function fire_fxs()
- foreach(
-  {p,unpack(npcs)},
-  function(p)
+ foreach({pa,pb}, function(p)
    if p.state=="gliding" then
     rocket:on_player(p)
    end
@@ -585,30 +593,6 @@ land=class(base_fx, {
 })
 
 -->8
---npc
-
-function init_npc(⬆️,color_map)
- return class(init_player(),{
-  ⬆️=⬆️,
-  color_map=color_map
- })
-end
-
-function update_npc(n)
- update_player(n)
-end
-
-function draw_npc(n)
- for i=1,#n.color_map,2 do
-  pal(
-   n.color_map[i],
-   n.color_map[i+1]
-  )
- end
- draw_player(n)
- pal()
-end
--->8
 -- lights
 lights_mask=11
 lights_loop=30
@@ -646,7 +630,6 @@ star = {
  y=nil,
  w=8,
  h=8,
- score=0,
 
  place=function(o)
    repeat
@@ -660,16 +643,19 @@ star = {
    o:place()
   end
 
-  if intersect(p,o) then
-   sfx(0)
-   o:place()
-   o.score+=1
-  end
+  foreach({pa,pb},function(p)
+   if intersect(p,o) then
+    sfx(0)
+    o:place()
+    p.score+=1
+   end
+  end)
  end,
 
  draw=function(o)
   spr(5,o.x,o.y)
-  print(o.score)
+  print(pa.score)
+  print(pb.score)
  end,
 }
 __gfx__
