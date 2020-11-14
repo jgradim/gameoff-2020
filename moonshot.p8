@@ -37,25 +37,18 @@ function class(super,kls)
  )
 end
 
-function handle_input(obj)
+--check if rec contains obj
+function rect_contains(rec,obj)
  --[[
-  obj={⬅️,➡️,⬆️,⬇️,🅾️,❎}
+ rec={left,top,right,bottom}
+ obj={x,y,w,h}
  ]]
- --button index=number+1
- --https://pico-8.fandom.com/wiki/btn
- btns={
-  "⬅️","➡️","⬆️","⬇️","🅾️","❎"
- }
- for i=1,#btns do
-  if btn(i-1) then
-   h=obj[btns[i]]
-   if h then
-    h(obj,btnp(i-1))
-   end
-  end
- end
+ return obj.x>=rec.left
+ and obj.x+obj.w<=rec.right
+ and obj.y>=rec.top
+ and obj.y+obj.h<=rec.bottom
 end
-
+ 
 --check if obj collides with map
 function collide_map(
  obj,aim,flag
@@ -141,11 +134,28 @@ end
 
 fps=30
 function _update()
- handle_input(p)
+ --input
+ player_btns={"⬅️","➡️","⬆️"}
+ for i=1,#player_btns do
+  if btn(i-1) then
+   fn=p[player_btns[i]]
+   if (fn) fn(p,btnp(i-1))
+  end
+ end
+ if btnp(🅾️) then
+  if path.state=="found" then
+   path:apply()
+  else
+   path:find(npcs[2],npcs[2],p)
+  end
+ end
 
+ --updates
  update_player(p)
+ path:update()
  foreach(npcs, update_npc)
 
+ --fxs
  fire_fxs()
  update_bg_fxs()
  update_fxs()
@@ -246,18 +256,19 @@ function init_player()
   init_entity(8,8,2,3),{
    sp=1,
    flp=false,
+   --{
+   -- idle,
+   -- running,
+   -- jumping,
+   -- gliding,
+   -- falling
+   --}
    state="idle",
    prev_state="idle",
 
-   ⬅️=function(self,first)
-    self.dx-=walk_f
-   end,
-
-   ➡️=function(self,first)
-    self.dx+=walk_f
-   end,
-
-   ⬆️=glide
+   ⬅️=left,
+   ➡️=right,
+   ⬆️=double_jump
   })
 end
 
@@ -309,6 +320,14 @@ function update_player(p)
  end
 end
 
+function left(p,first)
+ p.dx-=walk_f
+end
+
+function right(p,first)
+ p.dx+=walk_f
+end
+
 function jump(p, first)
  if not first then return end
 
@@ -330,7 +349,7 @@ function double_jump(p, first)
  end
 end
 
-function glide(p, tap)
+function glide(p,tap)
  if not p.glide and p.dy==0 then
   p.dy=-jump_f
   return
@@ -430,7 +449,6 @@ near_star = class(bg_fx, {
 function init_fxs()
  particles={}
 end
-
 
 function fire_fxs()
  foreach(
@@ -615,7 +633,7 @@ function draw_npc(n)
  pal()
 end
 -->8
--- lights
+--lights
 lights_mask=11
 lights_loop=30
 lights_colors={8,10,9,1}
@@ -644,6 +662,283 @@ function draw_lights()
   pset(x,y,lights_colors[c+1])
   i=i>lights_loop and 0 or i+3
  end)
+end
+-->8
+--path
+
+path={
+ entity=nil,
+ from=nil,
+ to=nil,
+ 
+ --{idle,finding,applying}
+ state="idle",
+ 
+ --open nodes to explore,
+ --ordered by priority
+ open={},
+ --previous node for each node
+ --in the best known path
+ prev={},
+ --cost for each node
+ cost={},
+ 
+ --sequence of btns from->to
+ btns={},
+ 
+ find=function(
+  self,entity,from,to
+ )
+  self.entity=entity
+  self.from=from
+  self.to=to
+  
+  self.open={}
+  self.prev={}
+  self.cost={}
+  if to!=nil then
+   insert(self.open,from,0)
+   from_i=vec2i(from)
+   self.prev[from_i]=nil
+   self.cost[from_i]=0
+   self.state="finding"
+  else
+   self.state="idle"
+  end
+  
+  self.btns={}
+ end,
+ 
+ apply=function(self)
+  self.state="applying"
+ end,
+ 
+ clear=function(self)
+  self:find(nil,nil,nil)
+ end,
+ 
+ update=function(self)
+  if self.state=="finding"
+  then
+   self:_update_find()
+  elseif self.state=="applying"
+  then
+   self:_update_apply()
+  end
+ end,
+ 
+ _update_find=function(self)
+  local from=self.from  
+  local to=self.to
+ 
+  if not from or not to then
+   return nil
+  end
+  
+  local open=self.open
+  local prev=self.prev
+  local cost=self.cost
+  
+  while #open>0 do
+   local cur=popend(open)
+   
+   --check if done
+   if vec2i(cur)==vec2i(to) then
+    cur=prev[vec2i(to)]
+    local c_i=vec2i(cur)
+    local f_i=vec2i(from)
+    
+    --go through previous nodes
+    --and build self.btns
+    while c_i!=f_i do
+     prepend(self.btns,cur.btns)
+     cur=prev[c_i]
+     c_i=vec2i(cur)
+    end
+    self.state="found"
+    
+    break
+   end
+   
+   --expand current node
+   local ns=self._expand(
+    self,cur
+   )
+   for n in all(ns) do
+    local new_cost=
+     cost[vec2i(cur)]+1
+     
+    local n_i=vec2i(n)
+    if not cost[n_i]
+    or cost[n_i]>new_cost
+    then
+     cost[n_i]=new_cost
+     insert(
+      open,
+      n,
+      --divide distance by 8
+      --to snap to map tiles,
+      --bringing it to the
+      --magnitude of cost (1)
+      new_cost+distance(n,to)/8
+     )
+     prev[n_i]=cur
+    end
+   end
+   
+   --avoid exhausting frame time
+   --todo:re-test later
+   budget=stat(1)
+   if budget>0.5 and budget<0.8
+   or budget%1>0.5 and budget>1
+   then
+    return
+   end
+  end
+ end,
+ 
+ _update_apply=function(self)
+  if #self.btns>0 then
+   move_npc(
+    self.entity,
+    unpack(pop(self.btns))
+   )
+  else
+   self:clear()
+  end
+ end,
+ 
+ --expand n by moving it
+ _expand=function(self,n)
+  local ns={}
+  local start_x=n.x\8
+  local start_y=n.y\8
+  local prev_btns=nil
+  for btns in all({
+   "",--do nothing
+   "⬅️",--press left
+   "➡️",--press right
+   "⬆️",--press up
+   "⬆️⬅️",--press up/left
+   "⬆️➡️",--press up/right
+  }) do
+   local cur={
+    x=n.x,
+    y=n.y,
+    w=n.w,
+    h=n.h,
+    dx=n.dx,
+    dy=n.dy,
+    max_dx=n.max_dx,
+    max_dy=n.max_dy,
+    ⬅️=n.⬅️,
+    ➡️=n.➡️,
+    ⬆️=n.⬆️,
+    btns={}
+   }
+   --repeat btns until position
+   --changes, up to 15 times
+   --(see btnp() for threshold)
+   for i=1,15 do
+    local first=i==1 and
+     btns!=prev_btns
+    move_npc(cur,btns,first)
+    update_npc(cur)
+    add(cur.btns,{btns,first})
+    
+    local bounds={
+     left=0,right=128,
+     top=0,bottom=128,
+    }
+    if rect_contains(bounds,cur)
+    and (cur.x\8!=start_x
+    or cur.y\8!=start_y)
+    then
+     add(ns,cur)
+     prev_btns=btns
+     break
+    end
+   end
+  end
+  return ns
+ end,
+}
+
+--move npc
+--invokes btns as functions
+function move_npc(
+ npc,btns,first
+)
+ for j=1,#btns do
+  npc[sub(btns,j,j)](npc,first)
+ end
+end
+
+--diagonal distance
+function distance(a,b)
+ local dx=abs(a.x-b.x)
+ local dy=abs(a.y-b.y)
+ return (dx+dy)-0.25*min(dx,dy)
+end
+
+--preprend b's elements in a
+function prepend(a,b)
+ for i=1,#b do
+  add(a,b[i],i)
+ end
+end
+
+--insert v in t and sort t by p
+function insert(t,v,p)
+ if #t>=1 then
+  add(t,{})
+  for i=(#t),2,-1 do
+   local n=t[i-1]
+   if p<n[2] then
+    t[i]={v,p}
+    return
+   else
+    t[i]=n
+   end
+  end
+  t[1]={v,p}
+ else
+  add(t,{v,p}) 
+ end
+end
+
+--pop last element of t
+function popend(t)
+ local top=t[#t]
+ del(t,top)
+ return top[1]
+end
+
+--pop first element of t
+function pop(t)
+ local top=t[1]
+ for i=1,(#t) do
+  if i==(#t) then
+   del(t,t[i])
+  else
+   t[i]=t[i+1]
+  end
+ end
+ return top
+end
+
+--convert x,y to map index
+--snaps x,y into map tiles
+--there are 16x16 map tiles
+--which are 8x8 pixels wide
+function vec2i(v)
+ return 1+(v.x\8)+16*(v.y\8)
+end
+ 
+--convert map index to x,y
+function i2vec(i)
+ i-=1
+ return {(i%16)*8,(i\16)*8}
 end
 __gfx__
 00000000000000000000000000666600000000000000000000000000944494445ddd5ddd00000000000000000000000000000000000000000000000000000000
