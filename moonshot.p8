@@ -51,9 +51,11 @@ function _update()
  end
 
  --updates
- update_player(p)
+ p:update()
  path:update()
- foreach(npcs,update_npc)
+ foreach(npcs,function(n)
+  n:update()
+ end)
 
  --fxs
  fire_fxs()
@@ -69,8 +71,10 @@ function _draw()
  draw_lights()
  draw_fxs()
 
- foreach(npcs,draw_npc)
- draw_player(p)
+ foreach(npcs,function(n)
+  n:draw()
+ end)
+ p:draw()
 
  if (debug) print(debug)
 end
@@ -82,6 +86,7 @@ end
 --kls "extends" super
 function class(super,kls)
  kls.meta={__index=super}
+ kls.super=super
  return setmetatable(
   kls,kls.meta
  )
@@ -187,60 +192,64 @@ function init_entity(
   dy=0,
   max_dx=max_dx,
   max_dy=max_dy,
+  
+  update=function(self)
+   --gravity/inertia
+   self.dy+=gravity
+   self.dx*=inertia
+
+   --vertical map collisions
+   if self.dy>0 then
+    if collide_map(self,"⬇️",0)
+    then
+     self.dy=0
+     self.glide=false
+     self.y-=((self.y+self.h+1)%8)-1
+    end
+   elseif self.dy<0 then
+    if collide_map(self,"⬆️",0)
+    then
+     self.dy=0
+    end
+   end
+
+   --horizontal map collisions
+   if self.dx<0 then
+    if collide_map(self,"⬅️",0)
+    then
+     self.dx=0
+    end
+   elseif self.dx>0 then
+    if collide_map(self,"➡️",0)
+    then
+     self.dx=0
+    end
+   end
+
+   --apply acceleration
+   self.x+=self.dx
+   self.y+=self.dy
+
+   --clamp acceleration
+   self.dx=discmid(
+    -self.max_dx,self.max_dx,
+    self.dx,0x0.01
+   )
+   self.dy=discmid(
+    -self.max_dy,self.max_dy,
+    self.dy,0x0.01
+   )
+  end,
  }
 end
 
 function discmid(a,b,c,step)
-  local v=mid(a,b,c)
-  v-=sgn(v)*(v%step)
-  if abs(v)<step then
-   v=0
-  end
-  return v
-end
-
-function update_entity(e)
- --gravity/inertia
- e.dy+=gravity
- e.dx*=inertia
-
- --vertical map collisions
- if e.dy>0 then
-  if collide_map(e,"⬇️",0) then
-   e.dy=0
-   e.glide=false
-   e.y-=((e.y+e.h+1)%8)-1
-  end
- elseif e.dy<0 then
-  if collide_map(e,"⬆️",0) then
-   e.dy=0
-  end
+ local v=mid(a,b,c)
+ v-=sgn(v)*(v%step)
+ if abs(v)<step then
+  v=0
  end
-
- --horizontal map collisions
- if e.dx<0 then
-  if collide_map(e,"⬅️",0) then
-   e.dx=0
-  end
- elseif e.dx>0 then
-  if collide_map(e,"➡️",0) then
-   e.dx=0
-  end
- end
-
- --apply acceleration
- e.x+=e.dx
- e.y+=e.dy
-
- --clamp acceleration
- e.dx=discmid(
-  -e.max_dx,e.max_dx,
-  e.dx,0x0.01
- )
- e.dy=discmid(
-  -e.max_dy,e.max_dy,
-  e.dy,0x0.01
- )
+ return v
 end
 
 ------------
@@ -252,76 +261,79 @@ function init_player()
   init_entity(8,8,2,3),{
    sp=1,
    flp=false,
-   --{
-   -- idle,
-   -- running,
-   -- jumping,
-   -- gliding,
-   -- falling
-   --}
+   
+   --{idle,run,jump,glide,fall}
    state="idle",
    prev_state="idle",
+   
+   ⬅️=function(self,_)
+    self.dx-=walk_f
+   end,
+   
+   ➡️=function(self,_)
+    self.dx+=walk_f
+   end,
+   
+   ⬆️=double_jump,
+   
+   update=function(self)
+    self.super:update()
 
-   ⬅️=left,
-   ➡️=right,
-   ⬆️=double_jump
+    --state
+    self.prev_state=self.state
+    self.state="idle"
+
+    if self.glide then
+     self.state="glide"
+     return
+    end
+
+    if self.dy==0 then
+     if self.dx!=0 then
+      self.state="run"
+     end
+    else
+     if self.dy<-1 then
+      self.state="jump"
+     elseif self.dy>1 then
+      self.state="fall"
+     end
+    end
+
+    --flip
+    if self.dx<0 then
+     self.flp=true
+    elseif self.dx>0 then
+     self.flp=false
+    end
+
+    --sprite
+    if self.state=="idle"
+    then
+     self.sp=1
+    elseif self.state=="run"
+    then
+     self.sp=2+(t()*10)%3
+    elseif self.state=="jump"
+    then
+     self.sp=3
+    elseif self.state=="glide"
+    then
+     self.sp=1
+    elseif self.state=="fall"
+    then
+     self.sp=1
+    end
+   end,
+   
+   draw=function(self)
+    spr(
+     self.sp,
+     self.x,self.y,
+     1,1,self.flp
+    )
+   end,
   })
-end
-
-function update_state(p)
- p.prev_state=p.state
- p.state="idle"
-
- if p.glide then
-  p.state="gliding"
-  return
- end
-
- if p.dy==0 then
-  if p.dx~=0 then
-   p.state="running"
-  end
- else
-  if p.dy<-1 then
-   p.state="jumping"
-  elseif p.dy>1 then
-   p.state="falling"
-  end
- end
-end
-
-function update_player(p)
- update_entity(p)
-
- update_state(p)
-
- --flip
- if p.dx<0 then
-  p.flp=true
- elseif p.dx>0 then
-  p.flp=false
- end
-
- --sprite
- if p.state=="idle" then
-  p.sp=1
- elseif p.state=="running" then
-  p.sp=2+(t()*10)%3
- elseif p.state=="jumping" then
-  p.sp=3
- elseif p.state=="gliding" then
-  p.sp=1
- elseif p.state=="falling" then
-  p.sp=1
- end
-end
-
-function left(p,_)
- p.dx-=walk_f
-end
-
-function right(p,_)
- p.dx+=walk_f
 end
 
 function jump(p,tap)
@@ -359,34 +371,31 @@ function glide(p)
  p.dy-=gravity+0.25
 end
 
-function draw_player(p)
- spr(p.sp,p.x,p.y,1,1,p.flp)
-end
-
 ---------
 ---npc---
 ---------
 
 function init_npc(⬆️,color_map)
  return class(init_player(),{
+  color_map=color_map,
+   
   ⬆️=⬆️,
-  color_map=color_map
+  
+  update=function(self)
+   self.super:update()
+  end,
+  
+  draw=function(self)
+   for i=1,#self.color_map,2 do
+   pal(
+    self.color_map[i],
+    self.color_map[i+1]
+   )
+   end
+   self.super.draw(self)
+   pal()
+  end,
  })
-end
-
-function update_npc(n)
- update_player(n)
-end
-
-function draw_npc(n)
- for i=1,#n.color_map,2 do
-  pal(
-   n.color_map[i],
-   n.color_map[i+1]
-  )
- end
- draw_player(n)
- pal()
 end
 
 -->8
@@ -404,15 +413,15 @@ function fire_fxs()
  foreach(
   {p,unpack(npcs)},
   function(p)
-   if p.state=="gliding" then
+   if p.state=="glide" then
     rocket:on_player(p)
    end
    if (
-    p.prev_state=="falling"
-    or p.prev_state=="gliding"
+    p.prev_state=="fall"
+    or p.prev_state=="glide"
    ) and (
     p.state == "idle"
-    or p.state == "running"
+    or p.state == "run"
    ) then
     land:on_player(p)
    end
@@ -805,7 +814,7 @@ path={
 
  _update_apply=function(self)
   if #self.btns>0 then
-   move_npc(
+   press_btns(
     self.entity,
     unpack(pop(self.btns))
    )
@@ -840,6 +849,7 @@ path={
     ⬅️=n.⬅️,
     ➡️=n.➡️,
     ⬆️=n.⬆️,
+    update=n.update,
     btns={}
    }
    --repeat btns until position
@@ -848,8 +858,8 @@ path={
    for i=1,15 do
     local tap=i==1 and
      btns!=prev_btns
-    move_npc(cur,btns,tap)
-    update_npc(cur)
+    press_btns(cur,btns,tap)
+    cur.update()
     add(cur.btns,{btns,tap})
 
     local bounds={
@@ -870,11 +880,12 @@ path={
  end,
 }
 
---move npc
 --invokes btns as functions
-function move_npc(npc,btns,tap)
- for j=1,#btns do
-  npc[sub(btns,j,j)](npc,tap)
+function press_btns(
+ obj,btns,tap
+)
+ for i=1,#btns do
+  obj[sub(btns,i,i)](n,tap)
  end
 end
 
