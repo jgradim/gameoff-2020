@@ -10,16 +10,12 @@ __lua__
 ---globals---
 -------------
 
---gravity
-g=0.2
---acceleration
-a=1.1
---inertia
+gravity=0.2
 inertia=0.75
 
 walk_f=0.5
 jump_f=2.8
-glide_f=g*2
+glide_f=gravity*2
 
 ---------------
 ---game loop---
@@ -205,7 +201,7 @@ end
 
 function update_entity(e)
  --gravity/inertia
- e.dy+=g
+ e.dy+=gravity
  e.dx*=inertia
 
  --vertical map collisions
@@ -359,8 +355,8 @@ function glide(p,tap)
   return
  end
 
- p.glide = true
- p.dy-=g+0.25
+ p.glide=true
+ p.dy-=gravity+0.25
 end
 
 function draw_player(p)
