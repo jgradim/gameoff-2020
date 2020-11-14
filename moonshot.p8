@@ -2,25 +2,13 @@ pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
 --moonshot
---by goncalo, jgradim, and pkoch
---[[readme
-
-# todo
-
---level
---particle systems
---better collisions
---double jump?
---follower
---large levels?
-----camera
---cleanup/optim code sections
---use map flag to pick start x,y
-
-]]
-
+--by goncalo, jgradim, pkoch
 -->8
---globals
+--globals,game loop,utils
+
+-------------
+---globals---
+-------------
 
 --gravity
 g=0.2
@@ -29,7 +17,73 @@ a=1.1
 --inertia
 inertia=0.75
 
---have super extend kls
+walk_f=0.5
+jump_f=2.8
+glide_f=g*2
+
+---------------
+---game loop---
+---------------
+
+function _init()
+ p=init_player()
+ npcs={
+  init_npc(jump,{1,0,12,5,8,9}),
+  init_npc(glide,{8,11,10,15,12,13}),
+ }
+ init_bg_fxs()
+ init_fxs()
+ init_lights(0,0)
+end
+
+fps=30
+function _update()
+ --input
+ player_btns={"⬅️","➡️","⬆️"}
+ for i=1,#player_btns do
+  if btn(i-1) then
+   fn=p[player_btns[i]]
+   if (fn) fn(p,btnp(i-1))
+  end
+ end
+ if btnp(🅾️) then
+  if path.state=="found" then
+   path:apply()
+  else
+   path:find(npcs[2],npcs[2],p)
+  end
+ end
+
+ --updates
+ update_player(p)
+ path:update()
+ foreach(npcs,update_npc)
+
+ --fxs
+ fire_fxs()
+ update_bg_fxs()
+ update_fxs()
+end
+
+function _draw()
+ cls()
+
+ draw_bg_fxs()
+ map(0,0)
+ draw_lights()
+ draw_fxs()
+
+ foreach(npcs,draw_npc)
+ draw_player(p)
+
+ if (debug) print(debug)
+end
+
+-----------
+---utils---
+-----------
+
+--kls "extends" super
 function class(super,kls)
  kls.meta={__index=super}
  return setmetatable(
@@ -119,63 +173,11 @@ end
 --]]
 
 -->8
---loop
+--entity,player,npcs
 
-function _init()
- p=init_player()
- npcs={
-  init_npc(jump,{1,0,12,5,8,9}),
-  init_npc(glide,{8,11,10,15,12,13}),
- }
- init_bg_fxs()
- init_fxs()
- init_lights(0,0)
-end
-
-fps=30
-function _update()
- --input
- player_btns={"⬅️","➡️","⬆️"}
- for i=1,#player_btns do
-  if btn(i-1) then
-   fn=p[player_btns[i]]
-   if (fn) fn(p,btnp(i-1))
-  end
- end
- if btnp(🅾️) then
-  if path.state=="found" then
-   path:apply()
-  else
-   path:find(npcs[2],npcs[2],p)
-  end
- end
-
- --updates
- update_player(p)
- path:update()
- foreach(npcs,update_npc)
-
- --fxs
- fire_fxs()
- update_bg_fxs()
- update_fxs()
-end
-
-function _draw()
- cls()
-
- draw_bg_fxs()
- map(0,0)
- draw_lights()
- draw_fxs()
-
- foreach(npcs,draw_npc)
- draw_player(p)
-
- if (debug) print(debug)
-end
--->8
---entity
+------------
+---entity---
+------------
 
 function init_entity(
  w,h,max_dx,max_dy
@@ -244,12 +246,10 @@ function update_entity(e)
   e.dy,0x0.01
  )
 end
--->8
---player
 
-walk_f=0.5
-jump_f=2.8
-glide_f=g*2
+------------
+---player---
+------------
 
 function init_player()
  return class(
@@ -367,84 +367,38 @@ function draw_player(p)
  spr(p.sp,p.x,p.y,1,1,p.flp)
 end
 
--->8
---bg_fxs
+---------
+---npc---
+---------
 
-function init_bg_fxs()
- bg_particles={}
- far_star:add_plane()
- near_star:add_plane()
+function init_npc(⬆️,color_map)
+ return class(init_player(),{
+  ⬆️=⬆️,
+  color_map=color_map
+ })
 end
 
-function update_bg_fxs()
- for f in all(bg_particles) do
-  f.t+=1
-  f.t%=f.life
-
-  f:update()
- end
+function update_npc(n)
+ update_player(n)
 end
 
-function draw_bg_fxs()
- for f in all(bg_particles) do
-  f:draw()
- end
-end
-
-bg_fx={
- t=0,
- c=0,
- dx=0,
- colors={1},
-
- add_plane=function(kls)
-  for i=1,75 do
-   kls:add_particle({
-     x=rnd(128)\1,
-     y=rnd(128)\1,
-     life=30+rnd(90)*fps,
-   })
-  end
- end,
-
- add_particle=function(kls,f)
-  f.t=1
-  f=setmetatable(
-    f,
-    {__index=kls}
+function draw_npc(n)
+ for i=1,#n.color_map,2 do
+  pal(
+   n.color_map[i],
+   n.color_map[i+1]
   )
-  return add(bg_particles,f)
- end,
-
- curr_color=function(f)
-  return f.colors[
-   ceil(f.t*#f.colors/f.life)
-  ]
- end,
-
- update=function(f)
-  f.x+=f.dx
-  f.x%=128
-  f.c=f:curr_color()
- end,
-
- draw=function(f)
-  pset(f.x,f.y,f.c)
- end,
-}
-
-far_star=class(bg_fx,{
- colors={5,6},
- dx=-1/fps,
-})
-
-near_star=class(bg_fx,{
- colors={7,15},
- dx=-6/fps,
-})
+ end
+ draw_player(n)
+ pal()
+end
 
 -->8
---fxs
+--fxs,background fxs
+
+---------
+---fxs---
+---------
 
 function init_fxs()
  particles={}
@@ -508,9 +462,11 @@ base_fx={
   f=setmetatable(
    f,{__index=kls}
   )
+  --[[
   assert(f.life,"particle must know how many frames it'll live")
   assert(f.x,"particle must know its x")
   assert(f.y,"particle must know its y")
+  --]]
   return add(particles,f)
  end,
 
@@ -608,32 +564,86 @@ land=class(base_fx,{
  end,
 })
 
--->8
---npc
+------------
+---bg_fxs---
+------------
 
-function init_npc(⬆️,color_map)
- return class(init_player(),{
-  ⬆️=⬆️,
-  color_map=color_map
- })
+function init_bg_fxs()
+ bg_particles={}
+ far_star:add_plane()
+ near_star:add_plane()
 end
 
-function update_npc(n)
- update_player(n)
-end
+function update_bg_fxs()
+ for f in all(bg_particles) do
+  f.t+=1
+  f.t%=f.life
 
-function draw_npc(n)
- for i=1,#n.color_map,2 do
-  pal(
-   n.color_map[i],
-   n.color_map[i+1]
-  )
+  f:update()
  end
- draw_player(n)
- pal()
 end
+
+function draw_bg_fxs()
+ for f in all(bg_particles) do
+  f:draw()
+ end
+end
+
+bg_fx={
+ t=0,
+ c=0,
+ dx=0,
+ colors={1},
+
+ add_plane=function(kls)
+  for i=1,75 do
+   kls:add_particle({
+     x=rnd(128)\1,
+     y=rnd(128)\1,
+     life=30+rnd(90)*fps,
+   })
+  end
+ end,
+
+ add_particle=function(kls,f)
+  f.t=1
+  f=setmetatable(
+    f,
+    {__index=kls}
+  )
+  return add(bg_particles,f)
+ end,
+
+ curr_color=function(f)
+  return f.colors[
+   ceil(f.t*#f.colors/f.life)
+  ]
+ end,
+
+ update=function(f)
+  f.x+=f.dx
+  f.x%=128
+  f.c=f:curr_color()
+ end,
+
+ draw=function(f)
+  pset(f.x,f.y,f.c)
+ end,
+}
+
+far_star=class(bg_fx,{
+ colors={5,6},
+ dx=-1/fps,
+})
+
+near_star=class(bg_fx,{
+ colors={7,15},
+ dx=-6/fps,
+})
+
 -->8
 --lights
+
 lights_mask=11
 lights_loop=30
 lights_colors={8,10,9,1}
