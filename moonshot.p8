@@ -1,8 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
--- moonshot
--- by goncalo, jgradim, and pkoch
+--moonshot
+--by goncalo, jgradim, and pkoch
 --[[readme
 
 # todo
@@ -48,7 +48,7 @@ function rect_contains(rec,obj)
  and obj.y>=rec.top
  and obj.y+obj.h<=rec.bottom
 end
- 
+
 --check if obj collides with map
 function collide_map(
  obj,aim,flag
@@ -99,7 +99,7 @@ function collide_map(
  or flag_on(x2,y2,flag)
 end
 
-function flag_on(x, y, flag)
+function flag_on(x,y,flag)
  return fget(mget(x\8,y\8),flag)
 end
 
@@ -153,7 +153,7 @@ function _update()
  --updates
  update_player(p)
  path:update()
- foreach(npcs, update_npc)
+ foreach(npcs,update_npc)
 
  --fxs
  fire_fxs()
@@ -169,10 +169,10 @@ function _draw()
  draw_lights()
  draw_fxs()
 
- foreach(npcs, draw_npc)
+ foreach(npcs,draw_npc)
  draw_player(p)
 
- if debug then print(debug) end
+ if (debug) print(debug)
 end
 -->8
 --entity
@@ -192,11 +192,11 @@ function init_entity(
  }
 end
 
-function discmid(a, b, c, step)
-  local v = mid(a,b,c)
-  v = v - sgn(v) * (v%step)
-  if abs(v) < step then
-   v = 0
+function discmid(a,b,c,step)
+  local v=mid(a,b,c)
+  v-=sgn(v)*(v%step)
+  if abs(v)<step then
+   v=0
   end
   return v
 end
@@ -237,11 +237,11 @@ function update_entity(e)
  --clamp acceleration
  e.dx=discmid(
   -e.max_dx,e.max_dx,
-  e.dx, 0x0.01
+  e.dx,0x0.01
  )
  e.dy=discmid(
   -e.max_dy,e.max_dy,
-  e.dy, 0x0.01
+  e.dy,0x0.01
  )
 end
 -->8
@@ -282,7 +282,7 @@ function update_state(p)
  end
 
  if p.dy==0 then
-  if p.dx ~= 0 then
+  if p.dx~=0 then
    p.state="running"
   end
  else
@@ -329,7 +329,7 @@ function right(p,first)
 end
 
 function jump(p, first)
- if not first then return end
+ if (not first) return
 
  if p.dy==0 then
   p.dy-=jump_f
@@ -337,7 +337,7 @@ function jump(p, first)
 end
 
 function double_jump(p, first)
- if not first then return end
+ if (not first) return
 
  if not p._j or p.dy==0 then
   p._j=0
@@ -408,8 +408,8 @@ bg_fx={
  end,
 
  add_particle=function(kls,f)
-  f.t = 1
-  f = setmetatable(
+  f.t=1
+  f=setmetatable(
     f,
     {__index=kls}
   )
@@ -433,12 +433,12 @@ bg_fx={
  end,
 }
 
-far_star = class(bg_fx, {
+far_star=class(bg_fx,{
  colors={5,6},
  dx=-1/fps,
 })
 
-near_star = class(bg_fx, {
+near_star=class(bg_fx,{
  colors={7,15},
  dx=-6/fps,
 })
@@ -504,8 +504,8 @@ base_fx={
  end,
 
  add_particle=function(kls,f)
-  f.t = 0
-  f = setmetatable(
+  f.t=0
+  f=setmetatable(
    f,{__index=kls}
   )
   assert(f.life,"particle must know how many frames it'll live")
@@ -555,7 +555,7 @@ rocket=class(base_fx,{
   dx,
   dy
  )
-  local w = kls.width
+  local w=kls.width
   return {
    x=x-w/2+rnd(w),
    y=y-w/2+rnd(w),
@@ -578,7 +578,7 @@ rocket=class(base_fx,{
 })
 
 
-land=class(base_fx, {
+land=class(base_fx,{
  colors={7,6,13},
  life=20,
  dy=-0.3,
@@ -670,10 +670,10 @@ path={
  entity=nil,
  from=nil,
  to=nil,
- 
+
  --{idle,finding,applying}
  state="idle",
- 
+
  --open nodes to explore,
  --ordered by priority
  open={},
@@ -682,17 +682,17 @@ path={
  prev={},
  --cost for each node
  cost={},
- 
+
  --sequence of btns from->to
  btns={},
- 
+
  find=function(
   self,entity,from,to
  )
   self.entity=entity
   self.from=from
   self.to=to
-  
+
   self.open={}
   self.prev={}
   self.cost={}
@@ -705,18 +705,18 @@ path={
   else
    self.state="idle"
   end
-  
+
   self.btns={}
  end,
- 
+
  apply=function(self)
   self.state="applying"
  end,
- 
+
  clear=function(self)
   self:find(nil,nil,nil)
  end,
- 
+
  update=function(self)
   if self.state=="finding"
   then
@@ -726,28 +726,28 @@ path={
    self:_update_apply()
   end
  end,
- 
+
  _update_find=function(self)
-  local from=self.from  
+  local from=self.from
   local to=self.to
- 
+
   if not from or not to then
    return nil
   end
-  
+
   local open=self.open
   local prev=self.prev
   local cost=self.cost
-  
+
   while #open>0 do
    local cur=popend(open)
-   
+
    --check if done
    if vec2i(cur)==vec2i(to) then
     cur=prev[vec2i(to)]
     local c_i=vec2i(cur)
     local f_i=vec2i(from)
-    
+
     --go through previous nodes
     --and build self.btns
     while c_i!=f_i do
@@ -756,10 +756,10 @@ path={
      c_i=vec2i(cur)
     end
     self.state="found"
-    
+
     break
    end
-   
+
    --expand current node
    local ns=self._expand(
     self,cur
@@ -767,7 +767,7 @@ path={
    for n in all(ns) do
     local new_cost=
      cost[vec2i(cur)]+1
-     
+
     local n_i=vec2i(n)
     if not cost[n_i]
     or cost[n_i]>new_cost
@@ -785,7 +785,7 @@ path={
      prev[n_i]=cur
     end
    end
-   
+
    --avoid exhausting frame time
    --todo:re-test later
    budget=stat(1)
@@ -796,7 +796,7 @@ path={
    end
   end
  end,
- 
+
  _update_apply=function(self)
   if #self.btns>0 then
    move_npc(
@@ -807,7 +807,7 @@ path={
    self:clear()
   end
  end,
- 
+
  --expand n by moving it
  _expand=function(self,n)
   local ns={}
@@ -845,7 +845,7 @@ path={
     move_npc(cur,btns,first)
     update_npc(cur)
     add(cur.btns,{btns,first})
-    
+
     local bounds={
      left=0,right=128,
      top=0,bottom=128,
@@ -903,7 +903,7 @@ function insert(t,v,p)
   end
   t[1]={v,p}
  else
-  add(t,{v,p}) 
+  add(t,{v,p})
  end
 end
 
@@ -934,7 +934,7 @@ end
 function vec2i(v)
  return 1+(v.x\8)+16*(v.y\8)
 end
- 
+
 --convert map index to x,y
 function i2vec(i)
  i-=1
