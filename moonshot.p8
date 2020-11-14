@@ -91,12 +91,12 @@ function collide_map(
  elseif aim=="⬆️" then
   x1=x+2
   y1=y-1
-  x2=x+w-3
+  x2=x+w-2
   y2=y
  elseif aim=="⬇️" then
   x1=x+2
   y1=y+h
-  x2=x+w-3
+  x2=x+w-2
   y2=y+h
  end
 
