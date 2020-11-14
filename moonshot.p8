@@ -316,24 +316,24 @@ function update_player(p)
  end
 end
 
-function left(p,first)
+function left(p,_)
  p.dx-=walk_f
 end
 
-function right(p,first)
+function right(p,_)
  p.dx+=walk_f
 end
 
-function jump(p, first)
- if (not first) return
+function jump(p,tap)
+ if (not tap) return
 
  if p.dy==0 then
   p.dy-=jump_f
  end
 end
 
-function double_jump(p, first)
- if (not first) return
+function double_jump(p,tap)
+ if (not tap) return
 
  if not p._j or p.dy==0 then
   p._j=0
@@ -345,7 +345,7 @@ function double_jump(p, first)
  end
 end
 
-function glide(p,tap)
+function glide(p)
  if not p.glide and p.dy==0 then
   p.dy=-jump_f
   return
@@ -846,11 +846,11 @@ path={
    --changes, up to 15 times
    --(see btnp() for threshold)
    for i=1,15 do
-    local first=i==1 and
+    local tap=i==1 and
      btns!=prev_btns
-    move_npc(cur,btns,first)
+    move_npc(cur,btns,tap)
     update_npc(cur)
-    add(cur.btns,{btns,first})
+    add(cur.btns,{btns,tap})
 
     local bounds={
      left=0,right=128,
@@ -872,11 +872,9 @@ path={
 
 --move npc
 --invokes btns as functions
-function move_npc(
- npc,btns,first
-)
+function move_npc(npc,btns,tap)
  for j=1,#btns do
-  npc[sub(btns,j,j)](npc,first)
+  npc[sub(btns,j,j)](npc,tap)
  end
 end
 
