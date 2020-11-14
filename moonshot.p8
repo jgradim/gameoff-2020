@@ -109,6 +109,22 @@ end
 function flag_on(x, y, flag)
  return fget(mget(x\8,y\8),flag)
 end
+
+--[[
+--to use, prepend "-" above
+function tostring(any)
+ if type(any)~="table" then
+  return tostr(any)
+ end
+ local str = "{"
+ for k,v in pairs(any) do
+  if (str~="{") str=str..","
+  str..=tostring(k).."="..tostring(v)
+ end
+ return str.."}"
+end
+--]]
+
 -->8
 --loop
 
