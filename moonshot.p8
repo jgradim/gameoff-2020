@@ -675,27 +675,34 @@ path={
  open={},
  --cost for each node
  cost={},
+ --grid to discretize space
+ grid=8,
 
  --sequence of btns from->to
  btns={},
 
  find=function(
-  self,npc,from,to
+  self,npc,from,to,grid
  )
   self.npc=npc
+  
   self.from=from
   self.to=to
+  
+  grid=grid or 8
+  self.grid=grid
 
   self.open={}
   self.cost={}
   if to!=nil then
-   if vec2i(from)==vec2i(to)
+   if vec2i(from,grid)==
+    vec2i(to,grid)
    then
     self.state="idle"
     self.found=true
    else
     insert(self.open,from,0)
-    from_i=vec2i(from)
+    from_i=vec2i(from,grid)
     self.cost[from_i]=0
     self.state="find"
     self.found=false
@@ -736,22 +743,25 @@ path={
 
   local open=self.open
   local cost=self.cost
+  local grid=self.grid
 
   while #open>0 do
    local cur=popend(open)
 
    --check if done
-   if vec2i(cur)==vec2i(to) then
+   if vec2i(cur,grid)==
+    vec2i(to,grid)
+   then
     cur=cur.prev
-    local c_i=vec2i(cur)
-    local f_i=vec2i(from)
+    local c_i=vec2i(cur,grid)
+    local f_i=vec2i(from,grid)
 
     --go through previous nodes
     --and build self.btns
     while c_i!=f_i do
      prepend(self.btns,cur.btns)
      cur=cur.prev
-     c_i=vec2i(cur)
+     c_i=vec2i(cur,grid)
     end
     
     self.found=true
@@ -764,9 +774,9 @@ path={
    )
    for n in all(ns) do
     local new_cost=
-     cost[vec2i(cur)]+1
-
-    local n_i=vec2i(n)
+     cost[vec2i(cur,grid)]+1
+    
+    local n_i=vec2i(n,grid)
     if not cost[n_i]
     or cost[n_i]>new_cost
     then
@@ -778,7 +788,8 @@ path={
       --to snap to map tiles,
       --bringing it to the
       --magnitude of cost (1)
-      new_cost+distance(n,to)/8
+      new_cost+
+       distance(n,to)/grid
      )
     end
    end
@@ -811,8 +822,9 @@ path={
  --expand n by moving it
  _expand=function(self,n)
   local ns={}
-  local start_x=n.x\8
-  local start_y=n.y\8
+  local grid=self.grid
+  local start_x=n.x\grid
+  local start_y=n.y\grid
   local prev_btns=nil
   for btns in all({
    "",--do nothing
@@ -857,8 +869,8 @@ path={
      top=0,bottom=128,
     }
     if rect_contains(bounds,cur)
-    and (cur.x\8!=start_x
-    or cur.y\8!=start_y)
+    and (cur.x\grid!=start_x
+    or cur.y\grid!=start_y)
     then
      add(ns,cur)
      prev_btns=btns
@@ -882,7 +894,7 @@ end
 function distance(a,b)
  local dx=abs(a.x-b.x)
  local dy=abs(a.y-b.y)
- return (dx+dy)-0.4*min(dx,dy)
+ return (dx+dy)-0.7*min(dx,dy)
 end
 
 --preprend b's elements in a
@@ -935,15 +947,12 @@ end
 --snaps x,y into map tiles
 --there are 16x16 map tiles
 --which are 8x8 pixels wide
-function vec2i(v)
- return 1+(v.x\8)+16*(v.y\8)
+function vec2i(v,grid)
+ return 1+
+  (v.x\grid)+
+  (128/grid)*(v.y\grid)
 end
 
---convert map index to x,y
-function i2vec(i)
- i-=1
- return {(i%16)*8,(i\16)*8}
-end
 __gfx__
 00000000000000000000000000666600000000000000000000000000944494445ddd5ddd00000000000000000000000000000000000000000000000000000000
 00000000006666000066660006611c6000666600000000000000000044494449ddd5ddd5000b0b00000000000000000000000000000000000000000000000000
