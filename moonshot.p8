@@ -703,7 +703,7 @@ path={
   self.prev={}
   self.cost={}
   if to!=nil then
-   if vec2i(from)==vec2i(to)
+   if vec2i(from)==vec2i(to) then
     self.state="found"
    else
     insert(self.open,from,0)
