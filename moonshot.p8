@@ -262,8 +262,14 @@ function init_player()
    state="idle",
    prev_state="idle",
 
-   ⬅️=left,
-   ➡️=right,
+   ⬅️=function(self)
+    self.dx-=walk_f
+   end,
+   
+   ➡️=function(self)
+    self.dx+=walk_f
+   end,
+    
    ⬆️=double_jump
   })
 end
@@ -314,14 +320,6 @@ function update_player(p)
  elseif p.state=="falling" then
   p.sp=1
  end
-end
-
-function left(p,_)
- p.dx-=walk_f
-end
-
-function right(p,_)
- p.dx+=walk_f
 end
 
 function jump(p,tap)
