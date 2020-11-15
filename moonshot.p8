@@ -666,7 +666,7 @@ end
 --path
 
 path={
- entity=nil,
+ npc=nil,
  from=nil,
  to=nil,
 
@@ -686,9 +686,9 @@ path={
  btns={},
 
  find=function(
-  self,entity,from,to
+  self,npc,from,to
  )
-  self.entity=entity
+  self.npc=npc
   self.from=from
   self.to=to
 
@@ -803,7 +803,7 @@ path={
  _update_apply=function(self)
   if #self.btns>0 then
    move_npc(
-    self.entity,
+    self.npc,
     unpack(pop(self.btns))
    )
   else
@@ -868,7 +868,7 @@ path={
 }
 
 --move npc
---invokes btns as functions
+--invokes btns as npc functions
 function move_npc(npc,btns,tap)
  for j=1,#btns do
   npc[sub(btns,j,j)](npc,tap)
