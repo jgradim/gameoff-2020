@@ -882,7 +882,7 @@ end
 function distance(a,b)
  local dx=abs(a.x-b.x)
  local dy=abs(a.y-b.y)
- return (dx+dy)-0.25*min(dx,dy)
+ return (dx+dy)-0.4*min(dx,dy)
 end
 
 --preprend b's elements in a
