@@ -338,7 +338,7 @@ function double_jump(p,tap)
  end
 end
 
-function glide(p)
+function glide(p,_)
  if not p.glide and p.dy==0 then
   p.dy=-jump_f
   return
