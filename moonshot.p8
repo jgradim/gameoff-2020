@@ -252,13 +252,8 @@ function init_player()
   init_entity(8,8,2,3),{
    sp=1,
    flp=false,
-   --{
-   -- idle,
-   -- running,
-   -- jumping,
-   -- gliding,
-   -- falling
-   --}
+   
+   --{idle,run,jump,glide,fall}
    state="idle",
    prev_state="idle",
 
@@ -279,19 +274,19 @@ function update_state(p)
  p.state="idle"
 
  if p.glide then
-  p.state="gliding"
+  p.state="glide"
   return
  end
 
  if p.dy==0 then
   if p.dx~=0 then
-   p.state="running"
+   p.state="run"
   end
  else
   if p.dy<-1 then
-   p.state="jumping"
+   p.state="jump"
   elseif p.dy>1 then
-   p.state="falling"
+   p.state="fall"
   end
  end
 end
@@ -311,13 +306,13 @@ function update_player(p)
  --sprite
  if p.state=="idle" then
   p.sp=1
- elseif p.state=="running" then
+ elseif p.state=="run" then
   p.sp=2+(t()*10)%3
- elseif p.state=="jumping" then
+ elseif p.state=="jump" then
   p.sp=3
- elseif p.state=="gliding" then
+ elseif p.state=="glide" then
   p.sp=1
- elseif p.state=="falling" then
+ elseif p.state=="fall" then
   p.sp=1
  end
 end
@@ -402,15 +397,15 @@ function fire_fxs()
  foreach(
   {p,unpack(npcs)},
   function(p)
-   if p.state=="gliding" then
+   if p.state=="glide" then
     rocket:on_player(p)
    end
    if (
-    p.prev_state=="falling"
-    or p.prev_state=="gliding"
+    p.prev_state=="fall"
+    or p.prev_state=="glide"
    ) and (
     p.state == "idle"
-    or p.state == "running"
+    or p.state == "run"
    ) then
     land:on_player(p)
    end
@@ -675,7 +670,7 @@ path={
  from=nil,
  to=nil,
 
- --{idle,finding,applying}
+ --{idle,find,apply}
  state="idle",
 
  --open nodes to explore,
@@ -708,7 +703,7 @@ path={
     from_i=vec2i(from)
     self.prev[from_i]=nil
     self.cost[from_i]=0
-    self.state="finding"
+    self.state="find"
    end
   else
    self.state="idle"
@@ -718,7 +713,7 @@ path={
  end,
 
  apply=function(self)
-  self.state="applying"
+  self.state="apply"
  end,
 
  clear=function(self)
@@ -726,10 +721,10 @@ path={
  end,
 
  update=function(self)
-  if self.state=="finding"
+  if self.state=="find"
   then
    self:_update_find()
-  elseif self.state=="applying"
+  elseif self.state=="apply"
   then
    self:_update_apply()
   end
