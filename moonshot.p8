@@ -269,38 +269,34 @@ function init_player()
   })
 end
 
-function update_state(p)
- p.prev_state=p.state
- p.state="idle"
-
- if p.glide then
-  p.state="glide"
-  return
- end
-
- if p.dy==0 then
-  if p.dx~=0 then
-   p.state="run"
-  end
- else
-  if p.dy<-1 then
-   p.state="jump"
-  elseif p.dy>1 then
-   p.state="fall"
-  end
- end
-end
-
 function update_player(p)
  update_entity(p)
-
- update_state(p)
 
  --flip
  if p.dx<0 then
   p.flp=true
  elseif p.dx>0 then
   p.flp=false
+ end
+ 
+ --state
+ p.prev_state=p.state
+ p.state="idle"
+
+ if p.glide then
+  p.state="glide"
+ else
+  if p.dy==0 then
+   if p.dx!=0 then
+    p.state="run"
+   end
+  else
+   if p.dy<-1 then
+    p.state="jump"
+   elseif p.dy>1 then
+    p.state="fall"
+   end
+  end
  end
 
  --sprite
