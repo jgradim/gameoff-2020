@@ -87,16 +87,16 @@ function class(super,kls)
  )
 end
 
---check if rec contains obj
-function rect_contains(rec,obj)
+--check if a contains b
+function contains(a,b)
  --[[
- rec={left,top,right,bottom}
- obj={x,y,w,h}
+ a={x,y,w,h}
+ b={x,y,w,h}
  ]]
- return obj.x>=rec.left
- and obj.x+obj.w<=rec.right
- and obj.y>=rec.top
- and obj.y+obj.h<=rec.bottom
+ return b.x>=a.x
+ and b.x+b.w<=a.x+a.w
+ and b.y>=a.y
+ and b.y+b.h<=a.y+a.h
 end
 
 --check if obj collides with map
@@ -865,10 +865,9 @@ path={
     add(cur.btns,{btns,tap})
 
     local bounds={
-     left=0,right=128,
-     top=0,bottom=128,
+     x=0,y=0,w=128,h=128
     }
-    if rect_contains(bounds,cur)
+    if contains(bounds,cur)
     and (cur.x\grid!=start_x
     or cur.y\grid!=start_y)
     then
