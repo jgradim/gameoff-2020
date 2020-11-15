@@ -703,11 +703,15 @@ path={
   self.prev={}
   self.cost={}
   if to!=nil then
-   insert(self.open,from,0)
-   from_i=vec2i(from)
-   self.prev[from_i]=nil
-   self.cost[from_i]=0
-   self.state="finding"
+   if vec2i(from)==vec2i(to)
+    self.state="found"
+   else
+    insert(self.open,from,0)
+    from_i=vec2i(from)
+    self.prev[from_i]=nil
+    self.cost[from_i]=0
+    self.state="finding"
+   end
   else
    self.state="idle"
   end
