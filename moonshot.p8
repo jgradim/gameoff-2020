@@ -672,9 +672,6 @@ path={
  --open nodes to explore,
  --ordered by priority
  open={},
- --previous node for each node
- --in the best known path
- prev={},
  --cost for each node
  cost={},
 
@@ -689,15 +686,14 @@ path={
   self.to=to
 
   self.open={}
-  self.prev={}
   self.cost={}
   if to!=nil then
-   if vec2i(from)==vec2i(to) then
+   if vec2i(from)==vec2i(to)
+   then
     self.state="found"
    else
     insert(self.open,from,0)
     from_i=vec2i(from)
-    self.prev[from_i]=nil
     self.cost[from_i]=0
     self.state="find"
    end
@@ -735,7 +731,6 @@ path={
   end
 
   local open=self.open
-  local prev=self.prev
   local cost=self.cost
 
   while #open>0 do
@@ -743,7 +738,7 @@ path={
 
    --check if done
    if vec2i(cur)==vec2i(to) then
-    cur=prev[vec2i(to)]
+    cur=cur.prev
     local c_i=vec2i(cur)
     local f_i=vec2i(from)
 
@@ -751,7 +746,7 @@ path={
     --and build self.btns
     while c_i!=f_i do
      prepend(self.btns,cur.btns)
-     cur=prev[c_i]
+     cur=cur.prev
      c_i=vec2i(cur)
     end
     self.state="found"
@@ -781,7 +776,6 @@ path={
       --magnitude of cost (1)
       new_cost+distance(n,to)/8
      )
-     prev[n_i]=cur
     end
    end
 
@@ -822,6 +816,7 @@ path={
    "⬆️➡️",--press up/right
   }) do
    local cur={
+    --npc data
     x=n.x,
     y=n.y,
     w=n.w,
@@ -830,9 +825,14 @@ path={
     dy=n.dy,
     max_dx=n.max_dx,
     max_dy=n.max_dy,
+    
+    --npc btns functions
     ⬅️=n.⬅️,
     ➡️=n.➡️,
     ⬆️=n.⬆️,
+    
+    --pathfinding data
+    prev=n,
     btns={}
    }
    --repeat btns until position
