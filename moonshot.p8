@@ -43,7 +43,7 @@ function _update()
   end
  end
  if btnp(🅾️) then
-  if path.state=="found" then
+  if path.found then
    path:apply()
   else
    path:find(npcs[2],npcs[2],p)
@@ -668,6 +668,7 @@ path={
 
  --{idle,find,apply}
  state="idle",
+ found=false,
 
  --open nodes to explore,
  --ordered by priority
@@ -690,15 +691,18 @@ path={
   if to!=nil then
    if vec2i(from)==vec2i(to)
    then
-    self.state="found"
+    self.state="idle"
+    self.found=true
    else
     insert(self.open,from,0)
     from_i=vec2i(from)
     self.cost[from_i]=0
     self.state="find"
+    self.found=false
    end
   else
    self.state="idle"
+   self.found=false
   end
 
   self.btns={}
@@ -749,8 +753,8 @@ path={
      cur=cur.prev
      c_i=vec2i(cur)
     end
-    self.state="found"
-
+    
+    self.found=true
     break
    end
 
@@ -788,6 +792,9 @@ path={
     return
    end
   end
+  
+  --no more open nodes
+  self.state="idle"
  end,
 
  _update_apply=function(self)
