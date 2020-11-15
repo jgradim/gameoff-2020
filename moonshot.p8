@@ -866,8 +866,8 @@ path={
 --move npc
 --invokes btns as npc functions
 function move_npc(npc,btns,tap)
- for j=1,#btns do
-  npc[sub(btns,j,j)](npc,tap)
+ for i=1,#btns do
+  npc[sub(btns,i,i)](npc,tap)
  end
 end
 
