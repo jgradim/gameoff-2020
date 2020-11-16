@@ -3,23 +3,12 @@ version 29
 __lua__
 --moonshot
 --by goncalo, jgradim, pkoch
--->8
---globals,game loop,utils
 
--------------
----globals---
--------------
+--global:loop,utils
 
-gravity=0.2
-inertia=0.75
-
-walk_f=0.5
-jump_f=2.8
-glide_f=gravity*2
-
----------------
----game loop---
----------------
+----------
+---loop---
+----------
 
 function _init()
  p=init_player()
@@ -169,11 +158,14 @@ end
 --]]
 
 -->8
---entity,player,npcs
+--characters:entity,player,npcs
 
 ------------
 ---entity---
 ------------
+
+gravity=0.2
+inertia=0.75
 
 function init_entity(
  w,h,max_dx,max_dy
@@ -247,6 +239,9 @@ end
 ---player---
 ------------
 
+walk_accel=0.5
+jump_accel=2.8
+
 function init_player()
  return class(
   init_entity(8,8,2,3),{
@@ -258,11 +253,11 @@ function init_player()
    prev_state="idle",
 
    ⬅️=function(self)
-    self.dx-=walk_f
+    self.dx-=walk_accel
    end,
    
    ➡️=function(self)
-    self.dx+=walk_f
+    self.dx+=walk_accel
    end,
     
    ⬆️=double_jump
@@ -317,7 +312,7 @@ function jump(p,tap)
  if (not tap) return
 
  if p.dy==0 then
-  p.dy-=jump_f
+  p.dy-=jump_accel
  end
 end
 
@@ -330,13 +325,13 @@ function double_jump(p,tap)
   p._j+=1
  end
  if p._j<2 then
-  p.dy=-jump_f
+  p.dy=-jump_accel
  end
 end
 
 function glide(p,_)
  if not p.glide and p.dy==0 then
-  p.dy=-jump_f
+  p.dy=-jump_accel
   return
  end
 
@@ -379,11 +374,15 @@ function draw_npc(n)
 end
 
 -->8
---fxs,background fxs
+--mechanics
 
----------
----fxs---
----------
+--todo:doors,platforms,hazards
+-->8
+--fxs:player,bg,lights
+
+----------------
+---player fxs---
+----------------
 
 function init_fxs()
  particles={}
@@ -549,9 +548,9 @@ land=class(base_fx,{
  end,
 })
 
-------------
----bg_fxs---
-------------
+--------------------
+---background fxs---
+--------------------
 
 function init_bg_fxs()
  bg_particles={}
@@ -626,8 +625,9 @@ near_star=class(bg_fx,{
  dx=-6/fps,
 })
 
--->8
---lights
+----------------
+---lights fxs---
+----------------
 
 lights_mask=11
 lights_loop=30
