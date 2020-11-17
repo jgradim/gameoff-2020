@@ -446,11 +446,6 @@ base_fx={
   f=setmetatable(
    f,{__index=kls}
   )
-  --[[
-  assert(f.life,"particle must know how many frames it'll live")
-  assert(f.x,"particle must know its x")
-  assert(f.y,"particle must know its y")
-  --]]
   return add(particles,f)
  end,
 
