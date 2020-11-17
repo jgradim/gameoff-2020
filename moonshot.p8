@@ -247,7 +247,7 @@ function init_player()
   init_entity(8,8,2,3),{
    sp=1,
    flp=false,
-   
+
    --{idle,run,jump,glide,fall}
    state="idle",
    prev_state="idle",
@@ -255,11 +255,11 @@ function init_player()
    ⬅️=function(self)
     self.dx-=walk_accel
    end,
-   
+
    ➡️=function(self)
     self.dx+=walk_accel
    end,
-    
+
    ⬆️=double_jump
   })
 end
@@ -273,7 +273,7 @@ function update_player(p)
  elseif p.dx>0 then
   p.flp=false
  end
- 
+
  --state
  p.prev_state=p.state
  p.state="idle"
@@ -680,10 +680,10 @@ path={
   self,npc,from,to,grid
  )
   self.npc=npc
-  
+
   self.from=from
   self.to=to
-  
+
   grid=grid or 8
   self.grid=grid
 
@@ -758,7 +758,7 @@ path={
      cur=cur.prev
      c_i=vec2i(cur,grid)
     end
-    
+
     self.found=true
     break
    end
@@ -770,7 +770,7 @@ path={
    for n in all(ns) do
     local new_cost=
      cost[vec2i(cur,grid)]+1
-    
+
     local n_i=vec2i(n,grid)
     if not cost[n_i]
     or cost[n_i]>new_cost
@@ -798,7 +798,7 @@ path={
     return
    end
   end
-  
+
   --no more open nodes
   self.state="idle"
  end,
@@ -839,12 +839,12 @@ path={
     dy=n.dy,
     max_dx=n.max_dx,
     max_dy=n.max_dy,
-    
+
     --npc btns functions
     ⬅️=n.⬅️,
     ➡️=n.➡️,
     ⬆️=n.⬆️,
-    
+
     --pathfinding data
     prev=n,
     btns={}
