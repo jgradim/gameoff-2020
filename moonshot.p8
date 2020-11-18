@@ -42,7 +42,7 @@ function _update()
  --updates
  update_player(p)
  path:update()
- foreach(npcs,update_npc)
+ -- foreach(npcs,update_npc)
 
  --fxs
  fire_fxs()
@@ -58,10 +58,14 @@ function _draw()
  draw_lights()
  draw_fxs()
 
- foreach(npcs,draw_npc)
+ -- foreach(npcs,draw_npc)
  draw_player(p)
+ rect(unpack(hitbox))
 
- if (debug) print(debug)
+ if (debug) then
+  color(1)
+  print(debug)
+ end
 end
 
 -----------
@@ -88,54 +92,55 @@ function contains(a,b)
  and b.y+b.h<=a.y+a.h
 end
 
---check if obj collides with map
-function collide_map(
- obj,aim,flag
+hitbox={}
+function next_tick_intersects(
+ o,flag
 )
- --[[
- obj={x,y,w,h}
- aim=⬅️,➡️,⬆️,⬇️
- flag=
-  0-stands on (eg: floor)
-  1-bumps into (eg: wall)
- ]]
+ assert(abs(o.dx)<8)
+ assert(abs(o.dy)<8)
 
- local x=obj.x
- local y=obj.y
- local w=obj.w
- local h=obj.h
+ -- l: Left
+ -- r: Right
+ -- b: Bottom
+ -- t: Top
+ -- t at the end: Tile
+ local xl = o.dx+o.x
+ local yt = o.dy+o.y
+ local xr = o.dx+o.x+o.h
+ local yb = o.dy+o.y+o.w
 
- local x1=0
- local y1=0
- local x2=0
- local y2=0
+ -- Adjust for realistic hitbox
+ xl+=2
+ xr+=-2
+ yb+=-1
+ yt+=2
 
- if aim=="⬅️" then
-  x1=x-1
-  y1=y
-  x2=x
-  y2=y+h-1
- elseif aim=="➡️" then
-  x1=x+w-1
-  y1=y
-  x2=x+w
-  y2=y+h-1
- elseif aim=="⬆️" then
-  x1=x+2
-  y1=y-1
-  x2=x+w-2
-  y2=y
- elseif aim=="⬇️" then
-  x1=x+2
-  y1=y+h
-  x2=x+w-2
-  y2=y+h
+ hitbox={xl,yt,xr,yb,1} -- 1 is color for splaying in rect
+
+ local r = {}
+
+ if abs(o.dy)>0 then
+  if flag_on(xl,yt,flag)
+  or flag_on(xr,yt,flag)
+  then add(r, "⬆️") end
+
+  if flag_on(xl,yb,flag)
+  or flag_on(xr,yb,flag)
+  then add(r, "⬇️") end
  end
 
- return flag_on(x1,y1,flag)
- or flag_on(x1,y2,flag)
- or flag_on(x2,y1,flag)
- or flag_on(x2,y2,flag)
+ if abs(o.dx)>0 then
+  if flag_on(xl,yt,flag)
+  or flag_on(xl,yb,flag)
+  then add(r, "⬅️") end
+
+  if flag_on(xr,yt,flag)
+  or flag_on(xr,yb,flag)
+  then add(r, "➡️") end
+ end
+
+ debug = reduce(r, function(a,b) return a..b end, "")
+ return r
 end
 
 function flag_on(x,y,flag)
@@ -191,38 +196,58 @@ function discmid(a,b,c,step)
   return v
 end
 
+function reduce(t,f, o)
+ local a = o
+ for i=1,#t do
+  a = f(a,t[i])
+ end
+ return a
+end
+
+function in_(t, o)
+ for i=0,#t do
+  if t[i]==o then return true end
+ end
+ return false
+end
+
+function collide_map(e, aim, flag)
+ return in_(
+  next_tick_intersects(e, flag),
+  aim
+ )
+end
+
 function update_entity(e)
  --gravity/inertia
  e.dy+=gravity
  e.dx*=inertia
 
+ local cols =
+  next_tick_intersects(p, 0)
+
+ if abs(e.dx)~=0
+ and (
+  in_(cols,"⬅️")
+  or in_(cols,"➡️")
+ )then
+  e.dx=0
+ end
+
  --vertical map collisions
- if e.dy>0 then
-  if collide_map(e,"⬇️",0) then
-   e.dy=0
-   e.glide=false
-   e.y-=((e.y+e.h+1)%8)-1
-  end
- elseif e.dy<0 then
-  if collide_map(e,"⬆️",0) then
-   e.dy=0
-  end
+ if e.dy>0 and in_(cols,"⬇️") then
+  e.dy=0
+  e.glide=false
+  p._j=0
+  e.y-=((e.y+e.h+1)%8)-1
  end
 
- --horizontal map collisions
- if e.dx<0 then
-  if collide_map(e,"⬅️",0) then
-   e.dx=0
-  end
- elseif e.dx>0 then
-  if collide_map(e,"➡️",0) then
-   e.dx=0
-  end
+ if e.dy<-0 and in_(cols,"⬆️") then
+  e.dy=0
  end
 
- --apply acceleration
- e.x+=e.dx
- e.y+=e.dy
+ local cols =
+  next_tick_intersects(p, 0)
 
  --clamp acceleration
  e.dx=discmid(
@@ -233,6 +258,10 @@ function update_entity(e)
   -e.max_dy,e.max_dy,
   e.dy,0x0.01
  )
+
+ --apply acceleration
+ e.x+=e.dx
+ e.y+=e.dy
 end
 
 ------------
