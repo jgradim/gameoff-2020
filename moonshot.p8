@@ -285,6 +285,15 @@ function update_entity(e)
  if e.dy>0 then
   if collides(e,"⬇️",flag_hits)
   then
+   // e.y+e.dy: Understand where
+   // the player would have been
+   // at overlap.
+   // \8: Identify the tile,
+   // cutting it to the left.
+   // This would make it so that
+   // they're now side by side.
+   // *8: Go back from tiles to
+   // pixels.
    e.y=((e.y+e.dy)\8)*8
    e.dy=0
    e.glide=false
