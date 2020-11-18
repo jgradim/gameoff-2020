@@ -4,7 +4,23 @@ __lua__
 --moonshot
 --by goncalo, jgradim, pkoch
 
---global:loop,utils
+--global:constants,loop,utils
+
+---------------
+---constants---
+---------------
+
+--downward movement per cycle
+gravity=0.2
+--movement multiplier per cycle
+inertia=0.75
+
+--obstacles that are rigid and
+--apply in all directions
+flag_hits=0
+--obstacles the player can stand
+--on but otherwise move through
+flag_stands=1
 
 ----------
 ---loop---
@@ -16,9 +32,12 @@ function _init()
   init_npc(jump,{1,0,12,5,8,9}),
   init_npc(glide,{8,11,10,15,12,13}),
  }
+ --some inits need the map
+ map(0,0)
+ plts=init_platforms()
  init_bg_fxs()
  init_fxs()
- init_lights(0,0)
+ init_lights()
 end
 
 fps=30
@@ -39,10 +58,13 @@ function _update()
   end
  end
 
- --updates
+ --characters
  update_player(p)
  path:update()
  foreach(npcs,update_npc)
+ 
+ --mechanics
+ foreach(plts,update_platform)
 
  --fxs
  fire_fxs()
@@ -53,14 +75,20 @@ end
 function _draw()
  cls()
 
+ --fxs
  draw_bg_fxs()
  map(0,0)
  draw_lights()
  draw_fxs()
-
+ 
+ --mechanics
+ foreach(plts,draw_platform)
+ 
+ --characters
  foreach(npcs,draw_npc)
  draw_player(p)
 
+ --debug
  if (debug) print(debug)
 end
 
@@ -82,16 +110,31 @@ function contains(a,b)
  a={x,y,w,h}
  b={x,y,w,h}
  ]]
- return b.x>=a.x
- and b.x+b.w<=a.x+a.w
- and b.y>=a.y
- and b.y+b.h<=a.y+a.h
+ return a.x<=b.x
+ and a.y<=b.y
+ and a.x+a.w>=b.x+b.w
+ and a.y+a.h>=b.y+b.h
 end
 
---check if obj collides with map
-function collide_map(
- obj,aim,flag
-)
+--check if a intersects b
+function intersetcs(a,b)
+ --[[
+ a={x,y,w,h}
+ b={x,y,w,h}
+ ]]
+ return a.x<b.x+b.w
+ and a.y<b.y+b.h
+ and a.x+a.w>b.x
+ and a.y+a.h>b.y
+end
+
+--ease function for f=[0,1]
+function ef_smooth(f)
+ return f*f*f*(f*(f*6-15)+10)
+end
+
+--check obj collisions
+function collides(obj,aim,flag)
  --[[
  obj={x,y,w,h}
  aim=⬅️,➡️,⬆️,⬇️
@@ -100,45 +143,78 @@ function collide_map(
   1-bumps into (eg: wall)
  ]]
 
- local x=obj.x
- local y=obj.y
- local w=obj.w
- local h=obj.h
-
- local x1=0
- local y1=0
- local x2=0
- local y2=0
+ local hitbox={
+  x=obj.x,
+  y=obj.y,
+  w=obj.w,
+  h=obj.h,
+ }
 
  if aim=="⬅️" then
-  x1=x-1
-  y1=y
-  x2=x
-  y2=y+h-1
+  --check left
+  hitbox.x-=1
+  hitbox.w=1
+  --adjust for player sprite
+  hitbox.x+=1
+  hitbox.y+=1
+  hitbox.h-=2
  elseif aim=="➡️" then
-  x1=x+w-1
-  y1=y
-  x2=x+w
-  y2=y+h-1
+  --check right
+  hitbox.x+=hitbox.w-1
+  hitbox.w=1
+  --adjust for player sprite
+  hitbox.x-=1
+  hitbox.y+=1
+  hitbox.h-=2
  elseif aim=="⬆️" then
-  x1=x+2
-  y1=y-1
-  x2=x+w-2
-  y2=y
+  --check top
+  hitbox.y-=1
+  hitbox.h=1
+  --adjust for player sprite
+  hitbox.y+=1
+  hitbox.x+=1
+  hitbox.w-=2
  elseif aim=="⬇️" then
-  x1=x+2
-  y1=y+h
-  x2=x+w-2
-  y2=y+h
+  --check bottom
+  hitbox.y+=hitbox.h-1
+  hitbox.h=1
+  --adjust for player sprite
+  hitbox.y+=1
+  hitbox.x+=1
+  hitbox.w-=2
  end
 
- return flag_on(x1,y1,flag)
- or flag_on(x1,y2,flag)
- or flag_on(x2,y1,flag)
- or flag_on(x2,y2,flag)
+ return collides_map(
+  hitbox,flag)
+ or collides_platforms(
+  hitbox,flag)
 end
 
-function flag_on(x,y,flag)
+function collides_map(
+ hitbox,flag
+)
+ local x1=hitbox.x
+ local x2=hitbox.x+hitbox.w
+ local y1=hitbox.y
+ local y2=hitbox.y+hitbox.h
+ return flag_on_xy(x1,y1,flag)
+ or flag_on_xy(x1,y2,flag)
+ or flag_on_xy(x2,y1,flag)
+ or flag_on_xy(x2,y2,flag)
+end
+
+function collides_platforms(
+ hitbox,flag
+)
+ for plt in all(plts) do
+  if intersetcs(plt,hitbox)
+  and fget(plt.sp,flag) then
+   return true
+  end
+ end
+end
+
+function flag_on_xy(x,y,flag)
  return fget(mget(x\8,y\8),flag)
 end
 
@@ -163,9 +239,6 @@ end
 ------------
 ---entity---
 ------------
-
-gravity=0.2
-inertia=0.75
 
 function init_entity(
  w,h,max_dx,max_dy
@@ -198,24 +271,28 @@ function update_entity(e)
 
  --vertical map collisions
  if e.dy>0 then
-  if collide_map(e,"⬇️",0) then
+  if collides(e,"⬇️",flag_hits)
+  then
    e.dy=0
    e.glide=false
    e.y-=((e.y+e.h+1)%8)-1
   end
  elseif e.dy<0 then
-  if collide_map(e,"⬆️",0) then
+  if collides(e,"⬆️",flag_hits)
+  then
    e.dy=0
   end
  end
 
  --horizontal map collisions
  if e.dx<0 then
-  if collide_map(e,"⬅️",0) then
+  if collides(e,"⬅️",flag_hits)
+  then
    e.dx=0
   end
  elseif e.dx>0 then
-  if collide_map(e,"➡️",0) then
+  if collides(e,"➡️",flag_hits)
+  then
    e.dx=0
   end
  end
@@ -377,6 +454,64 @@ end
 --mechanics
 
 --todo:doors,platforms,hazards
+
+--todo:will depend on level
+function init_platforms()
+ return {
+  init_platform(
+   72,8,24,8,8,11,true,
+   update_time
+  ),
+  init_platform(
+   72,32,104,8,8,3,false,
+   update_time
+  ),
+  init_platform(
+   72,112,104,8,8,2,true,
+   update_time
+  )
+ }
+end
+
+function init_platform(
+ sp,x,y,w,h,l,v,update_fn
+)
+ --[[
+ sp=platform sprite
+ x,y,l=platform start/length
+ pos=position [0,1]
+ v=true if path is vertical
+ ]]
+ return {
+  sp=sp,
+  x=x,
+  y=y,
+  w=w,
+  h=h,
+  pos=0,
+  l=l,
+  v=v,
+  update_fn=update_fn,
+ }
+end
+
+--updates pos based on time
+function update_time(p)
+ pos=sin(time()%0.5)+0.5
+end
+
+function update_platform(p)
+ p.update_fn(p)
+end
+
+function draw_platform(p)
+ spr(p.sp,
+  p.x+p.l*p.pos,
+  p.y+p.l*p.pos
+  ,1,1
+ )
+end
+ 
 -->8
 --fxs:player,bg,lights
 
@@ -624,16 +759,17 @@ near_star=class(bg_fx,{
 ---lights fxs---
 ----------------
 
-lights_mask=11
+lights_color_mask=11
 lights_loop=30
 lights_colors={8,10,9,1}
 lights_pos={}
 
-function init_lights(mx,my)
- map(mx,my)
+function init_lights()
  for y=0,127 do
   for x=0,127 do
-   if pget(x,y)==lights_mask then
+   if pget(x,y)==
+    lights_color_mask
+   then
     add(lights_pos,{x,y})
    end
   end
