@@ -60,7 +60,11 @@ function _draw()
 
  -- foreach(npcs,draw_npc)
  draw_player(p)
- rect(unpack(hitbox))
+ foreach(hitboxes, function(h)rect(unpack(h))end)
+ for i=1,#hitboxes do
+  deli(hitboxes,1)
+ end
+ hit_n=1
 
  if (debug) then
   color(1)
@@ -92,7 +96,8 @@ function contains(a,b)
  and b.y+b.h<=a.y+a.h
 end
 
-hitbox={}
+hitboxes={}
+hit_n=1
 function next_tick_intersects(
  o,flag
 )
@@ -103,7 +108,6 @@ function next_tick_intersects(
  -- r: Right
  -- b: Bottom
  -- t: Top
- -- t at the end: Tile
  local xl = o.dx+o.x
  local yt = o.dy+o.y
  local xr = o.dx+o.x+o.h
@@ -115,7 +119,8 @@ function next_tick_intersects(
  yb+=-1
  yt+=2
 
- hitbox={xl,yt,xr,yb,1} -- 1 is color for splaying in rect
+ add(hitboxes, {xl,yt,xr,yb,hit_n})
+  hit_n+=1
 
  local r = {}
 
@@ -226,14 +231,6 @@ function update_entity(e)
  local cols =
   next_tick_intersects(p, 0)
 
- if abs(e.dx)~=0
- and (
-  in_(cols,"⬅️")
-  or in_(cols,"➡️")
- )then
-  e.dx=0
- end
-
  --vertical map collisions
  if e.dy>0 and in_(cols,"⬇️") then
   e.dy=0
@@ -248,6 +245,14 @@ function update_entity(e)
 
  local cols =
   next_tick_intersects(p, 0)
+
+ if abs(e.dx)>0
+ and (
+  in_(cols,"⬅️")
+  or in_(cols,"➡️")
+ )then
+  e.dx=0
+ end
 
  --clamp acceleration
  e.dx=discmid(
