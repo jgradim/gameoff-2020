@@ -152,28 +152,28 @@ function hitbox(o, aim)
 
  if aim=="⬅️" then
   --check left
-  h.x-=1
-  h.w=0
+  h.x+=o.dx
+  h.w=o.dx
   --adjust for player sprite
   h.x+=2
-  h.y+=1
-  h.h-=2
+  h.y+=2
+  h.h-=3
  elseif aim=="➡️" then
   --check right
   h.x+=h.w-1
-  h.w=0
+  h.w=o.dx
   --adjust for player sprite
   h.x-=1
-  h.y+=1
-  h.h-=2
+  h.y+=2
+  h.h-=3
  elseif aim=="⬆️" then
   --check top
   h.y=o.y+o.dy
-  h.h=o.dy
+  h.h=1
   --adjust for player sprite
   h.y+=1
-  h.x+=1
-  h.w-=3
+  h.x+=2
+  h.w-=5
  elseif aim=="⬇️" then
   --check bottom
   h.y+=h.h-1
@@ -285,14 +285,14 @@ function update_entity(e)
  if e.dy>0 then
   if collides(e,"⬇️",flag_hits)
   then
-   e.y=((((e.y+e.dy)\8)-1)+1)*8
+   e.y=((e.y+e.dy)\8)*8
    e.dy=0
    e.glide=false
   end
  elseif e.dy<0 then
   if collides(e,"⬆️",flag_hits)
   then
-   e.y=((((e.y+e.dy)\8)-1)+1)*8-1
+   e.y=(((e.y+e.dy)\8)+1)*8-1
    e.dy=0
   end
  end
@@ -301,11 +301,13 @@ function update_entity(e)
  if e.dx<0 then
   if collides(e,"⬅️",flag_hits)
   then
+   e.x=(((e.x+e.dx)\8)+1)*8-2
    e.dx=0
   end
  elseif e.dx>0 then
   if collides(e,"➡️",flag_hits)
   then
+   e.x=((e.x+e.dx)\8)*8+2
    e.dx=0
   end
  end
