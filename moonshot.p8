@@ -86,6 +86,15 @@ function _draw()
 
  --characters
  foreach(npcs,draw_npc)
+
+ --[[
+ aims={"⬅️","➡️","⬆️","⬇️"}
+ for i=1,#aims do
+   local aim = aims[i]
+   local h = hitbox(p, aim)
+   rect(h.x,h.y,h.x+h.w,h.y+h.h,i)
+ end
+ --]]
  draw_player(p)
 
  --debug
@@ -133,6 +142,51 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
+function hitbox(o, aim)
+ local h={
+  x=o.x,
+  y=o.y,
+  w=o.w,
+  h=o.h,
+ }
+
+ if aim=="⬅️" then
+  --check left
+  h.x-=1
+  h.w=0
+  --adjust for player sprite
+  h.x+=2
+  h.y+=1
+  h.h-=2
+ elseif aim=="➡️" then
+  --check right
+  h.x+=h.w-1
+  h.w=0
+  --adjust for player sprite
+  h.x-=1
+  h.y+=1
+  h.h-=2
+ elseif aim=="⬆️" then
+  --check top
+  h.y=o.y+o.dy
+  h.h=o.dy
+  --adjust for player sprite
+  h.y+=1
+  h.x+=1
+  h.w-=3
+ elseif aim=="⬇️" then
+  --check bottom
+  h.y+=h.h-1
+  h.h=o.dy
+  --adjust for player sprite
+  h.y+=1
+  h.x+=2
+  h.w-=5
+ end
+
+  return h
+end
+
 --check obj collisions
 function collides(obj,aim,flag)
  --[[
@@ -143,51 +197,9 @@ function collides(obj,aim,flag)
   1-bumps into (eg: wall)
  ]]
 
- local hitbox={
-  x=obj.x,
-  y=obj.y,
-  w=obj.w,
-  h=obj.h,
- }
-
- if aim=="⬅️" then
-  --check left
-  hitbox.x-=1
-  hitbox.w=1
-  --adjust for player sprite
-  hitbox.x+=1
-  hitbox.y+=1
-  hitbox.h-=2
- elseif aim=="➡️" then
-  --check right
-  hitbox.x+=hitbox.w-1
-  hitbox.w=1
-  --adjust for player sprite
-  hitbox.x-=1
-  hitbox.y+=1
-  hitbox.h-=2
- elseif aim=="⬆️" then
-  --check top
-  hitbox.y+=obj.dy
-  hitbox.h=1
-  --adjust for player sprite
-  hitbox.y+=1
-  hitbox.x+=1
-  hitbox.w-=2
- elseif aim=="⬇️" then
-  --check bottom
-  hitbox.y+=hitbox.h-1
-  hitbox.h=1
-  --adjust for player sprite
-  hitbox.y+=1
-  hitbox.x+=1
-  hitbox.w-=2
- end
-
- return collides_map(
-  hitbox,flag)
- or collides_platforms(
-  hitbox,flag)
+ local h = hitbox(obj,aim)
+ return collides_map(h,flag)
+ or collides_platforms(h,flag)
 end
 
 function collides_map(
@@ -273,13 +285,14 @@ function update_entity(e)
  if e.dy>0 then
   if collides(e,"⬇️",flag_hits)
   then
+   e.y=((((e.y+e.dy)\8)-1)+1)*8
    e.dy=0
    e.glide=false
-   e.y-=((e.y+e.h+1)%8)-1
   end
  elseif e.dy<0 then
   if collides(e,"⬆️",flag_hits)
   then
+   e.y=((((e.y+e.dy)\8)-1)+1)*8-1
    e.dy=0
   end
  end
