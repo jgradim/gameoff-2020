@@ -146,42 +146,31 @@ function hitbox(o, aim)
  local h={
   x=o.x,
   y=o.y,
-  w=o.w,
-  h=o.h,
+  w=3, -- Waist offset
+  h=5, -- Abdomen + shorted helmet offset
  }
 
  if aim=="⬅️" then
-  --check left
-  h.x+=o.dx
   h.w=o.dx
-  --adjust for player sprite
-  h.x+=2
-  h.y+=2
-  h.h-=3
+  h.y+=1 -- Remove top of helmet
+  h.x+=1 -- Remove empty column
  elseif aim=="➡️" then
-  --check right
-  h.x+=h.w-1
   h.w=o.dx
-  --adjust for player sprite
-  h.x-=1
-  h.y+=2
-  h.h-=3
+  h.y+=1 -- Remove top of helmet
+  h.x+=1 -- Remove empty column
+
+  h.x+=4 -- Remove waist size
+  h.x+=1 -- Remove left arm
  elseif aim=="⬆️" then
-  --check top
-  h.y=o.y+o.dy
-  h.h=1
-  --adjust for player sprite
-  h.y+=1
-  h.x+=2
-  h.w-=5
+  -- Notice no h.h=o.dy
+  h.x+=2 -- Remove left empty column and arm
+
+  h.h=0  -- No offset, just one line
  elseif aim=="⬇️" then
-  --check bottom
-  h.y+=h.h-1
   h.h=o.dy
-  --adjust for player sprite
-  h.y+=1
-  h.x+=2
-  h.w-=5
+  h.x+=2 -- Remove left empty column and arm
+
+  h.y+=o.h -- Just below the sprite
  end
 
   return h
