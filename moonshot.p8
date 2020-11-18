@@ -458,58 +458,68 @@ end
 --todo:will depend on level
 function init_platforms()
  return {
+  --cel 1,3 <-> 1,13
   init_platform(
-   72,8,24,8,8,11,true,
-   update_time
+   72,8,8,11,true,
+   update_path_fn(
+    8,24,8,104
+   )
   ),
+  --cel 5,13 <-> 6,13
   init_platform(
-   72,32,104,8,8,3,false,
-   update_time
+   72,8,8,3,false,
+   update_path_fn(
+    40,104,48,104
+   )
   ),
+  --cel 14,15 <-> 14,13
   init_platform(
-   72,112,104,8,8,2,true,
-   update_time
+   72,8,8,2,true,
+   update_path_fn(
+    112,120,112,104
+   )
   )
  }
 end
 
 function init_platform(
- sp,x,y,w,h,l,v,update_fn
+ sp,w,h,l,v,update_fn
 )
  --[[
  sp=platform sprite
- x,y,l=platform start/length
+ x,y,w,h=platform pos/size
  pos=position [0,1]
  v=true if path is vertical
  ]]
  return {
   sp=sp,
-  x=x,
-  y=y,
+  x=0,
+  y=0,
   w=w,
   h=h,
-  pos=0,
-  l=l,
-  v=v,
   update_fn=update_fn,
  }
 end
 
---updates pos based on time
-function update_time(p)
- pos=sin(time()%0.5)+0.5
+function update_path_fn(
+ x,y,to_x,to_y
+)
+ local dx,dy=to_x-x,to_y-y
+ return function(plat)
+  local f=ef_smooth(
+   abs(time()%6-3)/3
+  )
+  plat.x=x+dx*f+0.5
+  plat.y=y+dy*f+0.5
+ end
 end
 
 function update_platform(p)
- p.update_fn(p)
+ p:update_fn()
 end
 
 function draw_platform(p)
- spr(p.sp,
-  p.x+p.l*p.pos,
-  p.y+p.l*p.pos
-  ,1,1
- )
+ spr(p.sp,p.x,p.y,1,1)
 end
  
 -->8
