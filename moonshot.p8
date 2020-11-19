@@ -40,8 +40,20 @@ function _init()
  init_lights()
 end
 
+free_exec = true
+exec_credits = 0
 fps=30
+t=0
 function _update()
+ if btnp(🅾️) then free_exec= not free_exec end
+ if btnp(❎) then exec_credits+=1 end
+ if not free_exec then
+  if exec_credits <0 then
+   return
+  end
+  exec_credits -= 1
+ end
+ t+=1/fps
  --input
  player_btns={"⬅️","➡️","⬆️"}
  for i=1,#player_btns do
@@ -50,6 +62,7 @@ function _update()
    if (fn) fn(p,btnp(i-1))
   end
  end
+ --[[
  if btnp(🅾️) then
   if path.found then
    path:apply()
@@ -57,6 +70,7 @@ function _update()
    path:find(npcs[2],npcs[2],p)
   end
  end
+ --]]
 
  --characters
  update_player(p)
@@ -390,7 +404,7 @@ function update_player(p)
  if p.state=="idle" then
   p.sp=1
  elseif p.state=="run" then
-  p.sp=2+(t()*10)%3
+  p.sp=2+(t*10)%3
  elseif p.state=="jump" then
   p.sp=3
  elseif p.state=="glide" then
@@ -522,7 +536,7 @@ function update_path_fn(
  local dx,dy=to_x-x,to_y-y
  return function(plat)
   local f=ef_smooth(
-   abs(time()%6-3)/3
+   abs(t%6-3)/3
   )
   plat.x=x+dx*f+0.5
   plat.y=y+dy*f+0.5
@@ -808,7 +822,7 @@ function draw_lights()
   local x=pos[1]
   local y=pos[2]
   local c=
-   abs(cos(t()/i))*#lights_colors\1
+   abs(cos(t/i))*#lights_colors\1
 
   pset(x,y,lights_colors[c+1])
   i=i>lights_loop and 0 or i+3
