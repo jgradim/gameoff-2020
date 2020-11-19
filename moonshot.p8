@@ -26,6 +26,9 @@ sp_player_idle=1
 sp_player_run_start=2
 sp_player_run_length=3
 sp_player_jump=3
+sp_door_opened=87
+sp_door_closed=84
+
 ----------
 ---loop---
 ----------
@@ -39,6 +42,7 @@ function _init()
  --some inits need the map
  map(0,0)
  plts=init_platforms()
+ drs=init_doors()
  init_bg_fxs()
  init_fxs()
  init_lights()
@@ -69,6 +73,7 @@ function _update()
 
  --mechanics
  foreach(plts,update_platform)
+ foreach(drs,update_door)
 
  --fxs
  fire_fxs()
@@ -87,6 +92,7 @@ function _draw()
 
  --mechanics
  foreach(plts,draw_platform)
+ foreach(drs,draw_door)
 
  --characters
  foreach(npcs,draw_npc)
@@ -551,6 +557,51 @@ end
 ---doors---
 -----------
 
+--todo:will depend on level
+function init_doors()
+ return {
+  --cel 12,12
+  init_door(96,96,true)
+ }
+end
+
+function init_door(x,y,open)
+ local sp
+ if open then
+  sp=sp_door_opened
+ else
+  sp=sp_door_closed
+ end
+ return {
+  sp=sp,
+  x=x,
+  y=y,
+  open=open
+ }
+end
+
+function update_door(d)
+ if t()%3==0 then
+  d.open=not d.open
+ end
+
+ local dsp=0
+ if d.open
+ and d.sp!=sp_door_opened
+ then
+  dsp=1
+ end
+ if not d.open
+ and d.sp!=sp_door_closed
+ then
+  dsp=-1
+ end
+ d.sp+=dsp
+end
+
+function draw_door(d)
+ spr(d.sp,d.x,d.y,1,1)
+end
 -->8
 --fxs:player,bg,lights
 
