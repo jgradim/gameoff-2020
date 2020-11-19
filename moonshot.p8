@@ -61,7 +61,7 @@ function _update()
  --characters
  update_player(p)
  path:update()
- foreach(npcs,update_npc)
+ --foreach(npcs,update_npc)
 
  --mechanics
  foreach(plts,update_platform)
@@ -87,7 +87,8 @@ function _draw()
  --characters
  foreach(npcs,draw_npc)
 
- --[[
+ draw_player(p)
+ ---[[
  aims={"⬅️","➡️","⬆️","⬇️"}
  for i=1,#aims do
    local aim = aims[i]
@@ -95,9 +96,9 @@ function _draw()
    rect(h.x,h.y,h.x+h.w,h.y+h.h,i)
  end
  --]]
- draw_player(p)
 
  --debug
+ color(15)
  if (debug) print(debug)
 end
 
@@ -132,9 +133,9 @@ function intersetcs(a,b)
  b={x,y,w,h}
  ]]
  return a.x<b.x+b.w
+ and b.x<a.x+a.w
  and a.y<b.y+b.h
- and a.x+a.w>b.x
- and a.y+a.h>b.y
+ and b.y<a.y+a.h
 end
 
 --ease function for f=[0,1]
@@ -154,23 +155,23 @@ function hitbox(o, aim)
   h.w=o.dx
   h.y+=1 -- Remove top of helmet
   h.x+=1 -- Remove empty column
+  h.x+=1 -- Remove left arm
  elseif aim=="➡️" then
   h.w=o.dx
   h.y+=1 -- Remove top of helmet
   h.x+=1 -- Remove empty column
 
   h.x+=4 -- Remove waist size
-  h.x+=1 -- Remove left arm
  elseif aim=="⬆️" then
-  -- Notice no h.h=o.dy
-  h.x+=2 -- Remove left empty column and arm
-
-  h.h=0  -- No offset, just one line
- elseif aim=="⬇️" then
   h.h=o.dy
   h.x+=2 -- Remove left empty column and arm
 
-  h.y+=o.h -- Just below the sprite
+  h.y+=1
+ elseif aim=="⬇️" then
+  h.h=o.dy+1
+  h.x+=2 -- Remove left empty column and arm
+
+  h.y+=o.h-1 -- Just below the sprite
  end
 
   return h
@@ -245,7 +246,7 @@ function init_entity(
  w,h,max_dx,max_dy
 )
  return {
-  x=0,
+  x=16,
   y=0,
   w=w,
   h=h,
@@ -270,8 +271,8 @@ function update_entity(e)
  e.dy+=gravity
  e.dx*=inertia
 
- --vertical map collisions
- if e.dy>0 then
+  debug=""
+
   if collides(e,"⬇️",flag_hits)
   then
    // e.y+e.dy: Understand where
@@ -283,32 +284,33 @@ function update_entity(e)
    // they're now side by side.
    // *8: Go back from tiles to
    // pixels.
+   debug="down"
    e.y=((e.y+e.dy)\8)*8
    e.dy=0
    e.glide=false
+   e._j=0
   end
- elseif e.dy<0 then
+
   if collides(e,"⬆️",flag_hits)
   then
+   debug="up"
    e.y=(((e.y+e.dy)\8)+1)*8-1
    e.dy=0
   end
- end
 
- --horizontal map collisions
- if e.dx<0 then
   if collides(e,"⬅️",flag_hits)
   then
+   debug="left"
    e.x=(((e.x+e.dx)\8)+1)*8-2
    e.dx=0
   end
- elseif e.dx>0 then
+
   if collides(e,"➡️",flag_hits)
   then
+   debug="right"
    e.x=((e.x+e.dx)\8)*8+2
    e.dx=0
   end
- end
 
  --apply acceleration
  e.x+=e.dx
