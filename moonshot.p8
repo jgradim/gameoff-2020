@@ -466,29 +466,33 @@ end
 -->8
 --mechanics
 
---todo:doors,platforms,hazards
+--todo:hazards
+
+---------------
+---platforms---
+---------------
 
 --todo:will depend on level
 function init_platforms()
  return {
   --cel 1,3 <-> 1,13
   init_platform(
-   72,8,8,11,true,
-   update_path_fn(
+   72,8,24,8,8,
+   linear_delta_fn(
     8,24,8,104
    )
   ),
   --cel 5,13 <-> 6,13
   init_platform(
-   72,8,8,3,false,
-   update_path_fn(
+   72,40,104,8,8,
+   linear_delta_fn(
     40,104,48,104
    )
   ),
   --cel 14,15 <-> 14,13
   init_platform(
-   72,8,8,2,true,
-   update_path_fn(
+   72,112,120,8,8,
+   linear_delta_fn(
     112,120,112,104
    )
   )
@@ -496,25 +500,26 @@ function init_platforms()
 end
 
 function init_platform(
- sp,w,h,l,v,update_fn
+ sp,x,y,w,h,delta_fn
 )
  --[[
  sp=platform sprite
  x,y,w,h=platform pos/size
- pos=position [0,1]
- v=true if path is vertical
+ delta_fn=fn that updates dx/dy
  ]]
  return {
   sp=sp,
-  x=0,
-  y=0,
+  x=x,
+  y=y,
   w=w,
   h=h,
-  update_fn=update_fn,
+  dx=0,
+  dy=0,
+  delta_fn=delta_fn,
  }
 end
 
-function update_path_fn(
+function linear_delta_fn(
  x,y,to_x,to_y
 )
  local dx,dy=to_x-x,to_y-y
@@ -522,18 +527,24 @@ function update_path_fn(
   local f=ef_smooth(
    abs(time()%6-3)/3
   )
-  plat.x=x+dx*f+0.5
-  plat.y=y+dy*f+0.5
+  plat.dx=x+dx*f+0.5-plat.x
+  plat.dy=y+dy*f+0.5-plat.y
  end
 end
 
 function update_platform(p)
- p:update_fn()
+ if (p.delta_fn) p:delta_fn()
+ p.x+=p.dx
+ p.y+=p.dy
 end
 
 function draw_platform(p)
  spr(p.sp,p.x,p.y,1,1)
 end
+
+-----------
+---doors---
+-----------
 
 -->8
 --fxs:player,bg,lights
