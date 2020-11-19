@@ -581,10 +581,6 @@ function init_door(x,y,open)
 end
 
 function update_door(d)
- if t()%3==0 then
-  d.open=not d.open
- end
-
  local dsp=0
  if d.open
  and d.sp!=sp_door_opened
