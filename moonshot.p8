@@ -22,6 +22,10 @@ flag_hits=0
 --on but otherwise move through
 flag_stands=1
 
+sp_player_idle=1
+sp_player_run_start=2
+sp_player_run_length=3
+sp_player_jump=3
 ----------
 ---loop---
 ----------
@@ -335,7 +339,7 @@ jump_accel=2.8
 function init_player()
  return class(
   init_entity(8,8,2,3),{
-   sp=1,
+   sp=sp_player_idle,
    flp=false,
 
    --{idle,run,jump,glide,fall}
@@ -386,15 +390,16 @@ function update_player(p)
 
  --sprite
  if p.state=="idle" then
-  p.sp=1
+  p.sp=sp_player_idle
  elseif p.state=="run" then
-  p.sp=2+(t()*10)%3
+  p.sp=sp_player_run_start+
+   (t()*10)%sp_player_run_length
  elseif p.state=="jump" then
-  p.sp=3
+  p.sp=sp_player_jump
  elseif p.state=="glide" then
-  p.sp=1
+  p.sp=sp_player_idle
  elseif p.state=="fall" then
-  p.sp=1
+  p.sp=sp_player_idle
  end
 end
 
