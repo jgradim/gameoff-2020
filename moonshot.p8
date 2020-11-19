@@ -15,19 +15,28 @@ gravity=0.2
 --movement multiplier per cycle
 inertia=0.75
 
+-------------
+---sprites---
+--------------
+
+sp_player_idle=1
+sp_player_run_start=2
+sp_player_run_length=3
+sp_player_jump=3
+sp_platform=72
+sp_door_opened=87
+sp_door_closed=84
+
+------------------
+---sprite flags---
+------------------
+
 --obstacles that are rigid and
 --apply in all directions
 flag_hits=0
 --obstacles the player can stand
 --on but otherwise move through
 flag_stands=1
-
-sp_player_idle=1
-sp_player_run_start=2
-sp_player_run_length=3
-sp_player_jump=3
-sp_door_opened=87
-sp_door_closed=84
 
 ----------
 ---loop---
@@ -491,21 +500,21 @@ function init_platforms()
  return {
   --cel 1,3 <-> 1,13
   init_platform(
-   72,8,24,8,8,
+   8,24,8,8,
    linear_delta_fn(
     8,24,8,104
    )
   ),
   --cel 5,13 <-> 6,13
   init_platform(
-   72,40,104,8,8,
+   40,104,8,8,
    linear_delta_fn(
     40,104,48,104
    )
   ),
   --cel 14,15 <-> 14,13
   init_platform(
-   72,112,120,8,8,
+   112,120,8,8,
    linear_delta_fn(
     112,120,112,104
    )
@@ -514,7 +523,7 @@ function init_platforms()
 end
 
 function init_platform(
- sp,x,y,w,h,delta_fn
+ x,y,w,h,delta_fn
 )
  --[[
  sp=platform sprite
