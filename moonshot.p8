@@ -175,7 +175,7 @@ function _draw()
  aims={"⬅️","➡️","⬆️","⬇️"}
  for i=1,#aims do
    local aim = aims[i]
-   local h = hitbox(p, aim)
+   local h = hitbox(player,aim)
    rect(h.x,h.y,h.x+h.w,h.y+h.h,i)
  end
  --]]
