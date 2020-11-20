@@ -96,6 +96,9 @@ end
 ----------
 
 function _init()
+ --btnp never repeats
+ poke(0x5f5c, 255)
+
  --mechanics
  map(0,0)
  mcns=init_mechanics()
