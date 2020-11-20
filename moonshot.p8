@@ -401,11 +401,11 @@ function update_entity(e)
  --clamp acceleration
  e.dx=discmid(
   -e.max_dx,e.max_dx,
-  e.dx,0x0.01
+  e.dx,0x0.1
  )
  e.dy=discmid(
   -e.max_dy,e.max_dy,
-  e.dy,0x0.01
+  e.dy,0x0.1
  )
 end
 
