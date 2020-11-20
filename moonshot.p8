@@ -96,7 +96,7 @@ end
 ----------
 
 function _init()
- p=init_player()
+ player=init_player()
  npcs={
   init_npc(jump,{1,0,12,5,8,9}),
   init_npc(glide,{8,11,10,15,12,13}),
@@ -115,20 +115,24 @@ function _update()
  player_btns={"⬅️","➡️","⬆️"}
  for i=1,#player_btns do
   if btn(i-1) then
-   fn=p[player_btns[i]]
-   if (fn) fn(p,btnp(i-1))
+   fn=player[player_btns[i]]
+   if (fn) fn(player,btnp(i-1))
   end
  end
  if btnp(🅾️) then
   if path.found then
    path:apply()
   else
-   path:find(npcs[2],npcs[2],p)
+   path:find(
+    npcs[2],
+    npcs[2],
+    player
+   )
   end
  end
 
  --characters
- update_player(p)
+ update_player(player)
  path:update()
  foreach(npcs,update_npc)
 
@@ -168,7 +172,7 @@ function _draw()
    rect(h.x,h.y,h.x+h.w,h.y+h.h,i)
  end
  --]]
- draw_player(p)
+ draw_player(player)
 
  --debug
  if (debug) print(debug)
