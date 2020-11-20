@@ -67,14 +67,14 @@ function init_mechanics()
    112,120,112,104
   )
  )
- 
+
  --doors
  --x,y,open
  local door1=init_door(
   --cel 12,12
   96,96,true
  )
- 
+
  --buttons
  --x,y,on
  local button1=init_button(
@@ -82,7 +82,7 @@ function init_mechanics()
   96,112,false,
   door_toggle_fn(door1)
  )
- 
+
  --return list of mechanics
  return {
   plt1,plt2,plt3,
@@ -102,14 +102,14 @@ function _init()
  --mechanics
  map(0,0)
  mcns=init_mechanics()
- 
+
  --characters
  player=init_player()
  npcs={
   init_npc(jump,{1,0,12,5,8,9}),
   init_npc(glide,{8,11,10,15,12,13}),
  }
- 
+
  --sfx
  init_bg_fxs()
  init_fxs()
@@ -142,7 +142,7 @@ function _update()
  foreach(mcns,function(m)
   m:update()
  end)
- 
+
  --characters
  update_player(player)
  path:update()
@@ -475,7 +475,7 @@ function update_player(p)
  elseif p.state=="run" then
   p.sp=sp_player_run_start+
    (t()*10)%sp_player_run_length
-  play_sfx("walk") 
+  play_sfx("walk")
  elseif p.state=="jump" then
   p.sp=sp_player_jump
  elseif p.state=="glide" then
@@ -574,13 +574,13 @@ function init_platform(
   dx=0,
   dy=0,
   delta_fn=delta_fn,
-  
+
   update=function(p)
    if (p.delta_fn) p:delta_fn()
    p.x+=p.dx
    p.y+=p.dy
   end,
-  
+
   draw=function(p)
    spr(p.sp,p.x,p.y,1,1)
   end,
@@ -616,7 +616,7 @@ function init_door(x,y,open)
   x=x,
   y=y,
   open=open,
-  
+
   update=function(d)
    local dsp=0
    if d.open
@@ -631,7 +631,7 @@ function init_door(x,y,open)
    end
    d.sp+=dsp
   end,
-  
+
   draw=function(d)
    spr(d.sp,d.x,d.y,1,1)
   end,
@@ -657,7 +657,7 @@ function init_button(
   y=y,
   on=on,
   toggle_fn=toggle_fn,
-  
+
   update=function(b)
    if on
    and sp!=sp_button_on
@@ -672,7 +672,7 @@ function init_button(
     toggle_fn(on)
    end
   end,
-  
+
   draw=function(b)
    spr(b.sp,b.x,b.y,1,1)
   end,
@@ -1284,9 +1284,9 @@ sfx_map={
 
 function play_sfx(_sfx)
  local idx=sfx_map[_sfx].i
- 
+
  if (stat(19)==idx) then return end
- 
+
  sfx(
   idx,
   -- possibly bad idea, no way to
