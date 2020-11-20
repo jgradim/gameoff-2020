@@ -96,14 +96,18 @@ end
 ----------
 
 function _init()
+ --mechanics
+ map(0,0)
+ mcns=init_mechanics()
+ 
+ --characters
  player=init_player()
  npcs={
   init_npc(jump,{1,0,12,5,8,9}),
   init_npc(glide,{8,11,10,15,12,13}),
  }
- --some inits need the map
- map(0,0)
- mcns=init_mechanics()
+ 
+ --sfx
  init_bg_fxs()
  init_fxs()
  init_lights()
@@ -131,15 +135,15 @@ function _update()
   end
  end
 
- --characters
- update_player(player)
- path:update()
- foreach(npcs,update_npc)
-
  --mechanics
  foreach(mcns,function(m)
   m:update()
  end)
+ 
+ --characters
+ update_player(player)
+ path:update()
+ foreach(npcs,update_npc)
 
  --fxs
  fire_fxs()
