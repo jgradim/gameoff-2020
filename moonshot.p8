@@ -801,7 +801,9 @@ rocket=class(base_fx,{
   f.r+=f.dr
   f.c=f:curr_color()
 
-  if flag_on(f.x,f.y,0) then
+  if flag_on_xy(
+   f.x,f.y,flag_hits
+  ) then
    f.r=0
    f.dx=0
    f.dy=0
