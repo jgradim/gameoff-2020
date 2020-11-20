@@ -40,6 +40,57 @@ flag_hits=0
 --on but otherwise move through
 flag_stands=1
 
+--------------------------
+---dynamic map elements---
+--------------------------
+function init_mechanics()
+ --platforms
+ --x,y,w,h,delta_fn
+ local plt1=init_platform(
+  --cel 1,3 <-> 1,13
+  8,24,8,8,
+  linear_delta_fn(
+   8,24,8,104
+  )
+ )
+ local plt2=init_platform(
+  --cel 5,13 <-> 6,13
+  40,104,8,8,
+  linear_delta_fn(
+   40,104,48,104
+  )
+ )
+ local plt3=init_platform(
+  --cel 14,15 <-> 14,13
+  112,120,8,8,
+  linear_delta_fn(
+   112,120,112,104
+  )
+ )
+ 
+ --doors
+ --x,y,open
+ local door1=init_door(
+  --cel 12,12
+  96,96,true
+ )
+ 
+ --buttons
+ --x,y,on
+ local button1=init_button(
+  --cel 12,14
+  96,112,false,
+  door_toggle_fn(door1)
+ )
+ 
+ --return list of mechanics
+ return {
+  plt1,plt2,plt3,
+  door1,
+  button1,
+ }
+end
+
 ----------
 ---loop---
 ----------
@@ -52,8 +103,7 @@ function _init()
  }
  --some inits need the map
  map(0,0)
- plts=init_platforms()
- drs=init_doors()
+ mcns=init_mechanics()
  init_bg_fxs()
  init_fxs()
  init_lights()
@@ -83,8 +133,9 @@ function _update()
  foreach(npcs,update_npc)
 
  --mechanics
- foreach(plts,update_platform)
- foreach(drs,update_door)
+ foreach(mcns,function(m)
+  m:update()
+ end)
 
  --fxs
  fire_fxs()
@@ -102,8 +153,9 @@ function _draw()
  draw_fxs()
 
  --mechanics
- foreach(plts,draw_platform)
- foreach(drs,draw_door)
+ foreach(mcns,function(m)
+  m:draw()
+ end)
 
  --characters
  foreach(npcs,draw_npc)
@@ -489,40 +541,11 @@ function draw_npc(n)
 end
 
 -->8
---mechanics
-
---todo:hazards
+--mechanics:platforms,doors,etc
 
 ---------------
 ---platforms---
 ---------------
-
---todo:will depend on level
-function init_platforms()
- return {
-  --cel 1,3 <-> 1,13
-  init_platform(
-   8,24,8,8,
-   linear_delta_fn(
-    8,24,8,104
-   )
-  ),
-  --cel 5,13 <-> 6,13
-  init_platform(
-   40,104,8,8,
-   linear_delta_fn(
-    40,104,48,104
-   )
-  ),
-  --cel 14,15 <-> 14,13
-  init_platform(
-   112,120,8,8,
-   linear_delta_fn(
-    112,120,112,104
-   )
-  )
- }
-end
 
 function init_platform(
  x,y,w,h,delta_fn
@@ -540,6 +563,16 @@ function init_platform(
   dx=0,
   dy=0,
   delta_fn=delta_fn,
+  
+  update=function(p)
+   if (p.delta_fn) p:delta_fn()
+   p.x+=p.dx
+   p.y+=p.dy
+  end,
+  
+  draw=function(p)
+   spr(p.sp,p.x,p.y,1,1)
+  end,
  }
 end
 
@@ -556,27 +589,9 @@ function linear_delta_fn(
  end
 end
 
-function update_platform(p)
- if (p.delta_fn) p:delta_fn()
- p.x+=p.dx
- p.y+=p.dy
-end
-
-function draw_platform(p)
- spr(p.sp,p.x,p.y,1,1)
-end
-
 -----------
 ---doors---
 -----------
-
---todo:will depend on level
-function init_doors()
- return {
-  --cel 12,12
-  init_door(96,96,true)
- }
-end
 
 function init_door(x,y,open)
  local sp
@@ -589,38 +604,32 @@ function init_door(x,y,open)
   sp=sp,
   x=x,
   y=y,
-  open=open
+  open=open,
+  
+  update=function(d)
+   local dsp=0
+   if d.open
+   and d.sp!=sp_door_opened
+   then
+    dsp=1
+   end
+   if not d.open
+   and d.sp!=sp_door_closed
+   then
+    dsp=-1
+   end
+   d.sp+=dsp
+  end,
+  
+  draw=function(d)
+   spr(d.sp,d.x,d.y,1,1)
+  end,
  }
-end
-
-function update_door(d)
- local dsp=0
- if d.open
- and d.sp!=sp_door_opened
- then
-  dsp=1
- end
- if not d.open
- and d.sp!=sp_door_closed
- then
-  dsp=-1
- end
- d.sp+=dsp
-end
-
-function draw_door(d)
- spr(d.sp,d.x,d.y,1,1)
 end
 
 -------------
 ---buttons---
 -------------
-
-function init_buttons()
- return {
-  --cel 12,14
-  init_button(96,112,false)
-end
 
 function init_button(
  x,y,on,toggle_fn
@@ -632,23 +641,37 @@ function init_button(
   sp=sp_button_off
  end
  return {
+  sp=sp,
   x=x,
   y=y,
   on=on,
-  toggle_fn=toggle_fn
+  toggle_fn=toggle_fn,
+  
+  update=function(b)
+   if on
+   and sp!=sp_button_on
+   then
+    sp=sp_button_on
+    toggle_fn(on)
+   end
+   if not on
+   and sp!=sp_button_off
+   then
+    sp=sp_button_off
+    toggle_fn(on)
+   end
+  end,
+  
+  draw=function(b)
+   spr(b.sp,b.x,b.y,1,1)
+  end,
  }
 end
 
-function update_button(b)
- if on then
-  sp=sp_button_on
- else
-  sp=sp_button_off
+function door_toggle_fn(d)
+ return function(on)
+  d.open=on
  end
-end
-
-function draw_button(b)
- spr(b.sp,b.x,b.y,1,1)
 end
 
 -->8
