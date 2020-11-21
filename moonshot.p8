@@ -110,6 +110,7 @@ function _init()
   init_npc(jump,{1,0,12,5,8,9}),
   init_npc(glide,{8,11,10,15,12,13}),
  }
+ playerlikes={player,unpack(npcs)}
 
  --sfx
  init_bg_fxs()
@@ -663,7 +664,10 @@ function init_button(
   toggle_fn=toggle_fn,
 
   update=function(b)
-   local is_coll = intersects(player,b)
+   local is_coll = false
+   for i=1,#playerlikes do
+     is_coll = is_coll or intersects(playerlikes[i],b)
+   end
    if is_coll and not b.was_colliding then
     on = not on
    end
