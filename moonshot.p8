@@ -176,9 +176,11 @@ function _draw()
  --[[
  aims={"⬅️","➡️","⬆️","⬇️"}
  for i=1,#aims do
-   local aim = aims[i]
-   local h = hitbox(player,aim)
-   rect(h.x,h.y,h.x+h.w,h.y+h.h,i)
+   local aim=aims[i]
+   local h=hitbox(player,aim)
+   rect(
+    h.x,h.y,h.x+h.w,h.y+h.h,i
+   )
  end
  --]]
  draw_player(player)
@@ -232,31 +234,43 @@ function hitbox(o, aim)
  local h={
   x=o.x,
   y=o.y,
-  w=3, -- Waist offset
-  h=5, -- Abdomen + shorted helmet offset
+  --waist offset
+  w=3,
+  --abdomen+shorted helmet offset
+  h=5,
  }
 
  if aim=="⬅️" then
   h.w=o.dx
-  h.y+=1 -- Remove top of helmet
-  h.x+=1 -- Remove empty column
+  --remove top of helmet
+  h.y+=1
+  --remove empty column
+  h.x+=1
  elseif aim=="➡️" then
   h.w=o.dx
-  h.y+=1 -- Remove top of helmet
-  h.x+=1 -- Remove empty column
+  --remove top of helmet
+  h.y+=1
+  --remove left padding
+  h.x+=1
 
-  h.x+=4 -- Remove waist size
-  h.x+=1 -- Remove left arm
+  --remove waist size
+  h.x+=4
+  --remove left arm
+  h.x+=1
  elseif aim=="⬆️" then
-  -- Notice no h.h=o.dy
-  h.x+=2 -- Remove left empty column and arm
+  --notice no h.h=o.dy
+  --remove left padding and arm
+  h.x+=2
 
-  h.h=0  -- No offset, just one line
+  --no offset, just one line
+  h.h=0
  elseif aim=="⬇️" then
   h.h=o.dy
-  h.x+=2 -- Remove left empty column and arm
+  --remove left padding and arm
+  h.x+=2
 
-  h.y+=o.h -- Just below the sprite
+  --just below the sprite
+  h.y+=o.h
  end
 
   return h
@@ -272,7 +286,7 @@ function collides(obj,aim,flag)
   1-bumps into (eg: wall)
  ]]
 
- local h = hitbox(obj,aim)
+ local h=hitbox(obj,aim)
  return collides_map(h,flag)
  or collides_platforms(h,flag)
 end
@@ -284,10 +298,12 @@ function collides_map(
  local x2=hitbox.x+hitbox.w
  local y1=hitbox.y
  local y2=hitbox.y+hitbox.h
- return flag_on_xy(x1,y1,flag)
+ if flag_on_xy(x1,y1,flag)
  or flag_on_xy(x1,y2,flag)
  or flag_on_xy(x2,y1,flag)
  or flag_on_xy(x2,y2,flag)
+  return 1
+ end
 end
 
 function collides_platforms(
@@ -308,13 +324,14 @@ end
 --[[
 --to use, prepend "-" above
 function tostring(any)
- if type(any)~="table" then
+ if type(any)!="table" then
   return tostr(any)
  end
- local str = "{"
+ local str="{"
  for k,v in pairs(any) do
-  if (str~="{") str=str..","
-  str..=tostring(k).."="..tostring(v)
+  if (str!="{") str=str..","
+  str..=
+   tostring(k).."="..tostring(v)
  end
  return str.."}"
 end
@@ -360,15 +377,15 @@ function update_entity(e)
  if e.dy>0 then
   if collides(e,"⬇️",flag_hits)
   then
-   // e.y+e.dy: Understand where
-   // the player would have been
-   // at overlap.
-   // \8: Identify the tile,
-   // cutting it to the left.
-   // This would make it so that
-   // they're now side by side.
-   // *8: Go back from tiles to
-   // pixels.
+   --e.y+e.dy: understand where
+   --the player would have been
+   --at overlap.
+   --\8: identify the tile,
+   --cutting it to the left.
+   --this would make it so that
+   --they're now side by side.
+   --*8: go back from tiles to
+   --pixels.
    e.y=((e.y+e.dy)\8)*8
    e.dy=0
    e.glide=false
