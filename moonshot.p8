@@ -118,6 +118,8 @@ function _init()
  init_lights()
 end
 
+function update(o) return o:update() end
+
 fps=30
 function _update()
  --input
@@ -141,9 +143,7 @@ function _update()
  end
 
  --mechanics
- foreach(mcns,function(m)
-  m:update()
- end)
+ foreach(mcns,update)
 
  --characters
  update_player(player)
