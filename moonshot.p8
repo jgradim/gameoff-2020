@@ -656,20 +656,29 @@ function init_button(
   sp=sp,
   x=x,
   y=y,
+  w=8,
+  h=8,
   on=on,
+  was_colliding=false,
   toggle_fn=toggle_fn,
 
   update=function(b)
+   local is_coll = intersects(player,b)
+   if is_coll and not b.was_colliding then
+    on = not on
+   end
+   b.was_colliding = is_coll
+
    if on
-   and sp!=sp_button_on
+   and b.sp!=sp_button_on
    then
-    sp=sp_button_on
+    b.sp=sp_button_on
     toggle_fn(on)
    end
    if not on
-   and sp!=sp_button_off
+   and b.sp!=sp_button_off
    then
-    sp=sp_button_off
+    b.sp=sp_button_off
     toggle_fn(on)
    end
   end,
