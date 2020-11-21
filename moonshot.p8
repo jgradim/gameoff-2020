@@ -211,7 +211,7 @@ function contains(a,b)
 end
 
 --check if a intersects b
-function intersetcs(a,b)
+function intersects(a,b)
  --[[
  a={x,y,w,h}
  b={x,y,w,h}
@@ -293,7 +293,7 @@ function collides_platforms(
  hitbox,flag
 )
  for plt in all(plts) do
-  if intersetcs(plt,hitbox)
+  if intersects(plt,hitbox)
   and fget(plt.sp,flag) then
    return true
   end
