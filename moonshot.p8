@@ -23,6 +23,7 @@ sp_player_idle=1
 sp_player_run_start=2
 sp_player_run_length=3
 sp_player_jump=3
+sp_player_glide=16
 sp_platform=72
 sp_button_on=104
 sp_button_off=105
@@ -84,7 +85,7 @@ function init_mechanics()
  )
 
  --return list of mechanics
- plts = {plt1,plt2,plt3}
+ plts={plt1,plt2,plt3}
  return {
   plt1,plt2,plt3,
   door1,
@@ -107,8 +108,8 @@ function _init()
  --characters
  player=init_player()
  npcs={
-  init_npc(jump,{1,0,12,5,8,9}),
-  init_npc(glide,{8,11,10,15,12,13}),
+  --init_npc(jump,{1,0,12,5,8,9}),
+  --init_npc(glide,{8,11,10,15,12,13}),
  }
  playerlikes={player,unpack(npcs)}
 
@@ -225,100 +226,78 @@ function intersects(a,b)
  and a.y+a.h>b.y
 end
 
+--clamp v between -max_v and
+--max_v in steps step
+function clamp(v,max_v,step)
+ local v=mid(-max_v,v,max_v)
+ v-=sgn(v)*(v%step)
+ if (abs(v)<step) v=0
+ return v
+end
+
 --ease function for f=[0,1]
 function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
-function hitbox(o, aim)
- local h={
-  x=o.x,
-  y=o.y,
-  --waist offset
-  w=3,
-  --abdomen+shorted helmet offset
-  h=5,
- }
-
- if aim=="⬅️" then
-  h.w=o.dx
-  --remove top of helmet
-  h.y+=1
-  --remove empty column
-  h.x+=1
- elseif aim=="➡️" then
-  h.w=o.dx
-  --remove top of helmet
-  h.y+=1
-  --remove left padding
-  h.x+=1
-
-  --remove waist size
-  h.x+=4
-  --remove left arm
-  h.x+=1
- elseif aim=="⬆️" then
-  --notice no h.h=o.dy
-  --remove left padding and arm
-  h.x+=2
-
-  --no offset, just one line
-  h.h=0
- elseif aim=="⬇️" then
-  h.h=o.dy
-  --remove left padding and arm
-  h.x+=2
-
-  --just below the sprite
-  h.y+=o.h
- end
-
-  return h
-end
-
---check obj collisions
-function collides(obj,aim,flag)
+--check player collisions
+function collision(p,flag)
  --[[
  obj={x,y,w,h}
- aim=⬅️,➡️,⬆️,⬇️
- flag=
-  0-stands on (eg: floor)
-  1-bumps into (eg: wall)
- ]]
-
- local h=hitbox(obj,aim)
- return collides_map(h,flag)
- or collides_platforms(h,flag)
+ flag=<sprite flags above>
+ --]]
+ 
+ local hb={
+  x=p.x+1,--+1=left pad
+  y=p.y+1,--+1=top pad
+  w=p.w-2,---2=horizontal pad
+  h=p.h-1,---1=vertical pad
+ }
+ 
+ return collision_plt(hb,flag)
+ or collision_map(hb,flag)
 end
 
-function collides_map(
- hitbox,flag
-)
- local x1=hitbox.x
- local x2=hitbox.x+hitbox.w
- local y1=hitbox.y
- local y2=hitbox.y+hitbox.h
- if flag_on_xy(x1,y1,flag)
- or flag_on_xy(x1,y2,flag)
- or flag_on_xy(x2,y1,flag)
- or flag_on_xy(x2,y2,flag)
-  return 1
- end
-end
-
-function collides_platforms(
- hitbox,flag
-)
+function collision_plt(hb,flag)
  for plt in all(plts) do
-  if intersects(plt,hitbox)
+  if intersects(plt,hb)
   and fget(plt.sp,flag) then
-   return true
+   return {
+    x=plt.x+plt.dx,
+    y=plt.y+plt.dy,
+    w=plt.w,
+    h=plt.h,
+   }
   end
  end
 end
 
+function collision_map(
+ hb,flag
+)
+ local x1=hb.x
+ local x2=hb.x+hb.w-1
+ local y1=hb.y
+ local y2=hb.y+hb.h-1
+ 
+ return flag_on_xy(x1,y1,flag)
+ or flag_on_xy(x1,y2,flag)
+ or flag_on_xy(x2,y1,flag)
+ or flag_on_xy(x2,y2,flag)
+end
+
 function flag_on_xy(x,y,flag)
- return fget(mget(x\8,y\8),flag)
+ if fget(mget(x/8,y/8),flag)
+ then
+  return {
+   x=x\8*8,
+   y=y\8*8,
+   w=8,
+   h=8
+  }
+ else
+  return nil
+ end
 end
 
 --[[
@@ -330,8 +309,7 @@ function tostring(any)
  local str="{"
  for k,v in pairs(any) do
   if (str!="{") str=str..","
-  str..=
-   tostring(k).."="..tostring(v)
+  str..=tostring(k).."="..tostring(v)
  end
  return str.."}"
 end
@@ -341,202 +319,160 @@ end
 --characters:entity,player,npcs
 
 ------------
----entity---
-------------
-
-function init_entity(
- w,h,max_dx,max_dy
-)
- return {
-  x=0,
-  y=0,
-  w=w,
-  h=h,
-  dx=0,
-  dy=0,
-  max_dx=max_dx,
-  max_dy=max_dy,
- }
-end
-
-function discmid(a,b,c,step)
-  local v=mid(a,b,c)
-  v-=sgn(v)*(v%step)
-  if abs(v)<step then
-   v=0
-  end
-  return v
-end
-
-function update_entity(e)
- --gravity/inertia
- e.dy+=gravity
- e.dx*=inertia
-
- --vertical map collisions
- if e.dy>0 then
-  if collides(e,"⬇️",flag_hits)
-  then
-   --e.y+e.dy: understand where
-   --the player would have been
-   --at overlap.
-   --\8: identify the tile,
-   --cutting it to the left.
-   --this would make it so that
-   --they're now side by side.
-   --*8: go back from tiles to
-   --pixels.
-   e.y=((e.y+e.dy)\8)*8
-   e.dy=0
-   e.glide=false
-  end
- elseif e.dy<0 then
-  if collides(e,"⬆️",flag_hits)
-  then
-   e.y=(((e.y+e.dy)\8)+1)*8-1
-   e.dy=0
-  end
- end
-
- --horizontal map collisions
- if e.dx<0 then
-  if collides(e,"⬅️",flag_hits)
-  then
-   e.x=(((e.x+e.dx)\8)+1)*8-2
-   e.dx=0
-  end
- elseif e.dx>0 then
-  if collides(e,"➡️",flag_hits)
-  then
-   e.x=((e.x+e.dx)\8)*8+2
-   e.dx=0
-  end
- end
-
- --apply acceleration
- e.x+=e.dx
- e.y+=e.dy
-
- --clamp acceleration
- e.dx=discmid(
-  -e.max_dx,e.max_dx,
-  e.dx,0x0.1
- )
- e.dy=discmid(
-  -e.max_dy,e.max_dy,
-  e.dy,0x0.1
- )
-end
-
-------------
 ---player---
 ------------
 
-walk_accel=0.5
-jump_accel=2.8
+run_accel=0.55
+jump_accel=2.55
 
 function init_player()
- return class(
-  init_entity(8,8,2,3),{
-   sp=sp_player_idle,
-   flp=false,
+ return {
+  x=0,
+  y=0,
+  w=8,
+  h=8,
+  dx=0,
+  dy=0,
+  max_dx=2,
+  max_dy=3,
 
-   --{idle,run,jump,glide,fall}
-   state="idle",
-   prev_state="idle",
+  running=false,
+  jumping=false,
+  falling=false,
+  gliding=false,
+  landed=false,
+  
+  sp=sp_player_idle,
+  flp=false,
 
-   ⬅️=function(self)
-    self.dx-=walk_accel
-   end,
-
-   ➡️=function(self)
-    self.dx+=walk_accel
-   end,
-
-   ⬆️=double_jump
-  })
+  ⬅️=run_left,
+  ➡️=run_right,
+  ⬆️=double_jump,
+ }
 end
 
 function update_player(p)
- update_entity(p)
-
- --flip
- if p.dx<0 then
-  p.flp=true
- elseif p.dx>0 then
-  p.flp=false
- end
-
- --state
- p.prev_state=p.state
- p.state="idle"
-
- if p.glide then
-  p.state="glide"
- else
-  if p.dy==0 then
-   if p.dx!=0 then
-    p.state="run"
+ local hcl,vcl
+ 
+ --move horizontally
+ p.dx*=inertia
+ p.dx=clamp(p.dx,p.max_dx,0.05)
+ if p.dx!=0 then
+  p.x+=p.dx
+  hcl=collision(p,flag_hits)
+  if hcl then
+   if p.dx<0 then
+    --left (-1 to pad sprite)
+    p.x+=hcl.x+hcl.w-p.x-1
+   else
+    --right (+1 to pad sprite)
+    p.x+=hcl.x-p.x-p.w+1
    end
-  else
-   if p.dy<-1 then
-    p.state="jump"
-   elseif p.dy>1 then
-    p.state="fall"
-   end
+   p.dx=0
   end
  end
-
+ 
+ --move vertically
+ p.dy+=gravity
+ p.dy=clamp(p.dy,p.max_dy,0.05)
+ if p.dy!=0 then
+  p.y+=p.dy 
+  vcl=collision(p,flag_hits)
+  if vcl then
+   if p.dy<0 then
+    --top (-1 to pad sprite)
+    p.y+=vcl.y+vcl.h-p.y-1
+   else
+    --bottom
+    p.y+=vcl.y-p.y-p.h
+   end
+   p.dy=0
+  end
+ end
+ 
+ --state
+ p.running=abs(p.dx)>0.5
+ p.landed=p.falling and vcl!=nil
+ if p.landed then
+  p.falling=false
+  p.jumping=false
+  p.gliding=false
+ else
+  p.falling=p.dy>=0.5
+  if p.falling then
+   p.jumping=false
+   p.gliding=false
+  end
+ end
+ 
  --sprite
- if p.state=="idle" then
+ if player.gliding then
+  p.sp=sp_player_glide
+ elseif player.jumping then
+  p.sp=sp_player_jump
+ elseif player.falling then
   p.sp=sp_player_idle
-  --stop_sfx("walk")
- elseif p.state=="run" then
+ elseif player.running then
   p.sp=sp_player_run_start+
    (t()*10)%sp_player_run_length
   play_sfx("walk")
- elseif p.state=="jump" then
-  p.sp=sp_player_jump
- elseif p.state=="glide" then
-  p.sp=sp_player_idle
- elseif p.state=="fall" then
-  p.sp=sp_player_idle
- end
-end
-
-function jump(p,tap)
- if (not tap) return
-
- if p.dy==0 then
-  p.dy-=jump_accel
- end
-end
-
-function double_jump(p,tap)
- if (not tap) return
-
- if not p._j or p.dy==0 then
-  p._j=0
  else
-  p._j+=1
+  p.sp=sp_player_idle
  end
- if p._j<2 then
-  play_sfx("jump")
+end
+
+function run_left(p)
+ p.dx-=run_accel
+ p.flp=true
+end
+
+function run_right(p)
+ p.dx+=run_accel
+ p.flp=false
+end
+
+function jump(p,first)
+ if (not first) return
+
+ if not p.jumping
+ and not p.falling then
   p.dy=-jump_accel
+  play_sfx("jump")
+  p.jumping=true
+  p.landed=false
+ end
+end
+
+function double_jump(p,first)
+ if (not first) return
+ 
+ if not p.jumping
+ and not p.falling then
+  jump(p,true)
+  p._j=true
+ elseif p._j then
+  p.jumping=false
+  p.falling=false
+  jump(p,true)
+  p._j=nil
  end
 end
 
 function glide(p,_)
- if not p.glide and p.dy==0 then
-  p.dy=-jump_accel
+ if not p.gliding
+ and not p.jumping
+ and not p.falling
+ then
+  jump(p,true)
   return
  end
 
- if not p.glide and p.dy<0 then
+ if not p.gliding
+ and p.dy<0 then
   return
  end
 
- p.glide=true
+ p.gliding=true
  p.dy-=gravity+0.25
 end
 
@@ -731,16 +667,10 @@ function fire_fxs()
  foreach(
   {p,unpack(npcs)},
   function(p)
-   if p.state=="glide" then
+   if p.gliding then
     rocket:on_player(p)
    end
-   if (
-    p.prev_state=="fall"
-    or p.prev_state=="glide"
-   ) and (
-    p.state == "idle"
-    or p.state == "run"
-   ) then
+   if p.landed then
     land:on_player(p)
    end
   end
@@ -1341,14 +1271,14 @@ music_tracks={
  bass_4bars={i=9,o=0,l=32},
 }
 __gfx__
-00000000000000000000000000666600000000000000000000000000944494445ddd5ddd00000000000000000000000000000000000000000000000000000000
-00000000006666000066660006611c6000666600000000000000000044494449ddd5ddd5000b0b00000000000000000000000000000000000000000000000000
-0070070006611c6006611c600661116006611c600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0007700006611160066111600066660006611160000000000000000044544454dd5ddd5d0b0b0b00000000000000000000000000000000000000000000000000
-0007700000666600006666000088a80000666600000000000000000045444544d5ddd5dd00000000000000000000000000000000000000000000000000000000
-007007000088a8000088a800008888000088a800000000000000000000000000000000000b0b0b00000000000000000000000000000000000000000000000000
-00000000008888000088880006000060068888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000006006000060006000000000000006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000944494445ddd5ddd00000000000000000000000000000000000000000000000000000000
+0000000000666600006666000066660000666600000000000000000044494449ddd5ddd5000b0b00000000000000000000000000000000000000000000000000
+0070070006611c6006611c6006611c6006611c600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0007700006611160066111600661116006611160000000000000000044544454dd5ddd5d0b0b0b00000000000000000000000000000000000000000000000000
+0007700000666600006666000066660000666600000000000000000045444544d5ddd5dd00000000000000000000000000000000000000000000000000000000
+007007000088a8000088a8000088a8000088a800000000000000000000000000000000000b0b0b00000000000000000000000000000000000000000000000000
+00000000008888000088880000888800068888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000006006000060006006000060000006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00666600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 06611c60000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -1556,7 +1486,7 @@ __map__
 5064646464646464646464646464646300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 7042404140424040404042404140427100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
-01070008006150000000000046000f615000050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00070008006150000000000046000f615000050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000400000a7110a7110e711127111a711227110c7000070000700007000070004700037000370003700037000370000700007000070000700007000f70013700177001b7001b7001a70012700107000070000700
 011000001361510615006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600006000060000600
 011000000473404721047110070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700007000070000700
