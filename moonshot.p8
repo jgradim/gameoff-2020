@@ -85,7 +85,6 @@ function init_mechanics()
  )
 
  --return list of mechanics
- plts={plt1,plt2,plt3}
  return {
   plt1,plt2,plt3,
   door1,
@@ -269,8 +268,10 @@ function collision(p,flag)
  or collision_map(hb,flag)
 end
 
+
+collidables = {}
 function collision_plt(hb,flag)
- for plt in all(plts) do
+ for plt in all(collidables) do
   if intersects(plt,hb)
   and fget(plt.sp,flag) then
    return plt
@@ -543,7 +544,7 @@ function init_platform(
  x,y,w,h=platform pos/size
  delta_fn=fn that updates dx/dy
  ]]
- return {
+ local p = {
   sp=sp_platform,
   x=x,
   y=y,
@@ -565,6 +566,9 @@ function init_platform(
    spr(p.sp,p.x,p.y,1,1)
   end,
  }
+
+ add(collidables, p)
+ return p
 end
 
 function linear_delta_fn(
