@@ -147,7 +147,7 @@ function _update()
  update_player(player)
  path:update()
  foreach(npcs,update_npc)
- 
+
  --mechanics
  foreach(mcns,update)
 
@@ -250,14 +250,14 @@ function collision(p,flag)
  obj={x,y,w,h}
  flag=<sprite flags above>
  --]]
- 
+
  local hb={
   x=p.x+1,--+1=left pad
   y=p.y+1,--+1=top pad
   w=p.w-2,---2=horizontal pad
   h=p.h-1,---1=vertical pad
  }
- 
+
  return collision_plt(hb,flag)
  or collision_map(hb,flag)
 end
@@ -285,7 +285,7 @@ function collision_map(
  local x2=hb.x+hb.w-1
  local y1=hb.y
  local y2=hb.y+hb.h-1
- 
+
  return flag_on_xy(x1,y1,flag)
  or flag_on_xy(x1,y2,flag)
  or flag_on_xy(x2,y1,flag)
@@ -347,7 +347,7 @@ function init_player()
   falling=false,
   gliding=false,
   landed=false,
-  
+
   sp=sp_player_idle,
   flp=false,
 
@@ -359,7 +359,7 @@ end
 
 function update_player(p)
  local hcl,vcl
- 
+
  --move horizontally
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0.05)
@@ -377,12 +377,12 @@ function update_player(p)
    p.dx=0
   end
  end
- 
+
  --move vertically
  p.dy+=gravity
  p.dy=clamp(p.dy,p.max_dy,0.05)
  if p.dy!=0 then
-  p.y+=p.dy 
+  p.y+=p.dy
   vcl=collision(p,flag_hits)
   if vcl then
    if p.dy<0 then
@@ -397,7 +397,7 @@ function update_player(p)
    p.dy=0
   end
  end
- 
+
  --state
  p.running=p.running and
   abs(p.dx)>0.5
@@ -413,7 +413,7 @@ function update_player(p)
    p.gliding=false
   end
  end
- 
+
  --sprite
  if player.gliding then
   p.sp=sp_player_glide
@@ -456,7 +456,7 @@ end
 
 function double_jump(p,first)
  if (not first) return
- 
+
  if not p.jumping
  and not p.falling then
   jump(p,true)
