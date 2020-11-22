@@ -73,7 +73,7 @@ function init_mechanics()
  --x,y,open
  local door1=init_door(
   --cel 12,12
-  96,96,true
+  96,96,false
  )
 
  --buttons
