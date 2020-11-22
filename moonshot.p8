@@ -266,14 +266,7 @@ function collision_plt(hb,flag)
  for plt in all(plts) do
   if intersects(plt,hb)
   and fget(plt.sp,flag) then
-   return {
-    x=plt.x,
-    y=plt.y,
-    w=plt.w,
-    h=plt.h,
-    dx=plt.dx,
-    dy=plt.dy,
-   }
+   return plt
   end
  end
 end
