@@ -174,13 +174,13 @@ function _draw()
  --characters
  foreach(npcs,draw_npc)
  draw_player(player)
- 
+
  --camera
  camera(
   mid(0,player.x-64,960),
   mid(0,player.y-64,256)
  )
- 
+
  debug=stat(1)*100\1
 
  --debug
