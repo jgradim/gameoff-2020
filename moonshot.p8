@@ -230,13 +230,20 @@ function intersects(a,b)
  and a.y+a.h>b.y
 end
 
+function bucket(v, step)
+ if(step == nil) step=0x0.01
+ v-= sgn(v)*(v%step)
+ if (abs(v)<step) v=0
+ return v
+end
+
 --clamp v between -max_v and
 --max_v in steps step
 function clamp(v,max_v,step)
- local v=mid(-max_v,v,max_v)
- v-=sgn(v)*(v%step)
- if (abs(v)<step) v=0
- return v
+ return bucket(
+  mid(-max_v,v,max_v),
+  step
+ )
 end
 
 --ease function for f=[0,1]
