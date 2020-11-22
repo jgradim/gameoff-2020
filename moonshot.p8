@@ -292,6 +292,30 @@ function collision_map(
  or flag_on_xy(x2,y2,flag)
 end
 
+function expel_x(e, p)
+ if p.dx<-0 then
+  --left (-1 to pad sprite)
+  p.x+=e.x+e.w-p.x-1
+ elseif p.dx>0 then
+  --right (+1 to pad sprite)
+  p.x+=e.x-p.x-p.w+1
+ end
+ p.dx=0
+end
+
+function expel_y(e, p)
+ if p.dy<-0 then
+  --top (-1 to pad sprite)
+  p.y+=e.y+e.h-p.y-1
+ elseif p.dy>0 then
+  --bottom
+  p.y+=e.y-p.y-p.h
+ end
+ if (e.dx) p.x+=e.dx
+ if (e.dy) p.y+=e.dy
+ p.dy=0
+end
+
 function flag_on_xy(x,y,flag)
  if fget(mget(x/8,y/8),flag)
  then
@@ -299,7 +323,11 @@ function flag_on_xy(x,y,flag)
    x=x\8*8,
    y=y\8*8,
    w=8,
-   h=8
+   h=8,
+   dx=0,
+   dy=0,
+   collide_x=expel_x,
+   collide_y=expel_y
   }
  else
   return nil
@@ -367,14 +395,7 @@ function update_player(p)
   p.x+=p.dx
   hcl=collision(p,flag_hits)
   if hcl then
-   if p.dx<-0 then
-    --left (-1 to pad sprite)
-    p.x+=hcl.x+hcl.w-p.x-1
-   elseif p.dx>0 then
-    --right (+1 to pad sprite)
-    p.x+=hcl.x-p.x-p.w+1
-   end
-   p.dx=0
+    hcl:collide_x(p)
   end
  end
 
@@ -385,16 +406,7 @@ function update_player(p)
   p.y+=p.dy
   vcl=collision(p,flag_hits)
   if vcl then
-   if p.dy<-0 then
-    --top (-1 to pad sprite)
-    p.y+=vcl.y+vcl.h-p.y-1
-   elseif p.dy>0 then
-    --bottom
-    p.y+=vcl.y-p.y-p.h
-   end
-   if (vcl.dx) p.x+=vcl.dx
-   if (vcl.dy) p.y+=vcl.dy
-   p.dy=0
+   vcl:collide_y(p)
   end
  end
 
@@ -539,6 +551,8 @@ function init_platform(
   h=h,
   dx=0,
   dy=0,
+  collide_x=expel_x,
+  collide_y=expel_y,
   delta_fn=delta_fn,
 
   update=function(p)
