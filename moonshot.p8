@@ -106,12 +106,11 @@ function _init()
  mcns=init_mechanics()
 
  --characters
- player=init_player()
- npcs={
-  --init_npc(jump,{1,0,12,5,8,9}),
-  --init_npc(glide,{8,11,10,15,12,13}),
+ playerlikes={
+  init_player(double_jump),
+  init_player(jump,{1,0,12,5,8,9}),
+  init_player(glide,{8,11,10,15,12,13}),
  }
- playerlikes={player,unpack(npcs)}
 
  --fxs
  init_bg_fxs()
@@ -122,32 +121,32 @@ end
 
 function update(o) return o:update() end
 
+function player() return playerlikes[1] end
 fps=30
 function _update()
  --input
  player_btns={"⬅️","➡️","⬆️"}
  for i=1,#player_btns do
   if btn(i-1) then
-   fn=player[player_btns[i]]
-   if (fn) fn(player,btnp(i-1))
+   fn=player()[player_btns[i]]
+   if (fn) fn(player(),btnp(i-1))
   end
+ end
+ if btnp(❎) then
+   local new_player = deli(playerlikes, #playerlikes)
+   add(playerlikes, new_player, 1)
  end
  if btnp(🅾️) then
   if path.found then
    path:apply()
   else
-   path:find(
-    npcs[2],
-    npcs[2],
-    player
-   )
+   path:find(unpack(playerlikes))
   end
  end
 
  --characters
- update_player(player)
  path:update()
- foreach(npcs,update_npc)
+ foreach(playerlikes, update_player)
 
  --mechanics
  foreach(mcns,update)
@@ -176,13 +175,12 @@ function _draw()
  foreach(mcns,draw)
 
  --characters
- foreach(npcs,draw_npc)
- draw_player(player)
+ foreach(playerlikes,draw_player)
 
  --camera
  camera(
-  mid(0,player.x-64,960),
-  mid(0,player.y-64,256)
+  mid(0,player().x-64,960),
+  mid(0,player().y-64,256)
  )
 
  foreach(sparks,draw)
@@ -364,7 +362,7 @@ end
 --]]
 
 -->8
---characters:entity,player,npcs
+--characters:entity,player
 
 ------------
 ---player---
@@ -373,7 +371,8 @@ end
 run_accel=0.55
 jump_accel=2.55
 
-function init_player()
+function init_player(⬆️, color_map)
+ if ⬆️ == nil then ⬆️ = glide end
  return {
   x=0,
   y=0,
@@ -395,7 +394,9 @@ function init_player()
 
   ⬅️=run_left,
   ➡️=run_right,
-  ⬆️=glide,
+  ⬆️=⬆️,
+
+  color_map=color_map,
  }
 end
 
@@ -514,35 +515,17 @@ function glide(p,_)
 end
 
 function draw_player(p)
- spr(p.sp,p.x,p.y,1,1,p.flp)
-end
-
----------
----npc---
----------
-
-function init_npc(⬆️,color_map)
- return class(init_player(),{
-  ⬆️=⬆️,
-  color_map=color_map
- })
-end
-
-function update_npc(n)
- update_player(n)
-end
-
-function draw_npc(n)
- for i=1,#n.color_map,2 do
-  pal(
-   n.color_map[i],
-   n.color_map[i+1]
-  )
+ if p.color_map then
+   for i=1,#p.color_map,2 do
+    pal(
+     p.color_map[i],
+     p.color_map[i+1]
+    )
+   end
  end
- draw_player(n)
+ spr(p.sp,p.x,p.y,1,1,p.flp)
  pal()
 end
-
 -->8
 --mechanics:platforms,doors,etc
 
@@ -1234,8 +1217,8 @@ path={
    for i=1,15 do
     local tap=i==1 and
      btns!=prev_btns
-    move_npc(cur,btns,tap)
-    update_npc(cur)
+    move_player(cur,btns,tap)
+    update_player(cur)
     add(cur.btns,{btns,tap})
 
     local bounds={
@@ -1255,11 +1238,11 @@ path={
  end,
 }
 
---move npc
---invokes btns as npc functions
-function move_npc(npc,btns,tap)
+--move player
+--invokes btns as player functions
+function move_player(p,btns,tap)
  for i=1,#btns do
-  npc[sub(btns,i,i)](npc,tap)
+  p[sub(btns,i,i)](p,tap)
  end
 end
 
