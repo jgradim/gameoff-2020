@@ -187,9 +187,9 @@ function _draw()
  if (debug) then
   color(8)
   print(
+   debug,
    peek2(0x5f28),
-   peek2(0x5f2a),
-   debug
+   peek2(0x5f2a)
   )
  end
 end
