@@ -143,13 +143,13 @@ function _update()
   end
  end
 
- --mechanics
- foreach(mcns,update)
-
  --characters
  update_player(player)
  path:update()
  foreach(npcs,update_npc)
+ 
+ --mechanics
+ foreach(mcns,update)
 
  --fxs
  fire_fxs()
@@ -173,17 +173,6 @@ function _draw()
 
  --characters
  foreach(npcs,draw_npc)
-
- --[[
- aims={"⬅️","➡️","⬆️","⬇️"}
- for i=1,#aims do
-   local aim=aims[i]
-   local h=hitbox(player,aim)
-   rect(
-    h.x,h.y,h.x+h.w,h.y+h.h,i
-   )
- end
- --]]
  draw_player(player)
 
  --debug
@@ -263,10 +252,12 @@ function collision_plt(hb,flag)
   if intersects(plt,hb)
   and fget(plt.sp,flag) then
    return {
-    x=plt.x+plt.dx,
-    y=plt.y+plt.dy,
+    x=plt.x,
+    y=plt.y,
     w=plt.w,
     h=plt.h,
+    dx=plt.dx,
+    dy=plt.dy,
    }
   end
  end
@@ -364,7 +355,7 @@ function update_player(p)
    if p.dx<0 then
     --left (-1 to pad sprite)
     p.x+=hcl.x+hcl.w-p.x-1
-   else
+   elseif p.dx>0 then
     --right (+1 to pad sprite)
     p.x+=hcl.x-p.x-p.w+1
    end
@@ -382,16 +373,19 @@ function update_player(p)
    if p.dy<0 then
     --top (-1 to pad sprite)
     p.y+=vcl.y+vcl.h-p.y-1
-   else
+   elseif p.dy>0 then
     --bottom
     p.y+=vcl.y-p.y-p.h
    end
+   if (vcl.dx) p.x+=vcl.dx
+   if (vcl.dy) p.y+=vcl.dy
    p.dy=0
   end
  end
  
  --state
- p.running=abs(p.dx)>0.5
+ p.running=p.running and
+  abs(p.dx)>0.5
  p.landed=p.falling and vcl!=nil
  if p.landed then
   p.falling=false
@@ -424,11 +418,13 @@ end
 function run_left(p)
  p.dx-=run_accel
  p.flp=true
+ p.running=true
 end
 
 function run_right(p)
  p.dx+=run_accel
  p.flp=false
+ p.running=true
 end
 
 function jump(p,first)
