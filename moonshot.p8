@@ -367,7 +367,7 @@ function update_player(p)
   p.x+=p.dx
   hcl=collision(p,flag_hits)
   if hcl then
-   if p.dx<0 then
+   if p.dx<-0 then
     --left (-1 to pad sprite)
     p.x+=hcl.x+hcl.w-p.x-1
    elseif p.dx>0 then
@@ -385,7 +385,7 @@ function update_player(p)
   p.y+=p.dy
   vcl=collision(p,flag_hits)
   if vcl then
-   if p.dy<0 then
+   if p.dy<-0 then
     --top (-1 to pad sprite)
     p.y+=vcl.y+vcl.h-p.y-1
    elseif p.dy>0 then
