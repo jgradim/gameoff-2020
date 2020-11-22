@@ -983,7 +983,10 @@ bg_fx={
  end,
 
  draw=function(f)
-  pset(f.x,f.y,f.c)
+  -- Camera
+  local cmx = %0x5f28
+  local cmy = %0x5f2a
+  pset(cmx+f.x,cmy+f.y,f.c)
  end,
 }
 
