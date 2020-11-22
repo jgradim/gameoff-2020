@@ -205,6 +205,12 @@ function class(super,kls)
  )
 end
 
+function instance(kls, o)
+  return setmetatable(
+   o,{__index=kls}
+  )
+end
+
 --check if a contains b
 function contains(a,b)
  --[[
@@ -741,9 +747,7 @@ base_fx={
 
  add_particle=function(kls,f)
   f.t=0
-  f=setmetatable(
-   f,{__index=kls}
-  )
+  f=instance(kls,f)
   return add(particles,f)
  end,
 
@@ -886,10 +890,7 @@ bg_fx={
 
  add_particle=function(kls,f)
   f.t=1
-  f=setmetatable(
-    f,
-    {__index=kls}
-  )
+  f=instance(kls,f)
   return add(bg_particles,f)
  end,
 
