@@ -22,6 +22,8 @@ inertia=0.75
 sp_player_idle=1
 sp_player_run_start=2
 sp_player_run_length=3
+sp_spark_start=19
+sp_spark_length=4
 sp_player_jump=3
 sp_player_glide=5
 sp_platform=72
@@ -116,6 +118,8 @@ function _init()
  init_bg_fxs()
  init_fxs()
  init_lights()
+
+ init_spark(1*8,10*8)
 end
 
 function update(o) return o:update() end
@@ -150,6 +154,8 @@ function _update()
  --mechanics
  foreach(mcns,update)
 
+ foreach(sparks,update)
+
  --fxs
  fire_fxs()
  update_bg_fxs()
@@ -179,6 +185,8 @@ function _draw()
   mid(0,player.x-64,960),
   mid(0,player.y-64,256)
  )
+
+ foreach(sparks,draw)
 
  debug=stat(1)*100\1
 
@@ -539,6 +547,47 @@ end
 -->8
 --mechanics:platforms,doors,etc
 
+------------
+---sparks---
+------------
+sparks={}
+function init_spark(
+ x,y
+)
+ local s = {
+  x=x,
+  y=y,
+  w=8,
+  h=8,
+  dx=0,
+  dy=0,
+  sp=19,
+  collide_x=function(s,p)
+   local old_dx = p.dx
+   expel_x(s,p)
+   p.dx=-old_dx * 10
+   spark_aura:on_player(p)
+  end,
+  collide_y=function(s,p)
+   local old_dy = p.dy
+   expel_y(s,p)
+   p.dy=-old_dy * 10
+   spark_aura:on_player(p)
+  end,
+
+  update=function(s)
+   s.sp=sp_spark_start+(t()*10)%sp_spark_length
+  end,
+
+  draw=function(s)
+   spr(s.sp,s.x,s.y)
+  end
+ }
+ add(collidables, s)
+ add(sparks, s)
+ return s
+end
+
 ---------------
 ---platforms---
 ---------------
@@ -816,6 +865,33 @@ rocket=class(base_fx,{
  end,
 })
 
+spark_aura=class(base_fx,{
+ colors={10,9},
+ amount=6,
+ t=0,
+ life=fps,
+
+ on_player=function(kls,p)
+  add(
+    particles,
+    instance(kls,{player=p})
+  )
+ end,
+
+ update=function(f)
+ end,
+
+ draw=function(f)
+  local p = f.player
+  for i=1,f.amount do
+   pset(
+     p.x+rnd(p.w-1),
+     p.y+rnd(p.h-1),
+     f:curr_color()
+   )
+  end
+ end,
+})
 
 land=class(base_fx,{
  colors={7,6,13},
@@ -1536,7 +1612,7 @@ d6666666d6666666d6666666d6666666d6666666d6666666d6666666d6666666d6666666d6666666
 5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d
 
 __gff__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010100000002000101000000000000010101000000000001010000000000000101010000000000000000000000000001010000000000000000000000000000
+0000000000000000000000000000000000000001010101000000000000000000000000000000000000000000000000000000000000000000000000000000000000010100000002000101000000000000010101000000000001010000000000000101010000000000000000000000000001010000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 4040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
