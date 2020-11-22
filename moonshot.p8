@@ -23,7 +23,7 @@ sp_player_idle=1
 sp_player_run_start=2
 sp_player_run_length=3
 sp_player_jump=3
-sp_player_glide=16
+sp_player_glide=5
 sp_platform=72
 sp_button_on=104
 sp_button_off=105
@@ -346,7 +346,7 @@ function init_player()
 
   ⬅️=run_left,
   ➡️=run_right,
-  ⬆️=double_jump,
+  ⬆️=glide,
  }
 end
 
@@ -669,7 +669,7 @@ end
 
 function fire_fxs()
  foreach(
-  {p,unpack(npcs)},
+  playerlikes,
   function(p)
    if p.gliding then
     rocket:on_player(p)
