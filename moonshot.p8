@@ -362,7 +362,7 @@ function update_player(p)
 
  --move horizontally
  p.dx*=inertia
- p.dx=clamp(p.dx,p.max_dx,0.05)
+ p.dx=clamp(p.dx,p.max_dx,0x.08)
  if p.dx!=0 then
   p.x+=p.dx
   hcl=collision(p,flag_hits)
@@ -380,7 +380,7 @@ function update_player(p)
 
  --move vertically
  p.dy+=gravity
- p.dy=clamp(p.dy,p.max_dy,0.05)
+ p.dy=clamp(p.dy,p.max_dy,0x.08)
  if p.dy!=0 then
   p.y+=p.dy
   vcl=collision(p,flag_hits)
