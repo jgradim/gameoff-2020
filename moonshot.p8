@@ -441,13 +441,13 @@ function update_player(p)
  end
 
  --sprite
- if player.gliding then
+ if p.gliding then
   p.sp=sp_player_glide
- elseif player.jumping then
+ elseif p.jumping then
   p.sp=sp_player_jump
- elseif player.falling then
+ elseif p.falling then
   p.sp=sp_player_idle
- elseif player.running then
+ elseif p.running then
   p.sp=sp_player_run_start+
    (t()*10)%sp_player_run_length
   play_sfx("walk")
