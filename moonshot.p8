@@ -156,6 +156,8 @@ function _update()
  update_fxs()
 end
 
+function draw(o) return o:draw() end
+
 function _draw()
  cls()
 
@@ -166,9 +168,7 @@ function _draw()
  draw_fxs()
 
  --mechanics
- foreach(mcns,function(m)
-  m:draw()
- end)
+ foreach(mcns,draw)
 
  --characters
  foreach(npcs,draw_npc)
