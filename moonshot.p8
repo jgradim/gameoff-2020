@@ -756,7 +756,7 @@ function init_door(x,y,open)
   end,
 
   draw=function(d)
-   spr(d.sp,d.x,d.y,1,1)
+   mset(d.x/8,d.y/8,d.sp)
   end,
  }
 end
@@ -816,7 +816,7 @@ function init_button(
   end,
 
   draw=function(b)
-   spr(b.sp,b.x,b.y,1,1)
+   mset(b.x/8,b.y/8,b.sp)
   end,
  }
 end
