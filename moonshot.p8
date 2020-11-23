@@ -108,7 +108,7 @@ function _init()
  --characters
  playerlikes={
   init_player{
-   ⬆️=jump,
+   ⬆️=grav_boots,
    color_map={1,0,12,5,8,9},
    x=60*8,
    y=28*8,
@@ -423,7 +423,11 @@ function update_player(p)
  end
 
  --move vertically
- p.dy+=gravity
+ if p.flpy then
+  p.dy-=gravity
+ else
+  p.dy+=gravity
+ end
  p.dy=clamp(p.dy,p.max_dy,0x.08)
  if p.dy!=0 then
   p.y+=p.dy
@@ -489,6 +493,12 @@ function jump(p,first)
  end
 end
 
+function grav_boots(p,first)
+ if (not first) return
+
+ p.flpy= not p.flpy
+end
+
 function double_jump(p,first)
  if (not first) return
 
@@ -531,7 +541,7 @@ function draw_player(p)
     )
    end
  end
- spr(p.sp,p.x,p.y,1,1,p.flpx)
+ spr(p.sp,p.x,p.y,1,1,p.flpx, p.flpy)
  pal()
 end
 -->8
