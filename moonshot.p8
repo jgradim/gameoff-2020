@@ -737,8 +737,8 @@ function linear_delta_fn(
   local f=ef_smooth(
    abs(time()%6-3)/3
   )
-  plat.dx=x+dx*f+0.5-plat.x
-  plat.dy=y+dy*f+0.5-plat.y
+  plat.dx=bucket(x+dx*f+0.5-plat.x)
+  plat.dy=bucket(y+dy*f+0.5-plat.y)
  end
 end
 
