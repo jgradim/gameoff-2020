@@ -370,73 +370,73 @@ function collision(p,flag)
   h=p.h-1,---1=vertical pad
  }
 
- return collision_plt(hb,flag)
- or collision_map(hb,flag)
-end
-
-collidables = {}
-function collision_plt(hb,flag)
- for plt in all(collidables) do
-  if intersects(plt,hb)
-  and fget(plt.sp,flag) then
-   return plt
+ local collisions={}
+ 
+ --check mechanics
+ for m in all(mcns) do
+  if m.collide
+  and intersects(m,hb)
+  and fget(m.sp,flag) then
+   add(collisions,m)
   end
  end
-end
-
-function collision_map(
- hb,flag
-)
+ 
+ --check map
  local x1=hb.x
  local x2=hb.x+hb.w-1
  local y1=hb.y
  local y2=hb.y+hb.h-1
-
- return flag_on_xy(x1,y1,flag)
- or flag_on_xy(x1,y2,flag)
- or flag_on_xy(x2,y1,flag)
- or flag_on_xy(x2,y2,flag)
-end
-
-function expel_x(e, p)
- if p.dx<-0 then
-  --left (-1 to pad sprite)
-  p.x+=e.x+e.w-p.x-1
- elseif p.dx>0 then
-  --right (+1 to pad sprite)
-  p.x+=e.x-p.x-p.w+1
+ for x in all({x1,x2}) do
+  for y in all({y1,y2}) do
+   if fget(mget(x/8,y/8),flag) then
+    add(collisions,{
+     x=x\8*8,
+     y=y\8*8,
+     w=8,
+     h=8,
+     dx=0,
+     dy=0,
+     collide=block,
+    })
+   end
+  end
  end
- p.dx=0
+ 
+ return collisions
 end
 
-function expel_y(e, p)
- if p.dy<-0 then
-  --top (-1 to pad sprite)
-  p.y+=e.y+e.h-p.y-1
- elseif p.dy>0 then
-  --bottom
-  p.y+=e.y-p.y-p.h
- end
- if (e.dx) p.x+=e.dx
- if (e.dy) p.y+=e.dy
- p.dy=0
-end
-
-function flag_on_xy(x,y,flag)
- if fget(mget(x/8,y/8),flag)
- then
-  return {
-   x=x\8*8,
-   y=y\8*8,
-   w=8,
-   h=8,
-   dx=0,
-   dy=0,
-   collide_x=expel_x,
-   collide_y=expel_y
-  }
+--blocks p from intersecting cl
+--returns block direction
+function block(cl,p)
+ --determine intersection
+ local x=max(p.x,cl.x)
+ local y=max(p.y,cl.y)
+ local int={
+  x=x,
+  y=y,
+  w=min(p.x+p.w,cl.x+cl.w)-x,
+  h=min(p.y+p.h,cl.y+cl.h)-y,
+ }
+ 
+ --resolve using shallowest axis
+ if int.w<int.h then
+  p.dx=0
+  if p.x<cl.x then
+   p.x+=cl.x-p.x-p.w+1
+   return "⬅️"
+  else
+   p.x+=cl.x+cl.w-p.x-1
+   return "➡️"
+  end
  else
-  return nil
+  p.dy=0
+  if p.y>cl.y then
+   p.y+=cl.y+cl.h-p.y-1
+   return "⬆️"
+  else
+   p.y+=cl.y-p.y-p.h
+   return "⬇️"
+  end
  end
 end
 
@@ -493,17 +493,14 @@ function init_player(p)
 end
 
 function update_player(p)
- local hcl,vcl
-
  --move horizontally
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
- if p.dx!=0 then
-  p.x+=p.dx
-  hcl=collision(p,flag_hits)
-  if hcl then
-    hcl:collide_x(p)
-  end
+ p.x+=p.dx
+ for cl in all(
+  collisions(p,flag_hits)
+ ) do
+  cl:collide(p)
  end
 
  --move vertically
@@ -513,12 +510,11 @@ function update_player(p)
   p.dy+=gravity
  end
  p.dy=clamp(p.dy,p.max_dy,0x.08)
- if p.dy!=0 then
-  p.y+=p.dy
-  vcl=collision(p,flag_hits)
-  if vcl then
-   vcl:collide_y(p)
-  end
+ p.y+=p.dy
+ for cl in all(
+  collisions(p,flag_hits)
+ ) do
+  cl:collide(p)
  end
 
  --state
