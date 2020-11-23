@@ -572,7 +572,7 @@ end
 function update_player(p)
  local old_y=p.y\1
  local old_x=p.x\1
- 
+
  --move horizontally
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
@@ -1675,7 +1675,7 @@ music_tracks={
 
 function init_title_screen()
  return {
-  
+
  }
 end
 
