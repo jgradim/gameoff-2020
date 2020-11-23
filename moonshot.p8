@@ -24,15 +24,19 @@ inertia=0.75
 sp_player_idle=1
 sp_player_run_start=2
 sp_player_run_length=3
-sp_spark_start=19
-sp_spark_length=4
 sp_player_jump=3
 sp_player_glide=5
+
+sp_spark_start=19
+sp_spark_length=4
+
 sp_platform=48
-sp_button_on=104
-sp_button_off=105
+
 sp_door_opened=87
 sp_door_closed=84
+
+sp_button_on=104
+sp_button_off=105
 
 ------------------
 ---sprite flags---
