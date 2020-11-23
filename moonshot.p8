@@ -31,7 +31,8 @@ sp_player_glide=5
 sp_spark_start=19
 sp_spark_length=4
 
-sp_platform=48
+sp_platform_start=48
+sp_platform_length=4
 
 sp_door_opened=37
 sp_door_closed=32
@@ -713,7 +714,7 @@ function init_platform(
  delta_fn=fn that updates dx/dy
  ]]
  return {
-  sp=sp_platform,
+  sp=sp_platform_start,
   x=x,
   y=y,
   w=w,
@@ -729,12 +730,16 @@ function init_platform(
    if (p.delta_fn) p:delta_fn()
    p.x+=p.dx
    p.y+=p.dy
+   
    foreach(all_players, function(pl)
     if intersects(stand_box(pl), p) then
      pl.x+=p.dx
      pl.y+=p.dy
     end
    end)
+   
+   p.sp=sp_platform_start+
+    (t()*8)%sp_platform_length
   end,
 
   draw=function(p)
