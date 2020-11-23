@@ -399,7 +399,8 @@ function init_player(p)
   landed=false,
 
   sp=sp_player_idle,
-  flp=false,
+  flpx=false,
+  flpy=false,
 
   ⬅️=run_left,
   ➡️=run_right,
@@ -466,13 +467,13 @@ end
 
 function run_left(p)
  p.dx-=run_accel
- p.flp=true
+ p.flpx=true
  p.running=true
 end
 
 function run_right(p)
  p.dx+=run_accel
- p.flp=false
+ p.flpx=false
  p.running=true
 end
 
@@ -530,7 +531,7 @@ function draw_player(p)
     )
    end
  end
- spr(p.sp,p.x,p.y,1,1,p.flp)
+ spr(p.sp,p.x,p.y,1,1,p.flpx)
  pal()
 end
 -->8
@@ -814,7 +815,7 @@ rocket=class(base_fx,{
 
  on_player=function(kls,p)
   local x_off=0
-  if p.flp then x_off=8 end
+  if p.flpx then x_off=8 end
   kls:sched(
    p.x+x_off,
    p.y+8,
