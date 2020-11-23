@@ -53,64 +53,101 @@ flag_stands=1
 ---dynamic map elements---
 --------------------------
 function init_mechanics()
+ --sparks
+ --x,y
+ local sprk0=init_spark(
+  33*8,28*8
+ )
+ local sprk1=init_spark(
+  34*8,25*8
+ )
+ local sprk2=init_spark(
+  35*8,25*8
+ )
+ local sprk3=init_spark(
+  35*8,26*8
+ )
+ local sprk4=init_spark(
+  36*8,28*8
+ )
+ local sprk5=init_spark(
+  37*8,28*8
+ )
+ local sprk6=init_spark(
+  38*8,25*8
+ )
+ local sprk7=init_spark(
+  38*8,26*8
+ )
+ local sprk8=init_spark(
+  39*8,25*8
+ )
+ local sprk9=init_spark(
+  39*8,28*8
+ )
+ local sprk10=init_spark(
+  40*8,28*8
+ )
+
  --platforms
  --x,y,w,h,delta_fn
- local plt1=init_platform(
-  --cel 1,3 <-> 1,13
-  8,24,8,8,
+ local plt0=init_platform(
+  1*8,24*8,8,8,
   linear_delta_fn(
-   8,24,8,104
+   --1,3 <-> 1,13
+   1*8,24*8,8*8,104*8
+  )
+ )
+ local plt1=init_platform(
+  5*8,13*8,8,8,
+  linear_delta_fn(
+   --5,13 <-> 6,13
+   5*8,13*8,6*8,13*8
   )
  )
  local plt2=init_platform(
-  --cel 5,13 <-> 6,13
-  40,104,8,8,
+  14*8,15*8,8,8,
   linear_delta_fn(
-   40,104,48,104
+   --14,15 <-> 14,13
+   14*8,15*8,14*8,13*8
   )
  )
  local plt3=init_platform(
-  --cel 14,15 <-> 14,13
-  112,120,8,8,
-  linear_delta_fn(
-   112,120,112,104
+  59*8,26*8,8,8
+  linear_delta_fn
+   --59,26 <-> 59,29
+   59*8,26*8,59*8,29*8
   )
  )
  local plt4=init_platform(
-  --cel 59,26 <-> 59,29
-  472,208,8,8,
+  57*8,24*8,8,8,
   linear_delta_fn(
-   472,208,472,232
-  )
- )
- local plt5=init_platform(
-  --cel 57,24 <-> 57,29
-  456,192,8,8,
-  linear_delta_fn(
-   456,192,456,232
+   --57,24 <-> 57,29
+   57*8,24*8,57*8,29*8
   )
  )
 
  --doors
  --x,y,open
- local door1=init_door(
-  --cel 12,12
-  96,96,false
+ local door0=init_door(
+  12*8,12*8,false
  )
 
  --buttons
  --x,y,on
- local button1=init_button(
-  --cel 12,14
-  96,112,false,
+ local btn0=init_button(
+  12*8,14*8,false,
   door_toggle_fn(door1)
  )
 
  --return list of mechanics
  return {
-  plt1,plt2,plt3,plt4,plt5,
-  door1,
-  button1,
+  sprk0,sprk1,sprk2,sprk3,
+  sprk4,sprk5,sprk6,sprk7,
+  sprk8,sprk9,sprk10,
+  plt0,plt1,plt2,plt3,plt4,
+  door0,
+  btn0,
  }
 end
 
@@ -146,17 +183,6 @@ function _init()
  init_bg_fxs()
  init_fxs()
 
- init_spark(34*8,28*8)
- init_spark(35*8,25*8)
- init_spark(36*8,25*8)
- init_spark(36*8,26*8)
- init_spark(37*8,28*8)
- init_spark(38*8,28*8)
- init_spark(39*8,25*8)
- init_spark(39*8,26*8)
- init_spark(40*8,25*8)
- init_spark(40*8,28*8)
- init_spark(41*8,28*8)
  cam=init_camera()
 end
 
@@ -194,8 +220,6 @@ function _update()
  --mechanics
  foreach(mcns,update)
 
- foreach(sparks,update)
-
  --fxs
  fire_fxs()
  update_bg_fxs()
@@ -221,8 +245,6 @@ function _draw()
  foreach(all_players,draw_player)
 
  cam:draw()
-
- foreach(sparks,draw)
 
  debug=stat(1)*100\1
 
@@ -602,28 +624,31 @@ end
 ------------
 ---sparks---
 ------------
+
 sparks={}
 function init_spark(
  x,y
 )
- local s = {
+ return {
   x=x,
   y=y,
   w=8,
   h=8,
   dx=0,
   dy=0,
-  sp=19,
-  collide_x=function(s,p)
-   local old_dx = p.dx
-   expel_x(s,p)
-   p.dx=-old_dx * 10
-   spark_aura:on_player(p)
-  end,
-  collide_y=function(s,p)
-   local old_dy = p.dy
-   expel_y(s,p)
-   p.dy=-old_dy * 10
+  sp=sp_spark_start,
+  
+  collide=function(s,p)
+   local old_dx=p.dx
+   local old_dy=p.dy
+   local aim=block(s,p)
+   if aim=="⬅️" or aim=="➡️"
+   then
+    p.dx=-old_dx*10
+   elseif aim=="⬅️" or aim=="➡️"
+   then
+    p.dy=-old_dy*10
+   end
    spark_aura:on_player(p)
   end,
 
@@ -635,9 +660,6 @@ function init_spark(
    spr(s.sp,s.x,s.y)
   end
  }
- add(collidables, s)
- add(sparks, s)
- return s
 end
 
 ---------------
@@ -651,7 +673,7 @@ function init_platform(
  x,y,w,h=platform pos/size
  delta_fn=fn that updates dx/dy
  ]]
- local p = {
+ return {
   sp=sp_platform,
   x=x,
   y=y,
@@ -659,9 +681,16 @@ function init_platform(
   h=h,
   dx=0,
   dy=0,
-  collide_x=expel_x,
-  collide_y=expel_y,
+  
   delta_fn=delta_fn,
+  
+  collide=function(p,o)
+   local aim=block(p,o)
+   if aim=="⬇️" then
+    o.x+=p.dx
+    o.y+=p.dy
+   end
+  end,
 
   update=function(p)
    if (p.delta_fn) p:delta_fn()
@@ -673,9 +702,6 @@ function init_platform(
    spr(p.sp,p.x,p.y,1,1)
   end,
  }
-
- add(collidables, p)
- return p
 end
 
 function linear_delta_fn(
