@@ -411,7 +411,29 @@ end
 --blocks p from intersecting cl
 --returns block direction
 function block(cl,p)
- --determine intersection
+ local aim = coll_aim(cl,p)
+
+ if aim == "⬅️" then
+  p.x+=cl.x-p.x-p.w+1
+  return aim
+ end
+ if aim == "➡️" then
+  p.x+=cl.x+cl.w-p.x-1
+  return aim
+ end
+ if aim == "⬆️" then
+  p.y+=cl.y+cl.h-p.y-1
+  return aim
+ end
+ if aim == "⬇️" then
+  p.y+=cl.y-p.y-p.h
+  return aim
+ end
+
+ assert(false, "unkown aim")
+end
+
+function coll_aim(cl,p)
  local x=max(p.x,cl.x)
  local y=max(p.y,cl.y)
  local int={
@@ -425,19 +447,15 @@ function block(cl,p)
  if int.w<int.h then
   p.dx=0
   if p.x<cl.x then
-   p.x+=cl.x-p.x-p.w+1
    return "⬅️"
   else
-   p.x+=cl.x+cl.w-p.x-1
    return "➡️"
   end
  else
   p.dy=0
   if p.y>cl.y then
-   p.y+=cl.y+cl.h-p.y-1
    return "⬆️"
   else
-   p.y+=cl.y-p.y-p.h
    return "⬇️"
   end
  end
