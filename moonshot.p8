@@ -252,11 +252,15 @@ function _draw()
  --camera
  cam:draw()
 
- debug=stat(1)*100\1
-
  --debug
- if (debug) then
-  color(8)
+ color(8)
+ cpu=tostring(stat(1)*100\1)
+ print(
+  cpu,
+  peek2(0x5f28)+128-#cpu*4+1,
+  peek2(0x5f2a)
+ )
+ if debug then
   print(
    debug,
    peek2(0x5f28),
