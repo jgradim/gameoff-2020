@@ -14,6 +14,7 @@ fps=30
 
 --downward movement per cycle
 gravity=0.2
+
 --movement multiplier per cycle
 inertia=0.75
 
@@ -45,6 +46,7 @@ sp_button_off=18
 --obstacles that are rigid and
 --apply in all directions
 flag_hits=0
+
 --obstacles the player can stand
 --on but otherwise move through
 flag_stands=1
@@ -183,6 +185,7 @@ function _init()
  init_bg_fxs()
  init_fxs()
 
+--camera
  cam=init_camera()
 end
 
@@ -215,7 +218,6 @@ function _update()
  --players
  --path:update()
  foreach(all_players, update_player)
- cam:update()
 
  --mechanics
  foreach(mcns,update)
@@ -224,6 +226,9 @@ function _update()
  fire_fxs()
  update_bg_fxs()
  update_fxs()
+
+ --camera
+ cam:update()
 end
 
 function draw(o) return o:draw() end
@@ -244,6 +249,7 @@ function _draw()
  --players
  foreach(all_players,draw_player)
 
+ --camera
  cam:draw()
 
  debug=stat(1)*100\1
@@ -285,8 +291,7 @@ function init_camera()
  }
 end
 
-
---kls "extends" super
+--have kls "extends" super
 function class(super,kls)
  kls.meta={__index=super}
  return setmetatable(
@@ -294,7 +299,8 @@ function class(super,kls)
  )
 end
 
-function instance(kls, o)
+---make o an instance of kls
+function instance(kls,o)
   return setmetatable(
    o,{__index=kls}
   )
@@ -324,9 +330,10 @@ function intersects(a,b)
  and a.y+a.h>b.y
 end
 
+--todo:document
 function bucket(v, step)
- if(step == nil) step=0x0.01
- v-= sgn(v)*(v%step)
+ if (step==nil) step=0x0.01
+ v-=sgn(v)*(v%step)
  if (abs(v)<step) v=0
  return v
 end
@@ -345,7 +352,7 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
---check player collisions
+--collisions for p
 function collision(p,flag)
  --[[
  obj={x,y,w,h}
@@ -362,7 +369,6 @@ function collision(p,flag)
  return collision_plt(hb,flag)
  or collision_map(hb,flag)
 end
-
 
 collidables = {}
 function collision_plt(hb,flag)
@@ -960,7 +966,7 @@ spark_aura=class(base_fx,{
  end,
 
  draw=function(f)
-  local p = f.player
+  local p=f.player
   for i=1,f.amount do
    pset(
      p.x+rnd(p.w-1),
@@ -1061,7 +1067,7 @@ bg_fx={
  end,
 
  draw=function(f)
-  -- Camera
+  --camera
   local cmx = %0x5f28
   local cmy = %0x5f2a
   pset(cmx+f.x,cmy+f.y,f.c)
@@ -1406,7 +1412,7 @@ function vec2i(v,grid)
 end
 
 -->8
--- sound effects, music
+--sound effects, music
 
 --[[
 channels:
@@ -1420,7 +1426,7 @@ channels:
 ---sound fxs---
 ---------------
 
--- i=index,o=offset,l=length
+--i=index,o=offset,l=length
 sfx_map={
  walk={i=0,o=0,l=8},
  jump={i=1,o=0,l=6},
@@ -1436,8 +1442,8 @@ function play_sfx(_sfx)
 
  sfx(
   idx,
-  -- possibly bad idea, no way to
-  -- play 2 sfx at the same time
+  --possibly bad idea, no way to
+  --play 2 sfx at the same time
   3,
   sfx_map[_sfx].o,
   sfx_map[_sfx].l
@@ -1456,6 +1462,7 @@ music_tracks={
  bass_2bars={i=8,o=0,l=32},
  bass_4bars={i=9,o=0,l=32},
 }
+
 __gfx__
 000000000000000000000000006666000000000000000000000000000000000000000000000000000000000000000000d777777dddddddddddddddddd566667d
 00000000006666000066660006611c60006666000066660000000000000000000000000000000000000000000000000076666667ddddddddddddddddd566667d
