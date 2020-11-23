@@ -108,17 +108,17 @@ function _init()
  --characters
  playerlikes={
   init_player{
-   ⬆️=grav_boots,
-   color_map={1,0,12,5,8,9},
-   x=60*8,
-   y=28*8,
-  },
-  init_player{
    ⬆️=double_jump
   },
   init_player{
    ⬆️= glide,
    color_map={8,11,10,15,12,13}
+  },
+  init_player{
+   ⬆️=grav_boots,
+   color_map={1,0,12,5,8,9},
+   x=60*8,
+   y=28*8,
   },
  }
 
@@ -132,7 +132,7 @@ end
 
 function update(o) return o:update() end
 
-function player() return playerlikes[1] end
+function player() return playerlikes[#playerlikes] end
 fps=30
 function _update()
  --input
