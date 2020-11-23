@@ -121,7 +121,7 @@ function _init()
  --mechanics
  mcns=init_mechanics()
 
- --characters
+ --players
  all_players={
   init_player{
    ⬆️=double_jump
@@ -158,8 +158,6 @@ end
 
 function update(o) return o:update() end
 
-function player() return all_players[#all_players] end
-
 function _update()
  --input
  player_btns={"⬅️","➡️","⬆️"}
@@ -184,8 +182,8 @@ function _update()
   end
  end
 
- --characters
- path:update()
+ --players
+ --path:update()
  foreach(all_players, update_player)
  cam:update()
 
@@ -202,26 +200,6 @@ end
 
 function draw(o) return o:draw() end
 
-function init_camera()
- return {
-  x=0,
-  y=0,
-  frms=7.5,
-
-  update=function(c)
-   c.x+=bucket((player().x - c.x)/c.frms)
-   c.y+=bucket((player().y - c.y)/c.frms)
-  end,
-
-  draw=function(c)
-   camera(
-    mid(0,c.x-64,960),
-    mid(0,c.y-64,128)
-   )
-  end,
- }
-end
-
 function _draw()
  cls()
 
@@ -235,7 +213,7 @@ function _draw()
  --mechanics
  foreach(mcns,draw)
 
- --characters
+ --players
  foreach(all_players,draw_player)
 
  cam:draw()
@@ -258,6 +236,29 @@ end
 -----------
 ---utils---
 -----------
+
+function player() return all_players[#all_players] end
+
+function init_camera()
+ return {
+  x=0,
+  y=0,
+  frms=7.5,
+
+  update=function(c)
+   c.x+=bucket((player().x - c.x)/c.frms)
+   c.y+=bucket((player().y - c.y)/c.frms)
+  end,
+
+  draw=function(c)
+   camera(
+    mid(0,c.x-64,960),
+    mid(0,c.y-64,128)
+   )
+  end,
+ }
+end
+
 
 --kls "extends" super
 function class(super,kls)
@@ -419,7 +420,7 @@ end
 --]]
 
 -->8
---characters:entity,player
+--player
 
 ------------
 ---player---
