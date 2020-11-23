@@ -107,16 +107,19 @@ function _init()
 
  --characters
  playerlikes={
-  init_player(
-   jump,
-   {1,0,12,5,8,9},
-   {x=60*8,y=28*8}
-  ),
-  init_player(double_jump),
-  init_player(
-   glide,
-   {8,11,10,15,12,13}
-  ),
+  init_player{
+   ⬆️=jump,
+   color_map={1,0,12,5,8,9},
+   x=60*8,
+   y=28*8,
+  },
+  init_player{
+   ⬆️=double_jump
+  },
+  init_player{
+   ⬆️= glide,
+   color_map={8,11,10,15,12,13}
+  },
  }
 
  --fxs
@@ -378,10 +381,8 @@ end
 run_accel=0.55
 jump_accel=2.55
 
-function init_player(⬆️,color_map,opts)
- if ⬆️ == nil then ⬆️ = glide end
-
- local config={
+function init_player(p)
+ return instance({
   x=0,
   y=0,
   w=8,
@@ -402,16 +403,8 @@ function init_player(⬆️,color_map,opts)
 
   ⬅️=run_left,
   ➡️=run_right,
-  ⬆️=⬆️,
-
-  color_map=color_map,
- }
-
- for k,v in pairs(opts) do
-  config[k] = v
- end
-
- return config
+  ⬆️=glide,
+ }, p)
 end
 
 function update_player(p)
