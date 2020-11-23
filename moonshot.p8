@@ -10,6 +10,8 @@ __lua__
 ---constants---
 ---------------
 
+fps=30
+
 --downward movement per cycle
 gravity=0.2
 --movement multiplier per cycle
@@ -157,7 +159,7 @@ end
 function update(o) return o:update() end
 
 function player() return all_players[#all_players] end
-fps=30
+
 function _update()
  --input
  player_btns={"⬅️","➡️","⬆️"}
