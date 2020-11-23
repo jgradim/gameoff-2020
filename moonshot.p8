@@ -127,6 +127,7 @@ function _init()
  init_fxs()
 
  init_spark(1*8,10*8)
+ cam=init_camera()
 end
 
 function update(o) return o:update() end
@@ -157,6 +158,7 @@ function _update()
  --characters
  path:update()
  foreach(playerlikes, update_player)
+ cam:update()
 
  --mechanics
  foreach(mcns,update)
@@ -170,6 +172,25 @@ function _update()
 end
 
 function draw(o) return o:draw() end
+
+function init_camera()
+ return {
+  x=0,
+  y=0,
+
+  update=function(c)
+   c.x+=bucket((player().x - c.x)/2)
+   c.y+=bucket((player().y - c.y)/2)
+  end,
+
+  draw=function(c)
+   camera(
+    mid(0,c.x-64,960),
+    mid(0,c.y-64,128)
+   )
+  end,
+ }
+end
 
 function _draw()
  cls()
@@ -187,11 +208,7 @@ function _draw()
  --characters
  foreach(playerlikes,draw_player)
 
- --camera
- camera(
-  mid(0,player().x-64,960),
-  mid(0,player().y-64,128)
- )
+ cam:draw()
 
  foreach(sparks,draw)
 
