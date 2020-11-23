@@ -115,7 +115,7 @@ function init_mechanics()
   )
  )
  local plt3=init_platform(
-  59*8,26*8,8,8
+  59*8,26*8,8,8,
   linear_delta_fn(
    --59,26 <-> 59,29
    59*8,26*8,59*8,29*8
@@ -132,14 +132,14 @@ function init_mechanics()
  --doors
  --x,y,open
  local door0=init_door(
-  12*8,12*8,false
+  56*8,28*8,false
  )
 
  --buttons
  --x,y,on
  local btn0=init_button(
-  12*8,14*8,false,
-  door_toggle_fn(door1)
+  62*8,25*8,false,
+  door_toggle_fn(door0)
  )
 
  --return list of mechanics
@@ -170,11 +170,11 @@ function _init()
    ⬆️=double_jump
   },
   init_player{
-   ⬆️= glide,
+   ⬆️=glide,
    color_map={8,11,10,15,12,13}
   },
   init_player{
-   ⬆️=grav_boots,
+   ⬆️=jump,
    color_map={1,0,12,5,8,9},
    x=60*8,
    y=28*8,
@@ -185,7 +185,7 @@ function _init()
  init_bg_fxs()
  init_fxs()
 
---camera
+ --camera
  cam=init_camera()
 end
 
@@ -217,7 +217,7 @@ function _update()
 
  --players
  --path:update()
- foreach(all_players, update_player)
+ foreach(all_players,update_player)
 
  --mechanics
  foreach(mcns,update)
@@ -357,7 +357,7 @@ function ef_smooth(f)
 end
 
 --collisions for p
-function collision(p,flag)
+function collisions(p,flag)
  --[[
  obj={x,y,w,h}
  flag=<sprite flags above>
@@ -497,9 +497,8 @@ function update_player(p)
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
  p.x+=p.dx
- for cl in all(
-  collisions(p,flag_hits)
- ) do
+ local hcl=collisions(p,flag_hits)
+ for cl in all(hcl) do
   cl:collide(p)
  end
 
@@ -511,16 +510,15 @@ function update_player(p)
  end
  p.dy=clamp(p.dy,p.max_dy,0x.08)
  p.y+=p.dy
- for cl in all(
-  collisions(p,flag_hits)
- ) do
-  cl:collide(p)
+ local vcl=collisions(p,flag_hits)
+ for cl in all(vcl) do
+  local aim=cl:collide(p)
  end
 
  --state
  p.running=p.running and
   abs(p.dx)>0.5
- p.landed=p.falling and vcl!=nil
+ p.landed=p.falling and #vcl>0
  if p.landed then
   p.falling=false
   p.jumping=false
@@ -651,7 +649,7 @@ function init_spark(
    if aim=="⬅️" or aim=="➡️"
    then
     p.dx=-old_dx*10
-   elseif aim=="⬅️" or aim=="➡️"
+   elseif aim=="⬆️" or aim=="⬇️"
    then
     p.dy=-old_dy*10
    end
