@@ -180,10 +180,11 @@ function init_camera()
  return {
   x=0,
   y=0,
+  frms=7.5,
 
   update=function(c)
-   c.x+=bucket((player().x - c.x)/2)
-   c.y+=bucket((player().y - c.y)/2)
+   c.x+=bucket((player().x - c.x)/c.frms)
+   c.y+=bucket((player().y - c.y)/c.frms)
   end,
 
   draw=function(c)
