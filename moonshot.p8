@@ -380,7 +380,7 @@ jump_accel=2.55
 
 function init_player(⬆️,color_map,opts)
  if ⬆️ == nil then ⬆️ = glide end
- 
+
  local config={
   x=0,
   y=0,
@@ -406,11 +406,11 @@ function init_player(⬆️,color_map,opts)
 
   color_map=color_map,
  }
- 
+
  for k,v in pairs(opts) do
   config[k] = v
  end
- 
+
  return config
 end
 
@@ -1021,11 +1021,11 @@ function animate_lights()
    abs(cos(t()/f))*#s\1,
    #s-2
   )
-  
+
   if c<0 or c>4 then
    printh(m.."/"..c)
   end
-  
+
   pal(m,s[c+1])
  end
 end
