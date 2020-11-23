@@ -371,7 +371,7 @@ function collisions(p,flag)
  }
 
  local collisions={}
- 
+
  --check mechanics
  for m in all(mcns) do
   if m.collide
@@ -380,7 +380,7 @@ function collisions(p,flag)
    add(collisions,m)
   end
  end
- 
+
  --check map
  local x1=hb.x
  local x2=hb.x+hb.w-1
@@ -401,7 +401,7 @@ function collisions(p,flag)
    end
   end
  end
- 
+
  return collisions
 end
 
@@ -417,7 +417,7 @@ function block(cl,p)
   w=min(p.x+p.w,cl.x+cl.w)-x,
   h=min(p.y+p.h,cl.y+cl.h)-y,
  }
- 
+
  --resolve using shallowest axis
  if int.w<int.h then
   p.dx=0
@@ -641,7 +641,7 @@ function init_spark(
   dx=0,
   dy=0,
   sp=sp_spark_start,
-  
+
   collide=function(s,p)
    local old_dx=p.dx
    local old_dy=p.dy
@@ -685,9 +685,9 @@ function init_platform(
   h=h,
   dx=0,
   dy=0,
-  
+
   delta_fn=delta_fn,
-  
+
   collide=function(p,o)
    local aim=block(p,o)
    if aim=="⬇️" then
@@ -780,10 +780,10 @@ function init_button(
   h=8,
   on=on,
   toggle_fn=toggle_fn,
-  
+
   collided_prev=false,
   collided_at=0,
-  
+
   collide=function(b)
    collided_at=time()
   end,
