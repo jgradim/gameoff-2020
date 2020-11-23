@@ -32,11 +32,11 @@ sp_spark_length=4
 
 sp_platform=48
 
-sp_door_opened=87
-sp_door_closed=84
+sp_door_opened=36
+sp_door_closed=32
 
-sp_button_on=104
-sp_button_off=105
+sp_button_on=16
+sp_button_off=18
 
 ------------------
 ---sprite flags---
@@ -114,7 +114,7 @@ function init_mechanics()
  )
  local plt3=init_platform(
   59*8,26*8,8,8
-  linear_delta_fn
+  linear_delta_fn(
    --59,26 <-> 59,29
    59*8,26*8,59*8,29*8
   )
