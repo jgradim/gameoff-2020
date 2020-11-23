@@ -360,12 +360,7 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
---collisions for p
 function collisions(p,flag)
- --[[
- obj={x,y,w,h}
- flag=<sprite flags above>
- --]]
 
  local hb={
   x=p.x+1,--+1=left pad
