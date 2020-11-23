@@ -146,7 +146,7 @@ function _update()
  if btnp(❎) then
    add(
      all_players,
-     deli(all_players, #all_players)
+     deli(all_players, #all_players),
      1
    )
  end
