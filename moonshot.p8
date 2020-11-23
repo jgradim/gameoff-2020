@@ -70,6 +70,20 @@ function init_mechanics()
    112,120,112,104
   )
  )
+ local plt4=init_platform(
+  --cel 59,26 <-> 59,29
+  472,208,8,8,
+  linear_delta_fn(
+   472,208,472,232
+  )
+ )
+ local plt5=init_platform(
+  --cel 57,24 <-> 57,29
+  456,192,8,8,
+  linear_delta_fn(
+   456,192,456,232
+  )
+ )
 
  --doors
  --x,y,open
@@ -88,7 +102,7 @@ function init_mechanics()
 
  --return list of mechanics
  return {
-  plt1,plt2,plt3,
+  plt1,plt2,plt3,plt4,plt5,
   door1,
   button1,
  }
