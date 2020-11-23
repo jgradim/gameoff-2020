@@ -363,10 +363,10 @@ end
 function collisions(p,flag)
 
  local hb={
-  x=p.x+1,--+1=left pad
-  y=p.y+1,--+1=top pad
-  w=p.w-2,---2=horizontal pad
-  h=p.h-1,---1=vertical pad
+  x=p.x+1,
+  y=p.y+1,
+  w=p.w-2,
+  h=p.h-1,
  }
 
  local collisions={}
