@@ -106,7 +106,7 @@ function _init()
  mcns=init_mechanics()
 
  --characters
- playerlikes={
+ all_players={
   init_player{
    ⬆️=double_jump
   },
@@ -132,7 +132,7 @@ end
 
 function update(o) return o:update() end
 
-function player() return playerlikes[#playerlikes] end
+function player() return all_players[#all_players] end
 fps=30
 function _update()
  --input
@@ -144,20 +144,23 @@ function _update()
   end
  end
  if btnp(❎) then
-   local new_player = deli(playerlikes, #playerlikes)
-   add(playerlikes, new_player, 1)
+   add(
+     all_players,
+     deli(all_players, #all_players)
+     1
+   )
  end
  if btnp(🅾️) then
   if path.found then
    path:apply()
   else
-   path:find(unpack(playerlikes))
+   path:find(unpack(all_players))
   end
  end
 
  --characters
  path:update()
- foreach(playerlikes, update_player)
+ foreach(all_players, update_player)
  cam:update()
 
  --mechanics
@@ -206,7 +209,7 @@ function _draw()
  foreach(mcns,draw)
 
  --characters
- foreach(playerlikes,draw_player)
+ foreach(all_players,draw_player)
 
  cam:draw()
 
@@ -719,8 +722,8 @@ function init_button(
 
   update=function(b)
    local is_coll = false
-   for i=1,#playerlikes do
-     is_coll = is_coll or intersects(playerlikes[i],b)
+   for i=1,#all_players do
+     is_coll = is_coll or intersects(all_players[i],b)
    end
    if is_coll and not b.was_colliding then
     on = not on
@@ -766,7 +769,7 @@ end
 
 function fire_fxs()
  foreach(
-  playerlikes,
+  all_players,
   function(p)
    if p.gliding then
     rocket:on_player(p)
