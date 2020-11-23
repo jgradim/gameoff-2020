@@ -360,15 +360,27 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
-function collisions(p,flag)
-
- local hb={
+function hitbox(p)
+ return {
   x=p.x+1,
   y=p.y+1,
   w=p.w-2,
   h=p.h-1,
  }
+end
 
+function stand_box(p)
+ return {
+  x=p.x+2,
+  w=4,
+  y=p.y+p.h,
+  h=1,
+ }
+end
+
+function collisions(p,flag)
+
+ local hb=hitbox(p)
  local collisions={}
 
  --check mechanics
@@ -533,7 +545,7 @@ function update_player(p)
  p.y+=p.dy
  local vcl=collisions(p,flag_hits)
  for cl in all(vcl) do
-  local aim=cl:collide(p)
+  cl:collide(p)
  end
 
  --state
@@ -709,18 +721,18 @@ function init_platform(
 
   delta_fn=delta_fn,
 
-  collide=function(p,o)
-   local aim=block(p,o)
-   if aim=="⬇️" then
-    o.x+=p.dx
-    o.y+=p.dy
-   end
-  end,
+  collide=block,
 
   update=function(p)
    if (p.delta_fn) p:delta_fn()
    p.x+=p.dx
    p.y+=p.dy
+   foreach(all_players, function(pl)
+    if intersects(stand_box(pl), p) then
+     pl.x+=p.dx
+     pl.y+=p.dy
+    end
+   end)
   end,
 
   draw=function(p)
