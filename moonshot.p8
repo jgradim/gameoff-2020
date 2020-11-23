@@ -530,6 +530,8 @@ function init_player(p)
   jumping=false,
   falling=false,
   gliding=false,
+  glided=false,
+  ground=false,
   landed=false,
 
   color="red",
@@ -544,6 +546,9 @@ function init_player(p)
 end
 
 function update_player(p)
+ local old_y=p.y\1
+ local old_x=p.x\1
+ 
  --move horizontally
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
@@ -561,29 +566,48 @@ function update_player(p)
  end
  p.dy=clamp(p.dy,p.max_dy,0x.08)
  p.y+=p.dy
+ local ground_aim=
+  p.flpy and "⬆️" or "⬇️"
+ local ground_hit=false
  local vcl=collisions(p,flag_hits)
  for cl in all(vcl) do
-  cl:collide(p)
+  local aim=cl:collide(p)
+  if (aim==ground_aim) ground_hit=true
  end
 
  --state
- p.running=p.running and
-  abs(p.dx)>0.5
- p.landed=p.falling and #vcl>0
- if p.landed then
+ local was_ground=p.ground
+ --running:x changes after dx
+ --and collisions
+ p.running=p.x\1!=old_x
+ --ground:ground hit or no y
+ --changes while on ground
+ p.ground=ground_hit or
+  (p.ground and p.y\1==old_y)
+ --landed:newly on ground
+ p.landed=p.ground and not was_ground
+ if p.ground then
   p.falling=false
   p.jumping=false
   p.gliding=false
  else
-  p.falling=p.dy>=0.5
+  --falling:moving downwards
+  --(mini gravity movements
+  --excluded since ground=true)
+  p.falling=not p.gliding and
+   (p.flpy and p.dy<0 or p.dy>0)
   if p.falling then
    p.jumping=false
    p.gliding=false
   end
  end
+ --glided:glided this cycle
+ p.glided=p.gliding
+ --gliding:true on user input
+ p.gliding=false
 
  --sprite
- if p.gliding then
+ if p.glided then
   p.sp=sp_player_glide
  elseif p.jumping then
   p.sp=sp_player_jump
@@ -613,12 +637,10 @@ end
 function jump(p,first)
  if (not first) return
 
- if not p.jumping
- and not p.falling then
+ if p.ground then
   p.dy=-jump_accel
   play_sfx("jump")
   p.jumping=true
-  p.landed=false
  end
 end
 
@@ -636,8 +658,7 @@ function double_jump(p,first)
   jump(p,true)
   p._j=true
  elseif p._j then
-  p.jumping=false
-  p.falling=false
+  p.ground=true
   jump(p,true)
   p._j=nil
  end
@@ -645,15 +666,15 @@ end
 
 function glide(p,_)
  if not p.gliding
- and not p.jumping
- and not p.falling
+ and p.ground
  then
   jump(p,true)
   return
  end
 
  if not p.gliding
- and p.dy<0 then
+ and p.jumping
+ then
   return
  end
 
@@ -896,7 +917,7 @@ function fire_fxs()
  foreach(
   all_players,
   function(p)
-   if p.gliding then
+   if p.glided then
     rocket:on_player(p)
    end
    if p.landed then
