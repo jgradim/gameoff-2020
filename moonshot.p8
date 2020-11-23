@@ -781,19 +781,26 @@ function init_button(
   w=8,
   h=8,
   on=on,
-  was_colliding=false,
   toggle_fn=toggle_fn,
+  
+  collided_prev=false,
+  collided_at=0,
+  
+  collide=function(b)
+   collided_at=time()
+  end,
 
   update=function(b)
-   local is_coll = false
-   for i=1,#all_players do
-     is_coll = is_coll or intersects(all_players[i],b)
+   --collision changes
+   local collided=
+    collided_at==time()
+   if collided
+   and not collided_prev then
+    on=not on
    end
-   if is_coll and not b.was_colliding then
-    on = not on
-   end
-   b.was_colliding = is_coll
+   collided_prev=collided
 
+   --on/off changes
    if on
    and b.sp!=sp_button_on
    then
