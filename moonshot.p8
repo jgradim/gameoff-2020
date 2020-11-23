@@ -388,7 +388,7 @@ function collisions(p,flag)
  local y2=hb.y+hb.h-1
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
-   if fget(mget(x/8,y/8),flag) then
+   if flag_on_xy(x,y,flag) then
     add(collisions,{
      x=x\8*8,
      y=y\8*8,
@@ -403,6 +403,10 @@ function collisions(p,flag)
  end
 
  return collisions
+end
+
+function flag_on_xy(x,y,flag)
+ return fget(mget(x/8,y/8),flag)
 end
 
 --blocks p from intersecting cl
