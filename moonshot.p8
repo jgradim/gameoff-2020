@@ -191,6 +191,14 @@ end
 
 function update(o) return o:update() end
 
+function focus_next_player()
+ add(
+  all_players,
+  deli(all_players, #all_players),
+  1
+ )
+end
+
 function _update()
  --input
  player_btns={"⬅️","➡️","⬆️"}
@@ -201,11 +209,7 @@ function _update()
   end
  end
  if btnp(❎) then
-   add(
-     all_players,
-     deli(all_players, #all_players),
-     1
-   )
+  focus_next_player()
  end
  if btnp(🅾️) then
   if path.found then
