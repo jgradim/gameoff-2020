@@ -12,6 +12,9 @@ __lua__
 
 fps=30
 
+map_width=1024
+map_height=256
+
 --downward movement per cycle
 gravity=0.2
 
@@ -297,8 +300,8 @@ function init_camera()
 
   draw=function(c)
    camera(
-    mid(0,c.x-64,960),
-    mid(0,c.y-64,128)
+    mid(0,c.x-64,map_width-64),
+    mid(0,c.y-64,map_height-128)
    )
   end,
  }
