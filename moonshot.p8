@@ -207,12 +207,16 @@ function _update()
   if path.found then
    path:apply()
   else
-   path:find(unpack(all_players))
+   path:find(
+    all_players[2],
+    all_players[2],
+    player()
+   )
   end
  end
 
  --players
- --path:update()
+ path:update()
  foreach(all_players,update_player)
 
  --mechanics
@@ -1205,7 +1209,7 @@ end
 --path
 
 path={
- npc=nil,
+ player=nil,
  from=nil,
  to=nil,
 
@@ -1225,9 +1229,9 @@ path={
  btns={},
 
  find=function(
-  self,npc,from,to,grid
+  self,player,from,to,grid
  )
-  self.npc=npc
+  self.player=player
 
   self.from=from
   self.to=to
@@ -1353,8 +1357,8 @@ path={
 
  _update_apply=function(self)
   if #self.btns>0 then
-   move_npc(
-    self.npc,
+   move_player(
+    self.player,
     unpack(pop(self.btns))
    )
   else
@@ -1362,7 +1366,7 @@ path={
   end
  end,
 
- --expand n by moving it
+ --expand node by moving it
  _expand=function(self,n)
   local ns={}
   local grid=self.grid
@@ -1378,7 +1382,7 @@ path={
    "⬆️➡️",--press up/right
   }) do
    local cur={
-    --npc data
+    --player data
     x=n.x,
     y=n.y,
     w=n.w,
@@ -1388,7 +1392,7 @@ path={
     max_dx=n.max_dx,
     max_dy=n.max_dy,
 
-    --npc btns functions
+    --player btns functions
     ⬅️=n.⬅️,
     ➡️=n.➡️,
     ⬆️=n.⬆️,
@@ -1407,10 +1411,10 @@ path={
     update_player(cur)
     add(cur.btns,{btns,tap})
 
-    local bounds={
-     x=0,y=0,w=128,h=128
-    }
-    if contains(bounds,cur)
+    if cur.x>=0
+    and cur.x<=map_width
+    and cur.y>=0
+    and cur.y<=map_height
     and (cur.x\grid!=start_x
     or cur.y\grid!=start_y)
     then
@@ -1487,12 +1491,11 @@ end
 
 --convert x,y to map index
 --snaps x,y into map tiles
---there are 16x16 map tiles
---which are 8x8 pixels wide
+--i=x+width*y
 function vec2i(v,grid)
  return 1+
   (v.x\grid)+
-  (128/grid)*(v.y\grid)
+  (map_width/grid)*(v.y\grid)
 end
 
 -->8
