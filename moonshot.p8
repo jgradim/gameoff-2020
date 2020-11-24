@@ -1158,9 +1158,9 @@ function animate_lights()
    #s-2
   )
 
-  if c<0 or c>4 then
-   printh(m.."/"..c)
-  end
+  --if c<0 or c>4 then
+  -- printh(m.."/"..c)
+  --end
 
   pal(m,s[c+1])
  end
@@ -1191,7 +1191,7 @@ function escape_pod(x,y,cm)
   local sy=8*(sp_e_pod/16\1)
 
   for c1,c2 in pairs(cm) do
-    printh(c1.."->"..c2)
+    --printh(c1.."->"..c2)
     pal(c1,c2)
   end
   sspr(sx,sy,32,24,x,y)
