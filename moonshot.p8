@@ -188,14 +188,6 @@ end
 
 function update(o) return o:update() end
 
-function focus_next_player()
- add(
-  all_players,
-  deli(all_players, #all_players),
-  1
- )
-end
-
 function _update()
  --input
  player_btns={"⬅️","➡️","⬆️"}
@@ -280,7 +272,17 @@ end
 ---utils---
 -----------
 
-function player() return all_players[#all_players] end
+function player()
+ return all_players[#all_players]
+end
+
+function focus_next_player()
+ add(
+  all_players,
+  deli(all_players,#all_players),
+  1
+ )
+end
 
 function init_camera()
  return {
