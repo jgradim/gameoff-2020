@@ -46,6 +46,16 @@ sp_button_off=18
 sp_speech=10
 sp_e_pod=28
 
+---------------------
+---player colors---
+---------------------
+p_colors={
+  red={[8]=8},
+  yellow={[1]=0,[12]=5,[8]=9},
+  blue={[8]=1,[12]=14,[6]=5},
+  green={[8]=3,[10]=11}
+}
+
 ------------------
 ---sprite flags---
 ------------------
@@ -139,7 +149,8 @@ function init_mechanics()
  --x,y,on
  local btn0=init_button(
   62*8,25*8,false,
-  door_toggle_fn(door0)
+  door_toggle_fn(door0),
+  "❎"
  )
 
  --return list of mechanics
@@ -167,15 +178,15 @@ function _init()
  --players
  all_players={
   init_player{
-   ⬆️=double_jump
+   ⬆️=double_jump,
   },
   init_player{
    ⬆️=glide,
-   color_map={8,11,10,15,12,13}
+   color="green",
   },
   init_player{
    ⬆️=jump,
-   color_map={1,0,12,5,8,9},
+   color="yellow",
    x=60*8,
    y=28*8,
   },
@@ -200,20 +211,20 @@ function _update()
    if (fn) fn(player(),btnp(i-1))
   end
  end
- if btnp(❎) then
+ if btnp(🅾️) then
   focus_next_player()
  end
- if btnp(🅾️) then
-  if path.found then
-   path:apply()
-  else
-   path:find(
-    all_players[2],
-    all_players[2],
-    player()
-   )
-  end
- end
+ --if btnp(🅾️) then
+ -- if path.found then
+ --  path:apply()
+ -- else
+ --  path:find(
+ --   all_players[2],
+ --   all_players[2],
+ --   player()
+ --  )
+ -- end
+ --end
 
  --players
  path:update()
@@ -248,12 +259,6 @@ function _draw()
 
  --players
  foreach(all_players,draw_player)
-
- --fixme: remove
- speech_bubble(62*8,26*8,"❎",9)
- escape_pod(59*8,20*8,{
-  [11]=10,[3]=8
- })
 
  --camera
  cam:draw()
@@ -527,6 +532,7 @@ function init_player(p)
   gliding=false,
   landed=false,
 
+  color="red",
   sp=sp_player_idle,
   flpx=false,
   flpy=false,
@@ -656,13 +662,9 @@ function glide(p,_)
 end
 
 function draw_player(p)
- if p.color_map then
-   for i=1,#p.color_map,2 do
-    pal(
-     p.color_map[i],
-     p.color_map[i+1]
-    )
-   end
+ local cm = p_colors[p.color]
+ for c1,c2 in pairs(cm) do
+   pal(c1,c2)
  end
  spr(p.sp,p.x,p.y,1,1,p.flpx, p.flpy)
  pal()
@@ -814,14 +816,11 @@ end
 -------------
 
 function init_button(
- x,y,on,toggle_fn
+ x,y,on,toggle_fn,label
 )
- local sp
- if on then
-  sp=sp_button_on
- else
-  sp=sp_button_off
- end
+ local sp = on and sp_button_on
+  or sp_button_off
+
  return {
   sp=sp,
   x=x,
@@ -829,42 +828,45 @@ function init_button(
   w=8,
   h=8,
   on=on,
-  toggle_fn=toggle_fn,
+  label=label,
+  toggle=function(b)
+    b.on = not b.on
+    b.sp = b.on and sp_button_on
+     or sp_button_off
+
+    toggle_fn(b.on)
+  end,
 
   collided_prev=false,
   collided_at=0,
 
   collide=function(b)
-   collided_at=time()
+   b.collided_at=time()
   end,
 
   update=function(b)
    --collision changes
    local collided=
-    collided_at==time()
-   if collided
-   and not collided_prev then
-    on=not on
-   end
-   collided_prev=collided
+    b.collided_at==time()
 
-   --on/off changes
-   if on
-   and b.sp!=sp_button_on
-   then
-    b.sp=sp_button_on
-    toggle_fn(on)
+    if collided and btnp(❎) then
+       b:toggle()
    end
-   if not on
-   and b.sp!=sp_button_off
-   then
-    b.sp=sp_button_off
-    toggle_fn(on)
-   end
+
+   b.collided_prev=collided
   end,
 
   draw=function(b)
    spr(b.sp,b.x,b.y,1,1)
+   if b.label != nil
+    and b.collided_prev then
+     local c=
+      p_colors[player().color][8]
+
+     speech_bubble(
+      b.x,b.y,b.label,c
+     )
+   end
   end,
  }
 end
@@ -1181,7 +1183,7 @@ function speech_bubble(x,y,l,c)
   local sx=8*(sp_speech%16)
   local sy=8*flr(sp_speech/16)
   local dx=x-4
-  local dy=y-19+cos(t()/2)+.5
+  local dy=y-12+cos(t()/2)+.5
 
   pal(11,c)
   sspr(sx,sy,16,16,dx,dy)
@@ -1746,7 +1748,7 @@ d6666666d6666666d6666666d6666666d6666666d6666666d6666666d6666666d6666666d6666666
 5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d5555555d
 
 __gff__
-0000000000000000000000000000010001010101010101000000000000000000010101010000000000000000000000000101010100000000000000000000000000010100000002010101000000000000010101000000000101010000000000000101010000000000000000000000000001010000000000000000000000000000
+0000000000000000000000000000000001010101010101000000000000000000010101010000000000000000000000000101010100000000000000000000000000010100000002010101000000000000010101000000000101010000000000000101010000000000000000000000000001010000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 4040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040404040
