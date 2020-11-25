@@ -741,14 +741,14 @@ function init_platform(
    if (p.delta_fn) p:delta_fn()
    p.x+=p.dx
    p.y+=p.dy
-   
+
    foreach(all_players, function(pl)
     if intersects(stand_box(pl), p) then
      pl.x+=p.dx
      pl.y+=p.dy
     end
    end)
-   
+
    p.sp=sp_platform_start+
     (t()*8)%sp_platform_length
   end,
