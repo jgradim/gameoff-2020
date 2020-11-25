@@ -395,6 +395,10 @@ function stand_box(p)
  }
 end
 
+function sprite_hitbox(sp, x, y)
+  return {x=x,y=y,w=8,h=8}
+end
+
 function collisions(p,flag)
 
  local hb=hitbox(p)
@@ -416,7 +420,13 @@ function collisions(p,flag)
  local y2=hb.y+hb.h-1
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
-   if flag_on_xy(x,y,flag) then
+   local map_sp=mget(x/8,y/8)
+   if fget(map_sp, flag)
+   and intersects(
+     sprite_hitbox(map_sp, x, y),
+     hb
+   )
+   then
     add(collisions,{
      x=x\8*8,
      y=y\8*8,
