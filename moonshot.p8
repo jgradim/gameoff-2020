@@ -788,7 +788,11 @@ function init_door(x,y,open)
   sp=sp,
   x=x,
   y=y,
+  w=8,
+  h=8,
   open=open,
+
+  collide=block,
 
   update=function(d)
    local dsp=0
