@@ -48,6 +48,100 @@ sp_e_pod=28
 sp_tiny_font=128
 
 ---------------------
+---custom hitboxes---
+---------------------
+
+custom_hitboxes={
+ -- player
+ [1]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- idle
+ [2]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- run 1
+ [1]={{2,0,4,1},{1,1,6,2},{2,3,4,4}}, -- mid run jump
+ [1]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- run 2
+ [1]={{2,2,4,1},{1,3,6,2},{2,5,4,3}}, -- crouch
+ [1]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- jetpack
+
+ -- interactive sprites
+ [32]={{1,0,6,8}},           -- door
+ [33]={{1,0,6,3},{1,5,6,3}}, -- door
+ [34]={{1,0,6,2},{1,6,6,2}}, -- door
+ [35]={{1,0,6,1},{1,5,7,1}}, -- door
+ [48]={{0,0,8,3}}, -- moving platform
+ [49]={{0,0,8,3}}, -- moving platform
+ [50]={{0,0,8,3}}, -- moving platform
+ [51]={{0,0,8,3}}, -- moving platform
+
+ -- map tiles
+ [65]= {{0,0,8,5},{0,5,7,1}}, -- right endpiece
+ [81]= {{0,0,8,5},{1,5,7,1}}, -- left endpiece
+ [82]= {{1,0,6,5},{2,6,4,1}}, -- top endpiece
+ [98]= {{1,1,6,7}}, -- bottom endpiece
+ [66]= {{1,0,6,8}}, -- wall
+ [104]={{1,0,6,8}}, -- wall w/ cable
+ [120]={{1,0,6,8}}, -- wall w/ cable
+ [67]= {{1,0,6,8},{7,0,1,6}}, -- top left corner
+ [68]= {{0,0,1,6},{1,0,6,8}}, -- top right corner
+ [67]= {{1,0,7,5},{2,5,6,1}}, -- bottom left corner
+ [68]= {{0,0,7,5},{0,5,6,1}}, -- bottom right corner
+ [80]= {{0,0,8,6}}, --floor
+ [72]= {{0,0,8,6}}, --floor w/ cable
+ [96]= {{0,0,8,6},{1,6,6,2}}, -- "t"
+ [112]={{0,0,8,6}}, -- reverse "t" (floor)
+ [97]= {{0,0,7,6},{1,6,6,2}}, -- branch left
+ [73]= {{0,0,7,6},{1,6,6,2}}, -- branch left w/ cable
+ [113]={{1,0,7,6},{1,6,6,2}}, -- branch right
+ [89]= {{1,0,7,6},{1,6,6,2}}, -- branch right w/ cable
+}
+
+function map_(f,vs)
+ local r={}
+ for v in all(vs) do
+  add(r,f(v))
+ end
+ return r
+end
+
+function get(f)
+ return function(o)
+  return o[f]
+ end
+end
+
+function min_(vs)
+ return reduce(vs[1], min, vs)
+end
+function max_(vs)
+ return reduce(vs[1], max, vs)
+end
+
+function reduce(a0, f, vs)
+ local a = a0
+ for v in all(vs) do
+  a = f(a, v)
+ end
+ return a
+end
+
+function bounding_box(bs)
+ local function x2(b) return b.x + b.w - 1 end
+ local function y2(b) return b.y + b.h - 1 end
+
+ local r = {
+  x=min_(map_(get('x'), bs)),
+  y=min_(map_(get('y'), bs)),
+  x2=max_(map_(x2, bs)),
+  y2=max_(map_(y2, bs)),
+ }
+ r.w=r.x2-r.x+1
+ r.h=r.y2-r.y+1
+ r.x2=nil
+ r.y2=nil
+ return r
+end
+
+--printh(bounding_box(custom_hitboxes[1]))
+printh(bounding_box({{x=2,y=1,w=4,h=1},{1,2,6,2},{2,4,4,4}}))
+
+---------------------
 ---player colors---
 ---------------------
 p_colors={
