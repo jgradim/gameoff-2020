@@ -923,6 +923,10 @@ end
 function door_toggle_fn(d)
  return function(on)
   d.open=on
+  if (on)
+    then play_sfx("door_open")
+    else play_sfx("door_close")
+    end
  end
 end
 
