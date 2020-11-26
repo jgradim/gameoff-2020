@@ -174,22 +174,12 @@ function _init()
  poke(0x5f5c, 255)
 
  --mechanics
- mcns=init_mechanics()
+ mcns={}-- init_mechanics()
 
  --players
  all_players={
   init_player{
    ⬆️=double_jump,
-  },
-  init_player{
-   ⬆️=glide,
-   color="green",
-  },
-  init_player{
-   ⬆️=jump,
-   color="yellow",
-   x=60*8,
-   y=28*8,
   },
  }
 
@@ -391,12 +381,14 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
-function hitbox(p)
+function player_hitboxes(p)
  return {
-  x=p.x+1,
-  y=p.y+1,
-  w=p.w-2,
-  h=p.h-1,
+  {
+    x=p.x+1,
+    y=p.y+1,
+    w=p.w-2,
+    h=p.h-1,
+  },
  }
 end
 
@@ -409,37 +401,113 @@ function stand_box(p)
  }
 end
 
-function sprite_hitbox(sp, x, y)
-  return {x=x,y=y,w=8,h=8}
+custom_hitboxes={
+ [65]= {{0,0,8,6}}, -- right endpiece
+ [66]= {{1,0,6,8}}, -- wall
+ [104]={{1,0,6,8}}, -- wall w/ cable
+ [120]={{1,0,6,8}}, -- wall w/ cable
+ [67]= {{1,0,6,8},{7,0,1,6}}, -- top left corner
+ [68]= {{0,0,1,6},{1,0,6,8}}, -- top right corner
+ [67]= {{1,0,7,5},{2,5,6,1}}, -- bottom left corner
+ --[68]= {{0,0,1,6},{1,0,6,8}}, -- bottom right corner
+ [80]= {{0,0,8,6}}, --floor
+ [72]= {{0,0,8,6}}, --floor w/ cable
+}
+
+function sprite_hitboxes(sp, x, y)
+printh(sp)
+  local bs = custom_hitboxes[sp]
+  if (not bs) return {}
+  local r = {}
+  for b in all(bs) do
+   add(r, {
+     x=b[1]+x,
+     y=b[2]+y,
+     w=b[3],
+     h=b[4],
+   })
+  end
+  return r
+end
+
+function map_(f,vs)
+ local r={}
+ for v in all(vs) do
+  add(r,f(v))
+ end
+ return r
+end
+
+function get(f)
+ return function(o)
+  return o[f]
+ end
+end
+
+function min_(vs)
+ return reduce(vs[1], min, vs)
+end
+function max_(vs)
+ return reduce(vs[1], max, vs)
+end
+
+function reduce(a0, f, vs)
+ local a = a0
+ for v in all(vs) do
+  a = f(a, v)
+ end
+ return a
+end
+
+function bounding_box(bs)
+ local function x2(b) return b.x + b.w - 1 end
+ local function y2(b) return b.y + b.h - 1 end
+
+ local r = {
+  x=min_(map_(get('x'), bs)),
+  y=min_(map_(get('y'), bs)),
+  x2=max_(map_(x2, bs)),
+  y2=max_(map_(y2, bs)),
+ }
+ r.w=r.x2-r.x+1
+ r.h=r.y2-r.y+1
+ r.x2=nil
+ r.y2=nil
+ return r
+end
+
+function insertsectsx(as,bs)
+ for a in all(as) do
+  for b in all(bs) do
+   if (intersects(a,b)) return true
+  end
+ end
+ return false
 end
 
 function collisions(p,flag)
 
- local hb=hitbox(p)
+ local hbs=player_hitboxes(p)
  local collisions={}
 
  --check mechanics
  for m in all(mcns) do
   if m.collide
-  and intersects(m,hb)
-  and fget(m.sp,flag) then
+  and insertsectsx(sprite_hitboxes(m.sp,m.x,m.y), hbs) then
    add(collisions,m)
   end
  end
 
  --check map
+ local hb=bounding_box(hbs)
  local x1=hb.x
  local x2=hb.x+hb.w-1
  local y1=hb.y
  local y2=hb.y+hb.h-1
+ printh(tostring(hb))
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
-   local map_sp=mget(x/8,y/8)
-   if fget(map_sp, flag)
-   and intersects(
-     sprite_hitbox(map_sp, x, y),
-     hb
-   )
+   if insertsectsx(sprite_hitboxes(mget(x/8,y/8), x, y), hb)
    then
     add(collisions,{
      x=x\8*8,
@@ -454,6 +522,7 @@ function collisions(p,flag)
   end
  end
 
+ printh(tostring(collisions))
  return collisions
 end
 
@@ -514,8 +583,6 @@ function coll_aim(cl,p)
  end
 end
 
---[[
---to use, prepend "-" above
 function tostring(any)
  if type(any)!="table" then
   return tostr(any)
@@ -527,7 +594,6 @@ function tostring(any)
  end
  return str.."}"
 end
---]]
 
 -->8
 --player
@@ -572,7 +638,7 @@ end
 function update_player(p)
  local old_y=p.y\1
  local old_x=p.x\1
- 
+
  --move horizontally
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
@@ -1675,7 +1741,7 @@ music_tracks={
 
 function init_title_screen()
  return {
-  
+
  }
 end
 
