@@ -1243,16 +1243,16 @@ end
 ---escape pods---
 -----------------
 
-function escape_pod(x,y,cm)
+function escape_pod(x,y,l,cm)
   local sx=8*(sp_e_pod%16)
   local sy=8*(sp_e_pod/16\1)
 
   for c1,c2 in pairs(cm) do
-    --printh(c1.."->"..c2)
     pal(c1,c2)
   end
   sspr(sx,sy,32,24,x,y)
   pal()
+  print_tiny(l,x+11,y+15,9)
 end
 
 ---------------
