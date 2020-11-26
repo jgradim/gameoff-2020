@@ -51,10 +51,10 @@ sp_tiny_font=128
 ---player colors---
 ---------------------
 p_colors={
-  red={[8]=8},
-  yellow={[1]=0,[12]=5,[8]=9},
-  blue={[8]=1,[12]=14,[6]=5},
-  green={[8]=3,[10]=11}
+ red={[8]=8},
+ yellow={[1]=0,[12]=5,[8]=9},
+ blue={[8]=1,[12]=14,[6]=5},
+ green={[8]=3,[10]=11}
 }
 
 ------------------
@@ -267,9 +267,12 @@ function _draw()
  --players
  foreach(all_players,draw_player)
 
+ escape_pod(58*8,23*8,"2")
+
  --camera
  cam:draw()
 
+ debug=stat(1)*100\1
  --debug
  color(8)
  cpu=tostring(stat(1)*100\1)
