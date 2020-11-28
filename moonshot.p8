@@ -691,12 +691,12 @@ function sprite_hitbox(sp, x, y)
   return {x=x,y=y,w=8,h=8}
 end
 
-function sprite_intersects(sp, x, y, hb, flag)
- return fget(sp, flag)
+function sprite_intersects(sp, x, y, hb)
+ return fget(sp, flag_hits)
  and intersects(sprite_hitbox(sp, x, y), hb)
 end
 
-function collisions(p,flag)
+function collisions(p)
 
  local hb=hitbox(p)
  local collisions={}
@@ -704,7 +704,7 @@ function collisions(p,flag)
  --check mechanics
  for m in all(mcns) do
   if m.collide
-  and sprite_intersects(m.sp, m.x, m.y, hb, flag)
+  and sprite_intersects(m.sp, m.x, m.y, hb)
   then
    add(collisions,m)
   end
@@ -718,7 +718,7 @@ function collisions(p,flag)
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local map_sp=mget(x/8,y/8)
-   if sprite_intersects(map_sp, x, y, hb, flag)
+   if sprite_intersects(map_sp, x, y, hb)
    then
     add(collisions,{
      x=x\8*8,
@@ -855,7 +855,7 @@ function update_player(p)
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
  p.x+=p.dx
- local hcl=collisions(p,flag_hits)
+ local hcl=collisions(p)
  for cl in all(hcl) do
   cl:collide(p)
  end
@@ -871,7 +871,7 @@ function update_player(p)
  local ground_aim=
   p.flpy and "⬆️" or "⬇️"
  local ground_hit=false
- local vcl=collisions(p,flag_hits)
+ local vcl=collisions(p)
  for cl in all(vcl) do
   local aim=cl:collide(p)
   if (aim==ground_aim) ground_hit=true
