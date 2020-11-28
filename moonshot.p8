@@ -1975,9 +1975,8 @@ function test(fn)
  return fn()
 end
 
-test(function()
- assert(true)
-end)
+cls()
+stop("all tests pass.")
 
 --]]
 
