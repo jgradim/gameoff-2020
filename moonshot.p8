@@ -731,7 +731,7 @@ function bounding_box(bs)
 end
 
 function sprite_hitboxes(sp, x, y)
-  local bs = custom_hitboxes[sp]
+  local bs = custom_hitboxes[sp\1]
   if(bs == nil) return {}
 
   local r = {}
