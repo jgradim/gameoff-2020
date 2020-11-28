@@ -638,10 +638,6 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
-function hitbox(p)
- return sprite_hitbox(p.sp, p.x, p.y)
-end
-
 function stand_box(p)
  return {
   x=p.x+2,
@@ -651,30 +647,83 @@ function stand_box(p)
  }
 end
 
-function sprite_hitbox(sp, x, y)
-  return {x=x,y=y,w=8,h=8}
+function map_(f,vs)
+ local r={}
+ for v in all(vs) do
+  add(r,f(v))
+ end
+ return r
 end
 
-function sprite_intersects(sp, x, y, hb)
- return fget(sp, flag_hits)
- and intersects(sprite_hitbox(sp, x, y), hb)
+function get(f)
+ return function(o)
+  return o[f]
+ end
+end
+
+function min_(vs)
+ return reduce(vs[1], min, vs)
+end
+function max_(vs)
+ return reduce(vs[1], max, vs)
+end
+
+function reduce(a0, f, vs)
+ local a = a0
+ for v in all(vs) do
+  a = f(a, v)
+ end
+ return a
+end
+
+function bounding_box(bs)
+ local function x2(b) return b.x + b.w - 1 end
+ local function y2(b) return b.y + b.h - 1 end
+
+ local r = {
+  x=min_(map_(get('x'), bs)),
+  y=min_(map_(get('y'), bs)),
+  x2=max_(map_(x2, bs)),
+  y2=max_(map_(y2, bs)),
+ }
+ r.w=r.x2-r.x+1
+ r.h=r.y2-r.y+1
+ r.x2=nil
+ r.y2=nil
+ return r
+end
+
+function sprite_hitboxes(sp, x, y)
+  return {{x=x,y=y,w=8,h=8}}
+end
+
+function sprite_intersects(sp, x, y, hbs)
+ if (not fget(sp, flag_hits)) return false
+ for a in all(hbs) do
+  for b in all(sprite_hitboxes(sp, x, y)) do
+   if(intersects(a, b)) return true
+  end
+ end
+
+ return false
 end
 
 function collisions(p)
 
- local hb=hitbox(p)
+ local hbs=sprite_hitboxes(p.sp, p.x, p.y)
  local collisions={}
 
  --check mechanics
  for m in all(mcns) do
   if m.collide
-  and sprite_intersects(m.sp, m.x, m.y, hb)
+  and sprite_intersects(m.sp, m.x, m.y, hbs)
   then
    add(collisions,m)
   end
  end
 
  --check map
+ local hb=bounding_box(hbs)
  local x1=hb.x
  local x2=hb.x+hb.w-1
  local y1=hb.y
@@ -682,7 +731,7 @@ function collisions(p)
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local map_sp=mget(x/8,y/8)
-   if sprite_intersects(map_sp, x, y, hb)
+   if sprite_intersects(map_sp, x, y, hbs)
    then
     add(collisions,{
      x=x\8*8,
