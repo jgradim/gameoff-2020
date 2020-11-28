@@ -711,22 +711,19 @@ function block(cl,p)
 
  if aim == "⬅️" then
   p.dx=0
-  p.x+=cl.x-p.x-p.w
+  p.x=cl.x-p.w
   return aim
- end
- if aim == "➡️" then
+ elseif aim == "➡️" then
   p.dx=0
-  p.x+=cl.x+cl.w-p.x
+  p.x=cl.x+cl.w
   return aim
- end
- if aim == "⬆️" then
+ elseif aim == "⬆️" then
   p.dy=0
-  p.y+=cl.y+cl.h-p.y
+  p.y=cl.y+cl.h
   return aim
- end
- if aim == "⬇️" then
+ elseif aim == "⬇️" then
   p.dy=0
-  p.y+=cl.y-p.y-p.h
+  p.y=cl.y-p.h
   return aim
  end
 
