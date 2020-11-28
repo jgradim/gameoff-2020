@@ -675,12 +675,7 @@ function ef_smooth(f)
 end
 
 function hitbox(p)
- return {
-  x=p.x+1,
-  y=p.y+1,
-  w=p.w-2,
-  h=p.h-1,
- }
+ return sprite_hitbox(p.sp, p.x, p.y)
 end
 
 function stand_box(p)
