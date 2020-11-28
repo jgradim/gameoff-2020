@@ -640,18 +640,22 @@ function block(cl,p)
  local aim = coll_aim(cl,p)
 
  if aim == "⬅️" then
+  p.dx=0
   p.x+=cl.x-p.x-p.w+1
   return aim
  end
  if aim == "➡️" then
+  p.dx=0
   p.x+=cl.x+cl.w-p.x-1
   return aim
  end
  if aim == "⬆️" then
+  p.dy=0
   p.y+=cl.y+cl.h-p.y-1
   return aim
  end
  if aim == "⬇️" then
+  p.dy=0
   p.y+=cl.y-p.y-p.h
   return aim
  end
@@ -671,14 +675,12 @@ function coll_aim(cl,p)
 
  --resolve using shallowest axis
  if int.w<int.h then
-  p.dx=0
   if p.x<cl.x then
    return "⬅️"
   else
    return "➡️"
   end
  else
-  p.dy=0
   if p.y>cl.y then
    return "⬆️"
   else
