@@ -696,6 +696,11 @@ function sprite_hitbox(sp, x, y)
   return {x=x,y=y,w=8,h=8}
 end
 
+function sprite_intersects(sp, x, y, hb, flag)
+ return fget(sp, flag)
+ and intersects(sprite_hitbox(sp, x, y), hb)
+end
+
 function collisions(p,flag)
 
  local hb=hitbox(p)
@@ -704,8 +709,8 @@ function collisions(p,flag)
  --check mechanics
  for m in all(mcns) do
   if m.collide
-  and intersects(m,hb)
-  and fget(m.sp,flag) then
+  and sprite_intersects(m.sp, m.x, m.y, hb, flag)
+  then
    add(collisions,m)
   end
  end
@@ -718,11 +723,7 @@ function collisions(p,flag)
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local map_sp=mget(x/8,y/8)
-   if fget(map_sp, flag)
-   and intersects(
-     sprite_hitbox(map_sp, x, y),
-     hb
-   )
+   if sprite_intersects(map_sp, x, y, hb, flag)
    then
     add(collisions,{
      x=x\8*8,
