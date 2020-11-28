@@ -677,6 +677,7 @@ function reduce(a0, f, vs)
 end
 
 function bounding_box(bs)
+ assert(#bs>0,"empty bs")
  local function x2(b) return b.x + b.w - 1 end
  local function y2(b) return b.y + b.h - 1 end
 
@@ -693,13 +694,20 @@ function bounding_box(bs)
  return r
 end
 
-function player_hitboxes(sp, x, y)
-  return {{x=x,y=y,w=8,h=8}}
-end
-
 function sprite_hitboxes(sp, x, y)
-  if(not fget(sp, flag_hits)) return {}
-  return {{x=x,y=y,w=8,h=8}}
+  local bs = custom_hitboxes[sp]
+  if(bs == nil) return {}
+
+  local r = {}
+  for b in all(bs) do
+   add(r, {
+     x=b[1]+x,
+     y=b[2]+y,
+     w=b[3],
+     h=b[4],
+   })
+  end
+  return r
 end
 
 function intersectsx(as, bs)
@@ -713,8 +721,8 @@ function intersectsx(as, bs)
 end
 
 function collisions(p)
-
- local hbs=player_hitboxes(p.sp, p.x, p.y)
+ local hbs=sprite_hitboxes(p.sp, p.x, p.y)
+ assert(count(hbs)!=0, p.sp)
  local collisions={}
 
  --check mechanics
