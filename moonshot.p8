@@ -693,14 +693,18 @@ function bounding_box(bs)
  return r
 end
 
-function sprite_hitboxes(sp, x, y)
+function player_hitboxes(sp, x, y)
   return {{x=x,y=y,w=8,h=8}}
 end
 
-function sprite_intersects(sp, x, y, hbs)
- if (not fget(sp, flag_hits)) return false
- for a in all(hbs) do
-  for b in all(sprite_hitboxes(sp, x, y)) do
+function sprite_hitboxes(sp, x, y)
+  if(not fget(sp, flag_hits)) return {}
+  return {{x=x,y=y,w=8,h=8}}
+end
+
+function intersectsx(as, bs)
+ for a in all(as) do
+  for b in all(bs) do
    if(intersects(a, b)) return true
   end
  end
@@ -710,13 +714,13 @@ end
 
 function collisions(p)
 
- local hbs=sprite_hitboxes(p.sp, p.x, p.y)
+ local hbs=player_hitboxes(p.sp, p.x, p.y)
  local collisions={}
 
  --check mechanics
  for m in all(mcns) do
   if m.collide
-  and sprite_intersects(m.sp, m.x, m.y, hbs)
+  and intersectsx(sprite_hitboxes(m.sp, m.x, m.y), hbs)
   then
    add(collisions,m)
   end
@@ -731,7 +735,7 @@ function collisions(p)
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local map_sp=mget(x/8,y/8)
-   if sprite_intersects(map_sp, x, y, hbs)
+   if intersectsx(sprite_hitboxes(map_sp, x, y), hbs)
    then
     add(collisions,{
      x=x\8*8,
