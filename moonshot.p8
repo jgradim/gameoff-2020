@@ -160,53 +160,18 @@ flag_stands=1
 
 --[sprite]={{x,y,w,h},(...)}
 custom_hitboxes={
- --player
- [1]={
-  --idle
-  {2,1,4,7},
-  --{1,2,6,2},
- },
- [2]={
-  --run 1
-  {2,1,4,7},
-  --{1,2,6,2},
- },
- [3]={
-  --mid run jump
-  {2,1,4,8},
-  --{1,2,6,2},
- },
- [4]={
-  --run 2
-  {2,1,4,7},
-  --{1,2,6,2},
- },
- [5]={
-  --crouch
-  {2,2,4,6},
-  --{1,2,6,2},
- },
- [6]={
-  --jetpack
-  {2,1,4,7},
-  --{1,2,6,2},
- },
-
  --doors
  [11]={
   {1,0,6,8},
  },
  [12]={
-  {1,0,6,3},
-  {1,5,6,3},
+  {1,0,6,8},
  },
  [13]={
-  {1,0,6,2},
-  {1,6,6,2},
+  {1,0,6,8},
  },
  [14]={
-  {1,0,6,1},
-  {1,5,7,1},
+  {1,0,6,8},
  },
 
  --moving platforms
@@ -225,23 +190,24 @@ custom_hitboxes={
 
  --map tiles
  [112]={
-  --right endpiece
-  {0,0,8,5},
-  {0,5,7,1},
+  --left endpiece
+  {1,0,7,6},
+  {0,1,8,4},
  },
  [113]={
   --left endpiece
-  {0,0,8,5},
-  {1,5,7,1},
+  {0,0,7,6},
+  {0,1,8,4},
  },
  [97]={
   --top endpiece
-  {1,0,6,5},
-  {2,6,4,1},
+  {2,1,4,7},
+  {1,2,6,6},
  },
  [96]={
   --bottom endpiece
-  {1,1,6,7},
+  {1,0,6,6},
+  {2,0,4,7},
  },
  
  --walls
@@ -282,23 +248,23 @@ custom_hitboxes={
  },
  [98]={
   --top left corner
-  {1,0,6,8},
-  {7,0,1,6},
+  {2,0,6,6},
+  {1,1,6,7},
  },
  [99]={
   --top right corner
-  {0,0,1,6},
-  {1,0,6,8},
+  {0,0,6,6},
+  {1,1,6,7},
  },
  [114]={
   --bottom left corner
   {1,0,7,5},
-  {2,5,6,1},
+  {2,0,6,6},
  },
  [115]={
   --bottom right corner
   {0,0,7,5},
-  {0,5,6,1},
+  {0,0,6,6},
  },
 
  --floor
@@ -327,27 +293,27 @@ custom_hitboxes={
  [65]={
   --"t" shape
   {0,0,8,6},
-  {1,6,6,2},
+  {1,0,6,8},
  },
  [81]={
   --branch left
   {0,0,7,6},
-  {1,6,6,2},
+  {1,0,6,8},
  },
  [100]={
   --branch left w/ cable
   {0,0,7,6},
-  {1,6,6,2},
+  {1,0,6,8},
  },
  [82]={
   --branch right
+  {1,0,6,8},
   {1,0,7,6},
-  {1,6,6,2},
  },
  [116]={
   -- branch right w/ cable
+  {1,0,6,8},
   {1,0,7,6},
-  {1,6,6,2},
  },
 }
 
@@ -812,85 +778,83 @@ end
 function sp_coords(tile)
  return {
   x=8*(tile%16),
-  y=8*flr(tile/16),
+  y=8*(tile\16),
  }
 end
 
-function sp_hbs_iter(sp,x,y)
- local hbs=custom_hitboxes[sp]
- local i=0
- return function()
-  i+=1
-  if hbs and i<=#hbs then
-   return {
-    x=hbs[i][1]+x,
-    y=hbs[i][2]+y,
-    w=hbs[i][3],
-    h=hbs[i][4],
-   }
-  elseif not hbs and i==1 then
-   return {x=x,y=y,w=8,h=8}
+function sp_hbs(sp,x,y)
+  local hbs=custom_hitboxes[sp]
+  if hbs then
+   local r={}
+   for hb in all(hbs) do
+    add(r,{
+     x=hb[1]+x,
+     y=hb[2]+y,
+     w=hb[3],
+     h=hb[4],
+    })
+   end
+   return r
+  else
+   return {{x=x,y=y,w=8,h=8}}
   end
- end
 end
 
---returns the first intersecting
---pair within a_iter and b_iter
-function intersects_iters(
- a_iter,b_iter
-)
- for a in a_iter do
-  for b in b_iter do
-   if intersects(a,b) then
-    return a,b
-   end
-  end
- end
+function player_hitbox(p)
+ return {
+  x=p.x+1,
+  y=p.y+1,
+  w=p.w-2,
+  h=p.h-1,
+ }
+end
 
- return false
+function player_standbox(p)
+ return {
+  x=p.x+2,
+  w=4,
+  y=p.y+p.h,
+  h=1,
+ }
 end
 
 function handle_collisions(p)
+ local phb=player_hitbox(p)
+ 
  --check mechanics
  for mcn in all(mcns) do
-  if mcn.collide then
-   local mcnhb,phb=
-    intersects_iters(
-     sp_hbs_iter(
-      mcn.sp,mcn.x,mcn.y
-     ),
-     sp_hbs_iter(
-      p.sp,p.x,p.y
-     )
-    )
-   if mcnhb then
-    mcn:collide(mcnhb,p,phb)
+  if mcn.collide
+  and fget(mcn.sp,flag_hits)
+  then
+   local mhbs=sp_hbs(
+    mcn.sp,mcn.x,mcn.y
+   )
+   for mhb in all(mhbs) do
+    if intersects(mhb,phb) then
+     mcn:collide(mhb,p)
+     phb=player_hitbox(p)
+    end
    end
   end
  end
-   
+ 
  --check map
- local x1=p.x+2
- local x2=p.x+p.w-3
- local y1=p.y+1
- local y2=p.y+p.h-1
+ local x1=phb.x
+ local x2=phb.x+phb.w-1
+ local y1=phb.y
+ local y2=phb.y+phb.h-1
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local sp=mget(x/8,y/8)
-   if fget(sp,flag_hits)
-   then
-    local mhb,phb=
-     intersects_iters(
-      sp_hbs_iter(sp,x,y),
-      sp_hbs_iter(p.sp,p.x,p.y)
-     )
-    if mhb then
-     block(
-      {x=x,y=y,w=8,h=8},
-      mhb,
-      p,
-      phb
-     )
+   if fget(sp,flag_hits) then
+    local mhbs=sp_hbs(
+     sp,x\8*8,y\8*8
+    )
+    for mhb in all(mhbs) do
+     if intersects(mhb,phb) then
+      block(mhb,mhb,p)
+      phb=player_hitbox(p)
+     end
     end
    end
   end
@@ -900,47 +864,40 @@ end
 --blocks p from intersecting cl,
 --adjusting for specific hitboxes
 --returns block direction
-function block(cl,clhb,p,phb)
+function block(cl,clhb,p)
  --get intersection
+ local phb=player_hitbox(p)
  local x=max(p.x,cl.x)
  local y=max(p.y,cl.y)
  local int={
   x=x,
   y=y,
-  w=min(
-   p.x+p.w,
-   cl.x+cl.w
-  )-x,
-  h=min(
-   p.y+p.h,
-   cl.y+cl.h
-  )-y,
+  w=min(p.x+p.w,cl.x+cl.w)-x,
+  h=min(p.y+p.h,cl.y+cl.h)-y,
  }
 
  --resolve using shallowest axis
  local aim=nil
  if int.w<int.h then
-  aim=p.x<cl.x
-   and "⬅️" or "➡️"
+  aim=phb.x<cl.x and "⬅️" or "➡️"
  else
-  aim=p.y>cl.y
-   and "⬆️" or "⬇️"
+  aim=phb.y>cl.y and "⬆️" or "⬇️"
  end
 
  if aim=="⬅️" then
-  p.dx=0
+  p.dx=max(p.dx,0)
   p.x+=clhb.x-phb.x-phb.w
   return aim
  elseif aim=="➡️" then
-  p.dx=0
+  p.dx=min(p.dx,0)
   p.x+=clhb.x+clhb.w-phb.x
   return aim
  elseif aim=="⬆️" then
-  p.dy=0
+  p.dy=max(p.dy,0)
   p.y+=clhb.y+clhb.h-phb.y
   return aim
  elseif aim=="⬇️" then
-  p.dy=0
+  p.dy=min(p.dy,0)
   p.y+=clhb.y-phb.y-phb.h
   return aim
  end
@@ -1011,11 +968,7 @@ function update_player(p)
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
  p.x+=p.dx
- printh("--")
- printh(tostring(p.x)..","..tostring(p.y))
  handle_collisions(p)
- printh(tostring(p.x)..","..tostring(p.y))
- printh("--")
 
  --move vertically
  if p.flpy then
@@ -1027,11 +980,7 @@ function update_player(p)
  p.y+=p.dy
  local was_falling=
   p.flpy and p.dy<0 or p.dy>0
- printh("---")
- printh(tostring(p.x)..","..tostring(p.y))
  handle_collisions(p)
- printh(tostring(p.x)..","..tostring(p.y))
- printh("---")
  local ground_hit=
   was_falling and p.dy==0
 
@@ -1083,10 +1032,6 @@ function update_player(p)
  else
   p.sp=sp_player_idle
  end
- 
- printh("----")
- printh(tostring(p.x)..","..tostring(p.y))
- printh("----")
 end
 
 function run_left(p)
@@ -1477,14 +1422,14 @@ function init_spark(
   dy=0,
   sp=sp_spark_start,
 
-  collide=function(s,shb,p,phb)
+  collide=function(s,cl,p)
    local old_dx=p.dx
    local old_dy=p.dy
-   local aim=block(s,shb,p,phb)
-   if old_dx!=0 and p.dx==0
+   local aim=block(s,cl,p)
+   if aim=="⬅️" or aim=="➡️"
    then
     p.dx=-old_dx*10
-   elseif old_dy!=0 and p.dy==0
+   elseif aim=="⬆️" or aim=="⬇️"
    then
     p.dy=-old_dy*10
    end
@@ -1533,23 +1478,15 @@ function init_platform(
    p.x+=p.dx
    p.y+=p.dy
 
-   --[[local phb_top=
-    sp_hitboxes(p.sp,p.x,p.y)[1]
-   foreach(players,function(pl)
-    local plhbs=
-     sp_hitboxes(pl.sp,pl.x,pl.y)
-    local plhb_bottom=
-     plhbs[#plhbs]
-    plhb_bottom.h+=1
+   foreach(all_players, function(pl)
     if intersects(
-     phb_top,plhb_bottom
-    )
-    then
+     player_standbox(pl),
+     p
+    ) then
      pl.x+=p.dx
      pl.y+=p.dy
     end
    end)
-      --]]
 
    animate(p,8,true)
   end,
