@@ -2,7 +2,7 @@ pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
 --moonshot
---by goncalo, jgradim, pkoch
+--by goncalossilva,jgradim,pkoch
 
 --global:constants,loop,utils
 
@@ -51,16 +51,32 @@ sp_hole=167
 -----------------------
 ---sprite animations---
 -----------------------
-anim_platform={23,24,25,26}
-anim_door_open={11,12,13,14,15,0}
-anim_door_close={0,15,14,13,12,11}
-anim_door_jammed={11,11,11,12,11,12}
-anim_bolt={39,40,41,42}
-anim_screen_warn={57,58}
-anim_screen_ok={59}
+
+anim_platform={
+ 23,24,25,26
+}
+anim_door_open={
+ 11,12,13,14,15,0
+}
+anim_door_close={
+ 0,15,14,13,12,11
+}
+anim_door_jammed={
+ 11,11,11,12,11,12
+}
+anim_bolt={
+ 39,40,41,42
+}
+anim_screen_warn={
+ 57,58
+}
+anim_screen_ok={
+ 59
+}
 
 function animate(e,freq,loop)
- if #e.anim==0 then return end
+ if (#e.anim==0) return
+
  if #e.anim==1 then
   e.sp=e.anim[1]
   return
@@ -83,8 +99,19 @@ end
 ------------------
 ---rect sprites---
 ------------------
-rect_tooltip={x=112,y=8,w=12,h=11}
-rect_moon={x=40,y=8,w=22,h=22}
+
+rect_tooltip={
+ x=112,
+ y=8,
+ w=12,
+ h=11
+}
+rect_moon={
+ x=40,
+ y=8,
+ w=22,
+ h=22
+}
 rect_escape_pod_l={0,8,32,20}
 rect_escape_pod_m={96,8,23,15}
 rect_escale_pod_s={64,16,11,8}
@@ -92,15 +119,23 @@ rect_escale_pod_s={64,16,11,8}
 -------------------
 ---palette swaps---
 -------------------
+
 pal_button_on={}
-pal_button_off={[3]=8,[11]=14}
-pal_button_disabled={[3]=9,[11]=10}
+pal_button_off={
+ [3]=8,
+ [11]=14
+}
+pal_button_disabled={
+ [3]=9,
+ [11]=10
+}
 
 --------------
 ---messages---
 --------------
 
-msg_close_scren="    press ❎/x to exit"
+msg_close_scren=
+ "    press ❎/x to exit"
 
 -------------------
 ---player colors---
@@ -117,8 +152,14 @@ p_colors={
 -----------------
 --{text,x,y,color}
 wall_labels={
- {"diagnostics",62*8+4,23*8+4,14},
- {"lvl 1",44*8+4,25*8+4,14},
+ {
+  "diagnostics",
+  62*8+4,23*8+4,14
+ },
+ {
+  "lvl 1",
+  44*8+4,25*8+4,14
+ },
 }
 
 ------------------
@@ -137,271 +178,368 @@ flag_stands=1
 ---custom hitboxes---
 ---------------------
 
+--[sprite]={{x,y,w,h},(...)}
 custom_hitboxes={
- -- player
- [1]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- idle
- [2]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- run 1
- [3]={{2,0,4,1},{1,1,6,2},{2,3,4,4}}, -- mid run jump
- [4]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- run 2
- [5]={{2,2,4,1},{1,3,6,2},{2,5,4,3}}, -- crouch
- [6]={{2,1,4,1},{1,2,6,2},{2,4,4,4}}, -- jetpack
+ --player
+ [1]={
+  --idle
+  {2,1,4,1},
+  {1,2,6,2},
+  {2,4,4,4},
+ },
+ [2]={
+  --run 1
+  {2,1,4,1},
+  {1,2,6,2},
+  {2,4,4,4},
+ },
+ [3]={
+  --mid run jump
+  {2,0,4,1},
+  {1,1,6,2},
+  {2,3,4,4},
+ },
+ [4]={
+  --run 2
+  {2,1,4,1},
+  {1,2,6,2},
+  {2,4,4,4},
+ },
+ [5]={
+  --crouch
+  {2,2,4,1},
+  {1,3,6,2},
+  {2,5,4,3},
+ },
+ [6]={
+  --jetpack
+  {2,1,4,1},
+  {1,2,6,2},
+  {2,4,4,4},
+ },
 
- -- interactive sprites
- [11]={{1,0,6,8}},           -- door
- [12]={{1,0,6,3},{1,5,6,3}}, -- door
- [13]={{1,0,6,2},{1,6,6,2}}, -- door
- [14]={{1,0,6,1},{1,5,7,1}}, -- door
+ --doors
+ [11]={
+  {1,0,6,8},
+ },
+ [12]={
+  {1,0,6,3},
+  {1,5,6,3},
+ },
+ [13]={
+  {1,0,6,2},
+  {1,6,6,2},
+ },
+ [14]={
+  {1,0,6,1},
+  {1,5,7,1},
+ },
 
- [23]={{0,0,8,3}}, -- moving platform
- [24]={{0,0,8,3}}, -- moving platform
- [25]={{0,0,8,3}}, -- moving platform
- [26]={{0,0,8,3}}, -- moving platform
+ --moving platforms
+ [23]={
+  {0,0,8,3},
+ },
+ [24]={
+  {0,0,8,3},
+ },
+ [25]={
+  {0,0,8,3},
+ },
+ [26]={
+  {0,0,8,3},
+ },
 
  -- map tiles
- [112]={{0,0,8,5},{0,5,7,1}}, -- right endpiece
- [113]={{0,0,8,5},{1,5,7,1}}, -- left endpiece
- [97]= {{1,0,6,5},{2,6,4,1}}, -- top endpiece
- [96]= {{1,1,6,7}},           -- bottom endpiece
+ [112]={
+  --right endpiece
+  {0,0,8,5},
+  {0,5,7,1},
+ },
+ [113]={
+  --left endpiece
+  {0,0,8,5},
+  {1,5,7,1},
+ },
+ [97]={
+  --top endpiece
+  {1,0,6,5},
+  {2,6,4,1},
+ },
+ [96]={
+  --bottom endpiece
+  {1,1,6,7},
+ },
+ 
+ --walls
+ [80]={
+  {1,0,6,8},
+ },
+ [83]={
+  --w/ cable
+  {1,0,6,8},
+ },
+ [84]={
+  --w/ cable
+  {1,0,6,8},
+ },
+ [85]={
+  --w/ hole
+  {1,0,6,8},
+ },
+ [86]={
+  --w/ hole
+  {1,0,6,8},
+ },
+ [101]={
+  --w/ hole
+  {1,0,6,8},
+ },
+ [102]={
+  --w/ hole
+  {1,0,6,8},
+ },
+ [117]={
+  --w/ hole
+  {1,0,6,8},
+ },
+ [118]={
+  --w/ hole
+  {1,0,6,8},
+ },
+ [98]={
+  --top left corner
+  {1,0,6,8},
+  {7,0,1,6},
+ },
+ [99]={
+  --top right corner
+  {0,0,1,6},
+  {1,0,6,8},
+ },
+ [114]={
+  --bottom left corner
+  {1,0,7,5},
+  {2,5,6,1},
+ },
+ [115]={
+  --bottom right corner
+  {0,0,7,5},
+  {0,5,6,1},
+ },
 
- [80]= {{1,0,6,8}}, -- wall
- [83]= {{1,0,6,8}}, -- wall w/ cable
- [84]= {{1,0,6,8}}, -- wall w/ cable
- [85]= {{1,0,6,8}}, -- wall w/ hole
- [86]= {{1,0,6,8}}, -- wall w/ hole
- [101]={{1,0,6,8}}, -- wall w/ hole
- [102]={{1,0,6,8}}, -- wall w/ hole
- [117]={{1,0,6,8}}, -- wall w/ hole
- [118]={{1,0,6,8}}, -- wall w/ hole
-
- [98]= {{1,0,6,8},{7,0,1,6}}, -- top left corner
- [99]= {{0,0,1,6},{1,0,6,8}}, -- top right corner
- [114]={{1,0,7,5},{2,5,6,1}}, -- bottom left corner
- [115]={{0,0,7,5},{0,5,6,1}}, -- bottom right corner
-
- [64]= {{0,0,8,6}}, -- floor
- [66]= {{0,0,8,6}}, -- floor
- [67]= {{0,0,8,6}}, -- floor
- [68]= {{0,0,8,6}}, -- floor
- [69]= {{0,0,8,6}}, -- floor
- [70]= {{0,0,8,6}}, -- floor
- [66]= {{0,0,8,6}}, -- reverse "t" (floor)
- [65]= {{0,0,8,6},{1,6,6,2}}, -- "t"
- [81]= {{0,0,7,6},{1,6,6,2}}, -- branch left
- [100]={{0,0,7,6},{1,6,6,2}}, -- branch left w/ cable
- [82]= {{1,0,7,6},{1,6,6,2}}, -- branch right
- [116]={{1,0,7,6},{1,6,6,2}}, -- branch right w/ cable
+ --floor
+ [64]={
+  {0,0,8,6},
+ },
+ [66]={
+  {0,0,8,6},
+ },
+ [67]={
+  {0,0,8,6},
+ },
+ [68]={
+  {0,0,8,6},
+ },
+ [69]={
+  {0,0,8,6},
+ },
+ [70]={
+  {0,0,8,6},
+ },
+ [66]={
+  --reverse "t" shape
+  {0,0,8,6},
+ },
+ [65]={
+  --"t" shape
+  {0,0,8,6},
+  {1,6,6,2},
+ },
+ [81]={
+  --branch left
+  {0,0,7,6},
+  {1,6,6,2},
+ },
+ [100]={
+  --branch left w/ cable
+  {0,0,7,6},
+  {1,6,6,2},
+ },
+ [82]={
+  --branch right
+  {1,0,7,6},
+  {1,6,6,2},
+ },
+ [116]={
+  -- branch right w/ cable
+  {1,0,7,6},
+  {1,6,6,2},
+ },
 }
 
---------------------------
----dynamic map elements---
---------------------------
+------------------
+---map elements---
+------------------
+
 function init_mechanics()
- -- --sparks
- -- --x,y
- -- local sprk0=init_spark(
- --  33*8,28*8
- -- )
- -- local sprk1=init_spark(
- --  34*8,25*8
- -- )
- -- local sprk2=init_spark(
- --  35*8,25*8
- -- )
- -- local sprk3=init_spark(
- --  35*8,26*8
- -- )
- -- local sprk4=init_spark(
- --  36*8,28*8
- -- )
- -- local sprk5=init_spark(
- --  37*8,28*8
- -- )
- -- local sprk6=init_spark(
- --  38*8,25*8
- -- )
- -- local sprk7=init_spark(
- --  38*8,26*8
- -- )
- -- local sprk8=init_spark(
- --  39*8,25*8
- -- )
- -- local sprk9=init_spark(
- --  39*8,28*8
- -- )
- -- local sprk10=init_spark(
- --  40*8,28*8
- -- )
+ --diagnostics
+ local diag_jammed_door=
+  init_animated({
+   x=68*8,
+   y=29*8,
+   w=8,
+   h=8,
+   anim=anim_door_jammed,
+   collide=block,
+  })
 
- --platforms
- --x,y,w,h,delta_fn
- -- local plt0=init_platform(
- --  1*8,24*8,8,8,
- --  linear_delta_fn(
- --   --1,3 <-> 1,13
- --   1*8,24*8,8*8,104*8
- --  )
- -- )
- -- local plt1=init_platform(
- --  5*8,13*8,8,8,
- --  linear_delta_fn(
- --   --5,13 <-> 6,13
- --   5*8,13*8,6*8,13*8
- --  )
- -- )
- -- local plt2=init_platform(
- --  14*8,15*8,8,8,
- --  linear_delta_fn(
- --   --14,15 <-> 14,13
- --   14*8,15*8,14*8,13*8
- --  )
- -- )
+ local diag_screen_warn=
+  init_animated({
+   x=62*8,
+   y=29*8,
+   anim=anim_screen_warn,
+   anim_freq=5,
+  })
 
- ---------------
- --diagnostics--
- ---------------
- --cosmetics
- local diag_jammed_door=init_animated({
-  x=68*8,
-  y=29*8,
-  w=8,
-  h=8,
-  anim=anim_door_jammed,
-  collide=block,
- })
-
- local diag_screen_warn=init_animated({
-  x=62*8,
-  y=29*8,
-  anim=anim_screen_warn,
-  anim_freq=5,
- })
-
- --door
- local diag_door=init_door(
-  56*8,28*8,false
- )
-
- --platforms
- local diag_plt=init_platform(
-  60*8,26*8,8,8,
-  linear_delta_fn(
-   60*8,26*8-1,60*8,26*8+1
+ --doors
+ local diag_door=
+  init_door(
+   56*8,28*8,false
   )
- )
+
+ --platforms
+ local diag_plt=
+  init_platform(
+   60*8,26*8,8,8,
+   linear_delta_fn(
+    60*8,26*8-1,60*8,26*8+1
+   )
+  )
 
  --buttons
- local diag_btn_door=init_interactable({
-  sp=sp_button_right,
-  sp_pal=pal_button_off,
-  x=67*8,
-  y=25*8,
-  tooltip="❎",
+ local diag_btn_door=
+  init_interactable({
+   sp=sp_button_right,
+   sp_pal=pal_button_off,
+   x=67*8,
+   y=25*8,
+   tooltip="❎",
 
-  active=false,
+   active=false,
 
-  on_button_press=function(b)
-   b.tooltip=nil
-   b.active=not b.active
-   b.sp_pal=b.active
-    and pal_button_on
-    or pal_button_off
+   on_button_press=function(b)
+    b.tooltip=nil
+    b.active=not b.active
+    b.sp_pal=b.active
+     and pal_button_on
+     or pal_button_off
 
-   toggle_door(diag_door,b.active)
+    toggle_door(
+     diag_door,
+     b.active
+    )
   end,
  })
 
- local diag_btn_plt=init_interactable({
-  sp=sp_button_left,
-  sp_pal=pal_button_off,
-  x=58*8,
-  y=29*8,
-  tooltip="❎",
+ local diag_btn_plt=
+  init_interactable({
+   sp=sp_button_left,
+   sp_pal=pal_button_off,
+   x=58*8,
+   y=29*8,
+   tooltip="❎",
 
-  active=false,
+   active=false,
 
-  on_button_press=function(b)
-   if b.active then return end
+   on_button_press=function(b)
+    if (b.active) return
 
-   play_sfx("platform_on")
-   b.tooltip=nil
-   b.active=true
-   b.sp_pal=pal_button_on
+    play_sfx("platform_on")
+    b.tooltip=nil
+    b.active=true
+    b.sp_pal=pal_button_on
 
-   diag_screen_warn.anim=anim_screen_ok
-   diag_plt.delta_fn=linear_delta_fn(
-    60*8,26*8,60*8,28*8
-   )
-  end,
- })
+    diag_screen_warn.anim=
+     anim_screen_ok
+    diag_plt.delta_fn=
+     linear_delta_fn(
+      60*8,26*8,60*8,28*8
+     )
+   end,
+  })
 
  --screens
- local diag_screen_high=init_interactable({
-  sp=sp_screen,
-  x=65*8,
-  y=25*8,
-  tooltip="❎",
-  msg=
-   "> status report:\n\n"..
-   "-heavy damage to hull\n"..
-   "-remaining crew: 3\n"..
-   "-escape pods: 4\n"..
-   "-disabled platforms: 5\n"..
-   "-shocking hazards\n\n"..
-   "objective: open door\n"..
-   "objective: rescue crew\n"..
-   "objective: escape to moon\n\n"..
-   msg_close_scren,
- })
+ local diag_screen_high=
+  init_interactable({
+   sp=sp_screen,
+   x=65*8,
+   y=25*8,
+   tooltip="❎",
+   msg=
+    "> status report:\n\n"..
+    "-heavy damage to hull\n"..
+    "-remaining crew: 3\n"..
+    "-escape pods: 4\n"..
+    "-disabled platforms: 5\n"..
+    "-shocking hazards\n\n"..
+    "objective: open door\n"..
+    "objective: rescue crew\n"..
+    "objective: escape to moon\n\n"..
+    msg_close_scren,
+  })
 
  ----------------
  --1st corridor--
  ----------------
- local corridor_hole=init_interactable({
-  sp=sp_hole,
-  x=50*8,
-  y=30*8,
-  w=5*8,
-  h=8,
-  on_collision=function(b)
-   printh('corridor_hole')
-   player().x=55*8
-   player().y=27*8
-   player().dx=0
-   player().dy=0
-  end
- })
+ 
+ local corridor_hole=
+  init_interactable({
+   sp=sp_hole,
+   x=50*8,
+   y=30*8,
+   w=5*8,
+   h=8,
+   on_collide=function(b)
+    local p=player()
+    p.x=55*8
+    p.y=27*8
+    p.dx=0
+    p.dy=0
+   end
+  })
 
- local corridor_plt=init_platform(
-  59*8,25*8,8,8,
-  linear_delta_fn(
-   --47,22 <-> 47,29
-   47*8,26*8,47*8,26*8+1
+ local corridor_plt=
+  init_platform(
+   59*8,25*8,8,8,
+   linear_delta_fn(
+    47*8,26*8,47*8,26*8
   )
  )
 
- local corridor_btn=init_interactable({
-  sp=sp_button_right,
-  sp_pal=pal_button_off,
-  x=42*8,
-  y=26*8,
-  --tooltip="❎",
+ local corridor_btn=
+  init_interactable({
+   sp=sp_button_right,
+   sp_pal=pal_button_off,
+   x=42*8,
+   y=26*8,
+   --tooltip="❎",
 
-  active=false,
+   active=false,
 
-  on_button_press=function(b)
-   if b.active then return end
+   on_button_press=function(b)
+    if (b.active) return
 
-   play_sfx("platform_on")
-   b.tooltip=nil
-   b.active=true
-   b.sp_pal=pal_button_on
+    play_sfx("platform_on")
+    b.tooltip=nil
+    b.active=true
+    b.sp_pal=pal_button_on
 
-   corridor_plt.delta_fn=
-    linear_delta_fn(
-     47*8,22*8,47*8,27*8
-    )
-  end,
- })
+    corridor_plt.delta_fn=
+     linear_delta_fn(
+      47*8,22*8,47*8,27*8
+     )
+   end,
+  })
 
  --return list of mechanics
  return {
@@ -436,13 +574,13 @@ end
 
 function _init()
  --btnp never repeats
- poke(0x5f5c, 255)
+ poke(0x5f5c,255)
 
  --mechanics
  mcns=init_mechanics()
 
  --players
- all_players={
+ players={
   init_player{
    ⬆️=double_jump,
    x=37*8,
@@ -471,16 +609,19 @@ end
 
 modal_open=false
 
-function update(o) return o:update() end
+function update(o)
+ return o:update()
+end
 
 function _update()
  --input
  if not modal_open then
+  local p=player()
   player_btns={"⬅️","➡️","⬆️"}
   for i=1,#player_btns do
    if btn(i-1) then
-    fn=player()[player_btns[i]]
-    if (fn) fn(player(),btnp(i-1))
+    fn=p[player_btns[i]]
+    if (fn) fn(p,btnp(i-1))
    end
   end
   if btnp(🅾️) then
@@ -491,8 +632,8 @@ function _update()
   --  path:apply()
   -- else
   --  path:find(
-  --   all_players[2],
-  --   all_players[2],
+  --   players[2],
+  --   players[2],
   --   player()
   --  )
   -- end
@@ -501,7 +642,7 @@ function _update()
 
  --players
  --path:update()
- foreach(all_players,update_player)
+ foreach(players,update_player)
 
  --mechanics
  foreach(mcns,update)
@@ -515,7 +656,9 @@ function _update()
  cam:update()
 end
 
-function draw(o) return o:draw() end
+function draw(o)
+ return o:draw()
+end
 
 function _draw()
  cls()
@@ -529,25 +672,29 @@ function _draw()
 
  --tiny text
  for wl in all(wall_labels) do
-  print_tiny(wl[1],wl[2],wl[3],wl[4])
+  print_tiny(
+   wl[1],wl[2],wl[3],wl[4]
+  )
  end
 
  --mechanics
  foreach(mcns,draw)
 
  --players
- foreach(all_players,draw_player)
+ foreach(players,draw_player)
 
  --dialog_box
- -- "thank you for saving me!\nlet me help you, i can\ndouble jump!",
- -- "well, now i feel\ninadequate :|",
+ -- "thank you for saving me!\nlet me help you,i can\ndouble jump!",
+ -- "well,now i feel\ninadequate :|",
  -- p_colors.red,
  -- p_colors.yellow
  --)
 
  --modals from interactables
  foreach(mcns,function(m)
-  if m.draw_modal then m:draw_modal() end
+  if m.draw_modal then
+   m:draw_modal()
+  end
  end)
 
  --camera
@@ -575,22 +722,17 @@ end
 -----------
 
 function player()
- return all_players[#all_players]
+ return players[#players]
 end
 
 function focus_next_player()
  add(
-  all_players,
-  deli(all_players,#all_players),
+  players,
+  deli(players,#players),
   1
  )
 end
 
-function sprite_coords(tile)
-  return {
-    x=8*(tile%16),
-    y=8*flr(tile/16),
-  }
 end
 
 function init_camera()
@@ -600,8 +742,9 @@ function init_camera()
   frms=7.5,
 
   update=function(c)
-   c.x+=bucket((player().x - c.x)/c.frms)
-   c.y+=bucket((player().y - c.y)/c.frms)
+   local p=player()
+   c.x+=bucket((p.x-c.x)/c.frms)
+   c.y+=bucket((p.y-c.y)/c.frms)
   end,
 
   draw=function(c)
@@ -653,8 +796,8 @@ function intersects(a,b)
 end
 
 --todo:document
-function bucket(v, step)
- if (step==nil) step=0x0.01
+function bucket(v,step)
+ step=step or 0x0.01
  v-=sgn(v)*(v%step)
  if (abs(v)<step) v=0
  return v
@@ -698,26 +841,30 @@ function get(f)
 end
 
 function min_(vs)
- return reduce(vs[1], min, vs)
+ return reduce(vs[1], min,vs)
 end
 function max_(vs)
- return reduce(vs[1], max, vs)
+ return reduce(vs[1], max,vs)
 end
 
-function reduce(a0, f, vs)
- local a = a0
+function reduce(a0, f,vs)
+ local a=a0
  for v in all(vs) do
-  a = f(a, v)
+  a=f(a,v)
  end
  return a
 end
 
 function bounding_box(bs)
  assert(#bs>0,"empty bs")
- local function x2(b) return b.x + b.w - 1 end
- local function y2(b) return b.y + b.h - 1 end
+ local function x2(b)
+  return b.x+b.w - 1
+ end
+ local function y2(b)
+  return b.y+b.h - 1
+ end
 
- local r = {
+ local r={
   x=min_(map_(get('x'), bs)),
   y=min_(map_(get('y'), bs)),
   x2=max_(map_(x2, bs)),
@@ -730,13 +877,20 @@ function bounding_box(bs)
  return r
 end
 
-function sprite_hitboxes(sp, x, y)
-  local bs = custom_hitboxes[sp\1]
-  if(bs == nil) return {}
+function sp_coords(tile)
+ return {
+  x=8*(tile%16),
+  y=8*flr(tile/16),
+ }
+end
+
+function sp_hitboxes(sp,x,y)
+  local bs=custom_hitboxes[sp\1]
+  if (bs==nil) return {}
 
   local r = {}
   for b in all(bs) do
-   add(r, {
+   add(r,{
      x=b[1]+x,
      y=b[2]+y,
      w=b[3],
@@ -746,10 +900,12 @@ function sprite_hitboxes(sp, x, y)
   return r
 end
 
-function intersectsx(as, bs)
+function intersectsx(as,bs)
  for a in all(as) do
   for b in all(bs) do
-   if(intersects(a, b)) return true
+   if intersects(a,b) then
+    return true
+   end
   end
  end
 
@@ -757,14 +913,18 @@ function intersectsx(as, bs)
 end
 
 function collisions(p)
- local hbs=sprite_hitboxes(p.sp, p.x, p.y)
- assert(count(hbs)!=0, p.sp)
+ local hbs=sp_hitboxes(
+  p.sp,p.x,p.y
+ )
  local collisions={}
 
  --check mechanics
  for m in all(mcns) do
   if m.collide
-  and intersectsx(sprite_hitboxes(m.sp, m.x, m.y), hbs)
+  and intersectsx(
+   sp_hitboxes(m.sp,m.x,m.y),
+   hbs
+  )
   then
    add(collisions,m)
   end
@@ -779,7 +939,10 @@ function collisions(p)
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local map_sp=mget(x/8,y/8)
-   if intersectsx(sprite_hitboxes(map_sp, x, y), hbs)
+   if intersectsx(
+    sp_hitboxes(map_sp,x,y),
+    hbs
+   )
    then
     add(collisions,{
      x=x\8*8,
@@ -804,7 +967,7 @@ end
 --blocks p from intersecting cl
 --returns block direction
 function block(cl,p)
- local aim = coll_aim(cl,p)
+ local aim=coll_aim(cl,p)
 
  if aim == "⬅️" then
   p.dx=0
@@ -824,7 +987,7 @@ function block(cl,p)
   return aim
  end
 
- assert(false, "unkown aim")
+ assert(false,"unknown aim")
 end
 
 function coll_aim(cl,p)
@@ -853,8 +1016,8 @@ function coll_aim(cl,p)
  end
 end
 
---[[
---to use, prepend "-" above
+---[[
+--to use,prepend "-" above
 function tostring(any)
  if type(any)!="table" then
   return tostr(any)
@@ -935,7 +1098,9 @@ function update_player(p)
  local vcl=collisions(p)
  for cl in all(vcl) do
   local aim=cl:collide(p)
-  if (aim==ground_aim) ground_hit=true
+  if aim==ground_aim then
+   ground_hit=true
+  end
  end
 
  --state
@@ -948,7 +1113,8 @@ function update_player(p)
  p.ground=ground_hit or
   (p.ground and p.y\1==old_y)
  --landed:newly on ground
- p.landed=p.ground and not was_ground
+ p.landed=p.ground
+  and not was_ground
  if p.ground then
   p.falling=false
   p.jumping=false
@@ -957,8 +1123,10 @@ function update_player(p)
   --falling:moving downwards
   --(mini gravity movements
   --excluded since ground=true)
-  p.falling=not p.gliding and
-   (p.flpy and p.dy<0 or p.dy>0)
+  p.falling=not p.gliding
+   and (
+    p.flpy and p.dy<0 or p.dy>0
+   )
   if p.falling then
    p.jumping=false
    p.gliding=false
@@ -1046,11 +1214,16 @@ function glide(p,_)
 end
 
 function draw_player(p)
- local cm = p_colors[p.color]
+ local cm=p_colors[p.color]
  for c1,c2 in pairs(cm) do
    pal(c1,c2)
  end
- spr(p.sp,p.x,p.y,1,1,p.flpx, p.flpy)
+ spr(
+  p.sp,
+  p.x,p.y,
+  1,1,
+  p.flpx,p.flpy
+ )
  pal()
 end
 -->8
@@ -1088,7 +1261,8 @@ function init_spark(
   end,
 
   update=function(s)
-   s.sp=sp_spark_start+(t()*10)%sp_spark_length
+   s.sp=sp_spark_start+
+    (t()*10)%sp_spark_length
   end,
 
   draw=function(s)
@@ -1128,8 +1302,12 @@ function init_platform(
    p.x+=p.dx
    p.y+=p.dy
 
-   foreach(all_players, function(pl)
-    if intersects(stand_box(pl), p) then
+   foreach(players,function(pl)
+    if intersects(
+      stand_box(pl),
+      p
+    )
+    then
      pl.x+=p.dx
      pl.y+=p.dy
     end
@@ -1163,7 +1341,8 @@ end
 -----------
 
 function init_door(x,y,open)
- local sp=open and sp_door_opened
+ local sp=open
+  and sp_door_opened
   or sp_door_closed
 
  return {
@@ -1214,7 +1393,7 @@ end
 
 function fire_fxs()
  foreach(
-  all_players,
+  players,
   function(p)
    if p.glided then
     rocket:on_player(p)
@@ -1503,8 +1682,6 @@ end
 
 function speech_bubble(x,y,l,c)
   local r=rect_tooltip
-  -- local sx=rect_tooltip[1]--8*(rect_tooltip%16)
-  -- local sy=8*flr(sp_speech/16)
   local dx=x-4
   local dy=y-12+cos(t()/2)+.5
 
@@ -1534,7 +1711,7 @@ end
 ---tiny text---
 ---------------
 
--- https://www.1001fonts.com/tinier-font.html
+--https://www.1001fonts.com/tinier-font.html
 tiny_font={
  a={0,0,3,3},
  b={0,3,3,3},
@@ -1563,10 +1740,10 @@ tiny_font={
  y={11,0,3,3},
  z={11,3,3,3},
  [1]={11,6,2,3},
- [2]={11,3,3,3}, -- z
+ [2]={11,3,3,3}, --z
  [3]={11,9,3,3},
  [4]={11,12,3,3},
- [5]={8,6,3,3},  -- s
+ [5]={8,6,3,3}, --s
  [6]={11,15,3,3},
  [7]={13,18,3,3},
  [8]={11,21,3,3},
@@ -1578,7 +1755,9 @@ tiny_font={
 
 function print_tiny(str,x,y,c)
  local chars=split(str,"")
- local sc=sprite_coords(sp_tiny_font)
+ local sc=sp_coords(
+  sp_tiny_font
+ )
  local cursor=0
 
  for char in all(chars) do
@@ -1611,17 +1790,32 @@ function modal(x,y,w,h)
  local cb=6
  local cs=5
 
- rectfill(x,y,x+w,y+h,cbg)          -- bg
- rectfill(x+1,y,x+w,y,ct)           -- top
- rectfill(x+w+1,y+1,x+w+1,y+h-1,ct) -- right
- rectfill(x+1,y+h,x+w,y+h,cb)       -- bottom
- rectfill(x,y+1,x,y+h-1,cb)         -- left
- pset(x,y,cs)                       -- shadow
- pset(x,y+h,cs)                     -- shadow
- rectfill(x-1,y+1,x-1,y+h-1,cs)     -- shadow
- rectfill(x+1,y+h+1,x+w-1,y+h+1,cs) -- shadow
- rectfill(x+1,y+1,x+w,y+1,cs)       -- inner shadow
- rectfill(x+w,y+1,x+w,y+h-1,cs)     -- inner shadow
+ --bg
+ rectfill(x,y,x+w,y+h,cbg)
+ --top
+ rectfill(x+1,y,x+w,y,ct)
+ --right
+ rectfill(
+  x+w+1,y+1,x+w+1,y+h-1,ct
+ )
+ --bottom
+ rectfill(x+1,y+h,x+w,y+h,cb)
+ --left
+ rectfill(x,y+1,x,y+h-1,cb)
+ --shadow
+ pset(x,y,cs)
+ --shadow
+ pset(x,y+h,cs)
+ --shadow
+ rectfill(x-1,y+1,x-1,y+h-1,cs)
+ --shadow
+ rectfill(
+  x+1,y+h+1,x+w-1,y+h+1,cs
+ )
+ --inner shadow
+ rectfill(x+1,y+1,x+w,y+1,cs)
+ --inner shadow
+ rectfill(x+w,y+1,x+w,y+h-1,cs)
 end
 
 function dialog_box(s1,s2,m1,m2)
@@ -1632,9 +1826,15 @@ function dialog_box(s1,s2,m1,m2)
 
  modal(x,y,w,h)
 
- with_pal(m1, sprfn(7,x+3,y+5))
+ with_pal(
+  m1,
+  sprfn(7,x+3,y+5)
+ )
  print(s1,x+14,y+5,12)
- with_pal(m2, sprfn(7,x+w-10,y+h-10))
+ with_pal(
+  m2,
+  sprfn(7,x+w-10,y+h-10
+ ))
  print(s2,x+35,y+h-14,12)
 end
 
@@ -1689,7 +1889,7 @@ function init_interactable(opts)
   tooltip=nil,
 
   on_button_press=function(s) end,
-  on_collision=function(s) end,
+  on_collide=function(s) end,
 
   collided_prev=false,
   collided_at=0,
@@ -1699,14 +1899,16 @@ function init_interactable(opts)
   end,
 
   update=function(s)
-   local collided=s.collided_at==time()
+   local collided=
+    s.collided_at==time()
    s.collided_prev=collided
 
    if collided then
-    s:on_collision()
+    s:on_collide()
    end
 
-   local interacted=collided and btnp(❎)
+   local interacted=
+    collided and btnp(❎)
 
    if interacted then
     s:on_button_press()
@@ -1715,7 +1917,9 @@ function init_interactable(opts)
    if s.msg then
     local just_opened=false
 
-    if interacted and not s.msg_open then
+    if interacted
+    and not s.msg_open
+    then
      s.msg_open=true
      s.msg_cursor=0
      just_opened=true
@@ -1724,12 +1928,15 @@ function init_interactable(opts)
     if s.msg_open then
      if s.msg_cursor<#s.msg then
       s.msg_cursor+=s.msg_freq;
-      play_sfx(s.msg_freq==original_freq and
-       "text_type_slow" or
-       "text_type_fast"
+      play_sfx(
+       s.msg_freq==original_freq
+       and "text_type_slow"
+       or "text_type_fast"
       )
 
-      if interacted and not just_opened then
+      if interacted
+      and not just_opened
+      then
        s.msg_freq=mid(
         original_freq,
         s.msg_freq*2,
@@ -1753,8 +1960,10 @@ function init_interactable(opts)
     sprfn(s.sp,s.x,s.y)
    )
 
-   if s.tooltip and not s.msg_open
-   and s.collided_prev then
+   if s.tooltip
+   and not s.msg_open
+   and s.collided_prev
+   then
    local c=
     p_colors[player().color][8]
 
@@ -1992,11 +2201,11 @@ path={
     btns={}
    }
    --repeat btns until position
-   --changes, up to 15 times
+   --changes,up to 15 times
    --(see btnp() for threshold)
    for i=1,15 do
-    local tap=i==1 and
-     btns!=prev_btns
+    local tap=i==1
+     and btns!=prev_btns
     move_player(cur,btns,tap)
     update_player(cur)
     add(cur.btns,{btns,tap})
@@ -2019,7 +2228,7 @@ path={
 }
 
 --move player
---invokes btns as player functions
+--invokes btns as player fns
 function move_player(p,btns,tap)
  for i=1,#btns do
   p[sub(btns,i,i)](p,tap)
@@ -2089,7 +2298,7 @@ function vec2i(v,grid)
 end
 
 -->8
---sound effects, music
+--sound effects,music
 
 --[[
 channels:
@@ -2118,8 +2327,11 @@ sfx_map={
 function play_sfx(_sfx)
  local idx=sfx_map[_sfx].i
 
- if stat(16)==idx or stat(17)==idx or
- stat(18)==idx or stat(19)==idx then
+ if stat(16)==idx
+ or stat(17)==idx
+ or stat(18)==idx
+ or stat(19)==idx
+ then
   return
  end
 
