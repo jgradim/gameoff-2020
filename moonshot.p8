@@ -386,7 +386,7 @@ function init_mechanics()
  --platforms
  local diag_plt=
   init_platform(
-   60*8,26*8,8,8,
+   60*8,26*8,
    linear_delta_fn(
     60*8,26*8-1,60*8,26*8+1
    )
@@ -486,7 +486,7 @@ function init_mechanics()
 
  local corridor_plt=
   init_platform(
-   59*8,25*8,8,8,
+   59*8,25*8,
    linear_delta_fn(
     47*8,26*8,47*8,26*8
   )
@@ -1572,7 +1572,7 @@ end
 ---------------
 
 function init_platform(
- x,y,w,h,delta_fn
+ x,y,delta_fn
 )
  --[[
  x,y,w,h=platform pos/size
@@ -1582,8 +1582,8 @@ function init_platform(
   sp=sp_platform_start,
   x=x,
   y=y,
-  w=w,
-  h=h,
+  w=8,
+  h=8,
   dx=0,
   dy=0,
   anim_cursor=1,
