@@ -4,6 +4,10 @@ __lua__
 --moonshot
 --by goncalossilva,jgradim,pkoch
 
+--todo:
+--update hitbox after everty collision
+--move to boxy hitboxes
+
 ---------------
 ---constants---
 ---------------
@@ -159,39 +163,33 @@ custom_hitboxes={
  --player
  [1]={
   --idle
-  {2,1,4,1},
-  {1,2,6,2},
-  {2,4,4,4},
+  {2,1,4,7},
+  --{1,2,6,2},
  },
  [2]={
   --run 1
-  {2,1,4,1},
-  {1,2,6,2},
-  {2,4,4,4},
+  {2,1,4,7},
+  --{1,2,6,2},
  },
  [3]={
   --mid run jump
-  {2,0,4,1},
-  {1,1,6,2},
-  {2,3,4,4},
+  {2,1,4,8},
+  --{1,2,6,2},
  },
  [4]={
   --run 2
-  {2,1,4,1},
-  {1,2,6,2},
-  {2,4,4,4},
+  {2,1,4,7},
+  --{1,2,6,2},
  },
  [5]={
   --crouch
-  {2,2,4,1},
-  {1,3,6,2},
-  {2,5,4,3},
+  {2,2,4,6},
+  --{1,2,6,2},
  },
  [6]={
   --jetpack
-  {2,1,4,1},
-  {1,2,6,2},
-  {2,4,4,4},
+  {2,1,4,7},
+  --{1,2,6,2},
  },
 
  --doors
@@ -225,7 +223,7 @@ custom_hitboxes={
   {0,0,8,3},
  },
 
- -- map tiles
+ --map tiles
  [112]={
   --right endpiece
   {0,0,8,5},
@@ -489,8 +487,8 @@ function init_mechanics()
    59*8,25*8,
    linear_delta_fn(
     47*8,26*8,47*8,26*8
+   )
   )
- )
 
  local corridor_btn=
   init_interactable({
@@ -519,11 +517,6 @@ function init_mechanics()
 
  --return list of mechanics
  return {
-  -- sprk0,sprk1,sprk2,sprk3,
-  -- sprk4,sprk5,sprk6,sprk7,
-  -- sprk8,sprk9,sprk10,
-  -- plt0,plt1,plt2,plt3,plt4,
-
   -- dianostics
   diag_jammed_door,
   diag_screen_warn,
@@ -823,27 +816,31 @@ function sp_coords(tile)
  }
 end
 
-function sp_hitboxes(sp,x,y)
-  local hbs=custom_hitboxes[sp]
-  if hbs then
-   local r={}
-   for hb in all(hbs) do
-    add(r,{
-     x=hb[1]+x,
-     y=hb[2]+y,
-     w=hb[3],
-     h=hb[4],
-    })
-   end
-   return r
-  else
-   return {{x=x,y=y,w=8,h=8}}
+function sp_hbs_iter(sp,x,y)
+ local hbs=custom_hitboxes[sp]
+ local i=0
+ return function()
+  i+=1
+  if hbs and i<=#hbs then
+   return {
+    x=hbs[i][1]+x,
+    y=hbs[i][2]+y,
+    w=hbs[i][3],
+    h=hbs[i][4],
+   }
+  elseif not hbs and i==1 then
+   return {x=x,y=y,w=8,h=8}
   end
+ end
 end
 
-function intersectsx(as,bs)
- for a in all(as) do
-  for b in all(bs) do
+--returns the first intersecting
+--pair within a_iter and b_iter
+function intersects_iters(
+ a_iter,b_iter
+)
+ for a in a_iter do
+  for b in b_iter do
    if intersects(a,b) then
     return a,b
    end
@@ -858,11 +855,11 @@ function handle_collisions(p)
  for mcn in all(mcns) do
   if mcn.collide then
    local mcnhb,phb=
-    intersectsx(
-     sp_hitboxes(
+    intersects_iters(
+     sp_hbs_iter(
       mcn.sp,mcn.x,mcn.y
      ),
-     sp_hitboxes(
+     sp_hbs_iter(
       p.sp,p.x,p.y
      )
     )
@@ -873,19 +870,20 @@ function handle_collisions(p)
  end
    
  --check map
- local x1=p.x
- local x2=p.x+p.w-1
- local y1=p.y
+ local x1=p.x+2
+ local x2=p.x+p.w-3
+ local y1=p.y+1
  local y2=p.y+p.h-1
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local sp=mget(x/8,y/8)
    if fget(sp,flag_hits)
    then
-    local mhb,phb=intersectsx(
-     sp_hitboxes(sp,x,y),
-     sp_hitboxes(p.sp,p.x,p.y)
-    )
+    local mhb,phb=
+     intersects_iters(
+      sp_hbs_iter(sp,x,y),
+      sp_hbs_iter(p.sp,p.x,p.y)
+     )
     if mhb then
      block(
       {x=x,y=y,w=8,h=8},
@@ -909,16 +907,24 @@ function block(cl,clhb,p,phb)
  local int={
   x=x,
   y=y,
-  w=min(p.x+p.w,cl.x+cl.w)-x,
-  h=min(p.y+p.h,cl.y+cl.h)-y,
+  w=min(
+   p.x+p.w,
+   cl.x+cl.w
+  )-x,
+  h=min(
+   p.y+p.h,
+   cl.y+cl.h
+  )-y,
  }
 
  --resolve using shallowest axis
  local aim=nil
  if int.w<int.h then
-  aim=p.x<cl.x and "⬅️" or "➡️"
+  aim=p.x<cl.x
+   and "⬅️" or "➡️"
  else
-  aim=p.y>cl.y and "⬆️" or "⬇️"
+  aim=p.y>cl.y
+   and "⬆️" or "⬇️"
  end
 
  if aim=="⬅️" then
@@ -1527,7 +1533,7 @@ function init_platform(
    p.x+=p.dx
    p.y+=p.dy
 
-   local phb_top=
+   --[[local phb_top=
     sp_hitboxes(p.sp,p.x,p.y)[1]
    foreach(players,function(pl)
     local plhbs=
@@ -1543,6 +1549,7 @@ function init_platform(
      pl.y+=p.dy
     end
    end)
+      --]]
 
    animate(p,8,true)
   end,
