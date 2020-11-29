@@ -8,7 +8,7 @@ __lua__
 ---constants---
 ---------------
 
-fps=5
+fps=30
 
 map_width=1024
 map_height=256
