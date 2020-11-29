@@ -816,66 +816,6 @@ function ef_smooth(f)
  return f*f*f*(f*(f*6-15)+10)
 end
 
-function stand_box(p)
- return {
-  x=p.x+2,
-  w=4,
-  y=p.y+p.h,
-  h=1,
- }
-end
-
-function map_(f,vs)
- local r={}
- for v in all(vs) do
-  add(r,f(v))
- end
- return r
-end
-
-function get(f)
- return function(o)
-  return o[f]
- end
-end
-
-function min_(vs)
- return reduce(vs[1], min,vs)
-end
-function max_(vs)
- return reduce(vs[1], max,vs)
-end
-
-function reduce(a0, f,vs)
- local a=a0
- for v in all(vs) do
-  a=f(a,v)
- end
- return a
-end
-
-function bounding_box(bs)
- assert(#bs>0,"empty bs")
- local function x2(b)
-  return b.x+b.w - 1
- end
- local function y2(b)
-  return b.y+b.h - 1
- end
-
- local r={
-  x=min_(map_(get('x'), bs)),
-  y=min_(map_(get('y'), bs)),
-  x2=max_(map_(x2, bs)),
-  y2=max_(map_(y2, bs)),
- }
- r.w=r.x2-r.x+1
- r.h=r.y2-r.y+1
- r.x2=nil
- r.y2=nil
- return r
-end
-
 function sp_coords(tile)
  return {
   x=8*(tile%16),
@@ -897,7 +837,7 @@ function sp_hitboxes(sp,x,y)
    end
    return r
   else
-   return {{x,y,8,8}}
+   return {{x=x,y=y,w=8,h=8}}
   end
 end
 
@@ -905,7 +845,7 @@ function intersectsx(as,bs)
  for a in all(as) do
   for b in all(bs) do
    if intersects(a,b) then
-    return true
+    return a,b
    end
   end
  end
@@ -913,85 +853,57 @@ function intersectsx(as,bs)
  return false
 end
 
-function collisions(p)
- local hbs=sp_hitboxes(
-  p.sp,p.x,p.y
- )
- local collisions={}
-
+function handle_collisions(p)
  --check mechanics
- for m in all(mcns) do
-  if m.collide
-  and intersectsx(
-   sp_hitboxes(m.sp,m.x,m.y),
-   hbs
-  )
-  then
-   add(collisions,m)
-  end
- end
-
- --check map
- local hb=bounding_box(hbs)
- local x1=hb.x
- local x2=hb.x+hb.w-1
- local y1=hb.y
- local y2=hb.y+hb.h-1
- for x in all({x1,x2}) do
-  for y in all({y1,y2}) do
-   local map_sp=mget(x/8,y/8)
-   if intersectsx(
-    sp_hitboxes(map_sp,x,y),
-    hbs
-   )
-   then
-    add(collisions,{
-     x=x\8*8,
-     y=y\8*8,
-     w=8,
-     h=8,
-     dx=0,
-     dy=0,
-     collide=block,
-    })
+ for mcn in all(mcns) do
+  if mcn.collide then
+   local mcnhb,phb=
+    intersectsx(
+     sp_hitboxes(
+      mcn.sp,mcn.x,mcn.y
+     ),
+     sp_hitboxes(
+      p.sp,p.x,p.y
+     )
+    )
+   if mcnhb then
+    mcn:collide(mcnhb,p,phb)
    end
   end
  end
-
- return collisions
-end
-
-function flag_on_xy(x,y,flag)
- return fget(mget(x/8,y/8),flag)
-end
-
---blocks p from intersecting cl
---returns block direction
-function block(cl,p)
- local aim=coll_aim(cl,p)
-
- if aim == "⬅️" then
-  p.dx=0
-  p.x=cl.x-p.w
-  return aim
- elseif aim == "➡️" then
-  p.dx=0
-  p.x=cl.x+cl.w
-  return aim
- elseif aim == "⬆️" then
-  p.dy=0
-  p.y=cl.y+cl.h
-  return aim
- elseif aim == "⬇️" then
-  p.dy=0
-  p.y=cl.y-p.h
-  return aim
+   
+ --check map
+ local x1=p.x
+ local x2=p.x+p.w-1
+ local y1=p.y
+ local y2=p.y+p.h-1
+ for x in all({x1,x2}) do
+  for y in all({y1,y2}) do
+   local sp=mget(x/8,y/8)
+   if fget(sp,flag_hits)
+   then
+    local mhb,phb=intersectsx(
+     sp_hitboxes(sp,x,y),
+     sp_hitboxes(p.sp,p.x,p.y)
+    )
+    if mhb then
+     block(
+      {x=x,y=y,w=8,h=8},
+      mhb,
+      p,
+      phb
+     )
+    end
+   end
+  end
  end
-
- assert(false,"unknown aim")
 end
 
-function coll_aim(cl,p)
+--blocks p from intersecting cl,
+--adjusting for specific hitboxes
+--returns block direction
+function block(cl,clhb,p,phb)
+ --get intersection
  local x=max(p.x,cl.x)
  local y=max(p.y,cl.y)
  local int={
@@ -1002,19 +914,32 @@ function coll_aim(cl,p)
  }
 
  --resolve using shallowest axis
+ local aim=nil
  if int.w<int.h then
-  if p.x<cl.x then
-   return "⬅️"
-  else
-   return "➡️"
-  end
+  aim=p.x<cl.x and "⬅️" or "➡️"
  else
-  if p.y>cl.y then
-   return "⬆️"
-  else
-   return "⬇️"
-  end
+  aim=p.y>cl.y and "⬆️" or "⬇️"
  end
+
+ if aim=="⬅️" then
+  p.dx=0
+  p.x+=clhb.x-phb.x-phb.w
+  return aim
+ elseif aim=="➡️" then
+  p.dx=0
+  p.x+=clhb.x+clhb.w-phb.x
+  return aim
+ elseif aim=="⬆️" then
+  p.dy=0
+  p.y+=clhb.y+clhb.h-phb.y
+  return aim
+ elseif aim=="⬇️" then
+  p.dy=0
+  p.y+=clhb.y-phb.y-phb.h
+  return aim
+ end
+
+ assert(false,"unknown aim")
 end
 
 ---[[
@@ -1080,10 +1005,11 @@ function update_player(p)
  p.dx*=inertia
  p.dx=clamp(p.dx,p.max_dx,0x.08)
  p.x+=p.dx
- local hcl=collisions(p)
- for cl in all(hcl) do
-  cl:collide(p)
- end
+ printh("--")
+ printh(tostring(p.x)..","..tostring(p.y))
+ handle_collisions(p)
+ printh(tostring(p.x)..","..tostring(p.y))
+ printh("--")
 
  --move vertically
  if p.flpy then
@@ -1093,16 +1019,15 @@ function update_player(p)
  end
  p.dy=clamp(p.dy,p.max_dy,0x.08)
  p.y+=p.dy
- local ground_aim=
-  p.flpy and "⬆️" or "⬇️"
- local ground_hit=false
- local vcl=collisions(p)
- for cl in all(vcl) do
-  local aim=cl:collide(p)
-  if aim==ground_aim then
-   ground_hit=true
-  end
- end
+ local was_falling=
+  p.flpy and p.dy<0 or p.dy>0
+ printh("---")
+ printh(tostring(p.x)..","..tostring(p.y))
+ handle_collisions(p)
+ printh(tostring(p.x)..","..tostring(p.y))
+ printh("---")
+ local ground_hit=
+  was_falling and p.dy==0
 
  --state
  local was_ground=p.ground
@@ -1152,6 +1077,10 @@ function update_player(p)
  else
   p.sp=sp_player_idle
  end
+ 
+ printh("----")
+ printh(tostring(p.x)..","..tostring(p.y))
+ printh("----")
 end
 
 function run_left(p)
@@ -1542,14 +1471,14 @@ function init_spark(
   dy=0,
   sp=sp_spark_start,
 
-  collide=function(s,p)
+  collide=function(s,shb,p,phb)
    local old_dx=p.dx
    local old_dy=p.dy
-   local aim=block(s,p)
-   if aim=="⬅️" or aim=="➡️"
+   local aim=block(s,shb,p,phb)
+   if old_dx!=0 and p.dx==0
    then
     p.dx=-old_dx*10
-   elseif aim=="⬆️" or aim=="⬇️"
+   elseif old_dy!=0 and p.dy==0
    then
     p.dy=-old_dy*10
    end
@@ -1598,10 +1527,16 @@ function init_platform(
    p.x+=p.dx
    p.y+=p.dy
 
+   local phb_top=
+    sp_hitboxes(p.sp,p.x,p.y)[1]
    foreach(players,function(pl)
+    local plhbs=
+     sp_hitboxes(pl.sp,pl.x,pl.y)
+    local plhb_bottom=
+     plhbs[#plhbs]
+    plhb_bottom.h+=1
     if intersects(
-      stand_box(pl),
-      p
+     phb_top,plhb_bottom
     )
     then
      pl.x+=p.dx
