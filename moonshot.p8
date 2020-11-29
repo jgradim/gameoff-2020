@@ -884,19 +884,21 @@ function sp_coords(tile)
 end
 
 function sp_hitboxes(sp,x,y)
-  local bs=custom_hitboxes[sp\1]
-  if (bs==nil) return {}
-
-  local r = {}
-  for b in all(bs) do
-   add(r,{
-     x=b[1]+x,
-     y=b[2]+y,
-     w=b[3],
-     h=b[4],
-   })
+  local hbs=custom_hitboxes[sp]
+  if hbs then
+   local r={}
+   for hb in all(hbs) do
+    add(r,{
+     x=hb[1]+x,
+     y=hb[2]+y,
+     w=hb[3],
+     h=hb[4],
+    })
+   end
+   return r
+  else
+   return {{x,y,8,8}}
   end
-  return r
 end
 
 function intersectsx(as,bs)
