@@ -161,11 +161,6 @@ function init_laser(opts)
 
   on=true,
 
-  delta_fn=function()
-  end,
-
-  --collide=block,
-
   update=function(l)
    animate(l,1.5,true,"frame")
 
@@ -1863,10 +1858,6 @@ end
 function init_platform(
  x,y,delta_fn
 )
- --[[
- x,y,w,h=platform pos/size
- delta_fn=fn that updates dx/dy
- ]]
  return {
   sp=sp_platform_start,
   x=x,
