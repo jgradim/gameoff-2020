@@ -153,10 +153,12 @@ function init_laser(
   from=from,
   to=to,
   dir=dir,
-  l=len,
+  len=len,
   anim={1,2,3,4,5,6,7,8},--frame
   anim_cursor=1,
   frame=1,
+  w=dir=="h" and len or 4,
+  h=dir=="v" and len or 4,
   pals={
    [1]={h,m,s,s,s,s,m,h},
    [2]={h,h,m,s,s,s,s,m},
@@ -171,7 +173,7 @@ function init_laser(
   on=true,
 
   on_collide=function(l)
-   printh("laser collided")
+   --printh("laser collided"..t())
   end,
   --collide=block,
 
@@ -198,7 +200,7 @@ function init_laser(
     for c1,p in pairs(l.pals) do
      pal(c1,p[l.anim[l.frame]])
     end
-    for i=0,l.l\8-1 do
+    for i=0,l.len\8-1 do
      spr(sp_laser_h,l.x+i*8,l.y)
     end
     pal()
@@ -210,7 +212,7 @@ function init_laser(
    )
    sspr(
     lhr.x,lhr.y,lhr.w,lhr.h,
-    l.x+l.l,l.y
+    l.x+l.len,l.y
    )
   end,
 
@@ -224,7 +226,7 @@ function init_laser(
     for c1,p in pairs(l.pals) do
      pal(c1,p[l.anim[l.frame]])
     end
-    for i=0,l.l\8-1 do
+    for i=0,l.len\8-1 do
      spr(sp_laser_v,l.x,l.y+i*8)
     end
     pal()
@@ -236,7 +238,7 @@ function init_laser(
    )
    sspr(
     lvd.x,lvd.y,lvd.w,lvd.h,
-    l.x,l.y+l.l
+    l.x,l.y+l.len
    )
   end,
  })
