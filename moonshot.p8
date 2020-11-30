@@ -4,10 +4,6 @@ __lua__
 --moonshot
 --by goncalossilva,jgradim,pkoch
 
---todo:
---update hitbox after everty collision
---move to boxy hitboxes
-
 ---------------
 ---constants---
 ---------------
