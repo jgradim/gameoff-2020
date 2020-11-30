@@ -979,52 +979,104 @@ end
 
 function sp_hitboxes(sp,x,y)
  local hbs=custom_hitboxes[sp]
- if hbs then
-  local r={}
-  for hb in all(hbs) do
-   add(r,{
-    x=hb[1]+x,
-    y=hb[2]+y,
-    w=hb[3],
-    h=hb[4],
-   })
-  end
-  return r
- else
+ 
+ if not hbs then
   return {{x=x,y=y,w=8,h=8}}
  end
+ 
+ local r={}
+ for hb in all(hbs) do
+  add(r,{
+   x=hb[1]+x,
+   y=hb[2]+y,
+   w=hb[3],
+   h=hb[4],
+  })
+ end
+ return r
 end
 
---insert v in t and sort t by p
-function insert(t,v,p)
- if #t>=1 then
-  add(t,{})
-  for i=(#t),2,-1 do
-   local n=t[i-1]
-   if p<n[2] then
-    t[i]={v,p}
-    return
-   else
-    t[i]=n
+function sp_collisions_iter(
+ sp,x,y,phb,flag
+)
+ if not fget(sp,flag) then
+  return function() end
+ end
+ 
+ local hbs=sp_hitboxes(sp,x,y)
+ local i=0
+ return function()
+  while i<#hbs do
+   i+=1
+   local hb=hbs[i]
+   if intersects(phb,hb) then
+    return hb
    end
   end
-  t[1]={v,p}
- else
-  add(t,{v,p})
  end
 end
 
---pop first element of t
-function pop(t)
- local top=t[1]
- for i=1,(#t) do
-  if i==(#t) then
-   del(t,t[i])
-  else
-   t[i]=t[i+1]
+function resolve_collisions(p)
+ local collisions={}
+
+ --check colliding map tiles
+ local phb=p:hitbox()
+ local x1=phb.x
+ local x2=phb.x+phb.w-1
+ local y1=phb.y
+ local y2=phb.y+phb.h-1
+ for x in all({x1,x2}) do
+  for y in all({y1,y2}) do
+   local sp=mget(x/8,y/8)
+   for mhb in sp_collisions_iter(
+    sp,x\8*8,y\8*8,phb,
+    flag_block
+   ) do
+    local x=intersect(phb,mhb)
+    insert(
+     collisions,
+     {block,mhb,mhb,p},
+     max(x.w,x.h)
+    )
+   end
+   for mhb in sp_collisions_iter(
+    sp,x\8*8,y\8*8,phb,
+    flag_respawn
+   ) do
+    insert(
+     collisions,
+     {chkpt.restore,chkpt},
+     0
+    )
+   end
   end
  end
- return top
+
+ --check colliding mechanics
+ for mcn in all(mcns) do
+  if mcn.collide then
+   for mhb in sp_collisions_iter(
+    mcn.sp,mcn.x,mcn.y,phb,
+    flag_block
+   ) do
+    local x=intersect(phb,mhb)
+    insert(
+     collisions,
+     {mcn.collide,mcn,mhb,p},
+     max(x.w,x.h)
+    )
+   end
+  end
+ end
+
+ --resolve collisions from the
+ --most to least colliding
+ while #collisions>0 do
+  local r=pop(collisions)[1]
+  local r_fn=r[1]
+  del(r,r_fn)
+  r_fn(unpack(r))
+ end
 end
 
 --blocks p from intersecting cl,
@@ -1087,20 +1139,37 @@ function fadepal(perc)
  end
 end
 
---[[
---to use,prepend "-" above
-function tostring(any)
- if type(any)!="table" then
-  return tostr(any)
+--insert v in t and sort t by p
+function insert(t,v,p)
+ if #t>=1 then
+  add(t,{})
+  for i=(#t),2,-1 do
+   local n=t[i-1]
+   if p<n[2] then
+    t[i]={v,p}
+    return
+   else
+    t[i]=n
+   end
+  end
+  t[1]={v,p}
+ else
+  add(t,{v,p})
  end
- local str="{"
- for k,v in pairs(any) do
-  if (str!="{") str=str..","
-  str..=tostring(k).."="..tostring(v)
- end
- return str.."}"
 end
---]]
+
+--pop first element of t
+function pop(t)
+ local top=t[1]
+ for i=1,(#t) do
+  if i==(#t) then
+   del(t,t[i])
+  else
+   t[i]=t[i+1]
+  end
+ end
+ return top
+end
 
 function unpack_custom_hitboxes(ls)
  local r={}
@@ -1117,6 +1186,20 @@ function unpack_custom_hitboxes(ls)
 end
 custom_hitboxes=unpack_custom_hitboxes(custom_hitboxes)
 
+--[[
+--to use,prepend "-" above
+function tostring(any)
+ if type(any)!="table" then
+  return tostr(any)
+ end
+ local str="{"
+ for k,v in pairs(any) do
+  if (str!="{") str=str..","
+  str..=tostring(k).."="..tostring(v)
+ end
+ return str.."}"
+end
+--]]
 
 -->8
 --player
@@ -1261,89 +1344,6 @@ function init_player(p)
    pal()
   end,
  },p)
-end
-
-function sp_collisions_iter(
- sp,x,y,phb,flag
-)
- if fget(sp,flag) then
-  local hbs=sp_hitboxes(sp,x,y)
-  local i=0
-  return function()
-   while i<#hbs do
-    i+=1
-    local hb=hbs[i]
-    if intersects(phb,hb) then
-     return hb
-    end
-   end
-  end
- else
-  return function() end
- end
-end
-
-function resolve_collisions(p)
- local collisions={}
-
- --check colliding map tiles
- local phb=p:hitbox()
- local x1=phb.x
- local x2=phb.x+phb.w-1
- local y1=phb.y
- local y2=phb.y+phb.h-1
- for x in all({x1,x2}) do
-  for y in all({y1,y2}) do
-   local sp=mget(x/8,y/8)
-   for mhb in sp_collisions_iter(
-    sp,x\8*8,y\8*8,phb,
-    flag_block
-   ) do
-    local x=intersect(phb,mhb)
-    insert(
-     collisions,
-     {block,mhb,mhb,p},
-     max(x.w,x.h)
-    )
-   end
-   for mhb in sp_collisions_iter(
-    sp,x\8*8,y\8*8,phb,
-    flag_respawn
-   ) do
-    insert(
-     collisions,
-     {chkpt.restore,chkpt},
-     0
-    )
-   end
-  end
- end
-
- --check colliding mechanics
- for mcn in all(mcns) do
-  if mcn.collide then
-   for mhb in sp_collisions_iter(
-    mcn.sp,mcn.x,mcn.y,phb,
-    flag_block
-   ) do
-    local x=intersect(phb,mhb)
-    insert(
-     collisions,
-     {mcn.collide,mcn,mhb,p},
-     max(x.w,x.h)
-    )
-   end
-  end
- end
-
- --resolve collisions from the
- --most to least colliding
- while #collisions>0 do
-  local r=pop(collisions)[1]
-  local r_fn=r[1]
-  del(r,r_fn)
-  r_fn(unpack(r))
- end
 end
 
 --------------------
