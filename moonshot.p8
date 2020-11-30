@@ -1837,6 +1837,8 @@ function set_checkpoint(x,y)
    p.y=y
    p.dx=0
    p.dy=0
+   fx_respwan:on_player(p)
+   fx_respwan_darker:on_player(p)
    cam:shake()
   end,
  }
@@ -2210,6 +2212,14 @@ land=class(base_fx,{
    dx=0.3,
   })
  end,
+})
+fx_respwan=class(spark_aura,{
+ colors={12},
+ amount=15,
+})
+
+fx_respwan_darker=class(fx_respwan,{
+ colors={1},
 })
 
 --------------------
