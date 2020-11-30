@@ -277,7 +277,6 @@ function init_checkpoint(x,y)
   anim_cursor=1,
 
   on_collide=function(c)
-   printh('collided'..c.x..","..c.y)
    checkpoint={x=c.x,y=c.y}
   end,
 
