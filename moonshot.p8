@@ -623,158 +623,185 @@ function init_mechanics()
 end
 
 -->8
---game loop,utils
+--scenes,loop,camera,utils
+
+-----------------
+---title scene---
+-----------------
+
+scene_title={
+ init=function() end,
+ update=function() end,
+ draw=function() end,
+}
+
+----------------
+---game scene---
+----------------
+
+scene_game={
+ init=function()
+  --btnp never repeats
+  poke(0x5f5c,255)
+
+  --mechanics
+  mcns=init_mechanics()
+
+  --players
+  players={
+    init_player{
+    ⬆️=double_jump,
+    x=37*8,
+    y=30*8,
+    },
+    init_player{
+    ⬆️=glide,
+    color="green",
+    x=35*8,
+    y=30*8,
+    },
+    init_player{
+    ⬆️=jump,
+    color="yellow",
+    x=65*8,
+    y=28*8,
+    },
+  }
+
+  --fxs
+  init_bg_fxs()
+  init_fxs()
+
+  --camera
+  cam:init()
+ end,
+
+ update=function()
+  --input
+  local p=player()
+  player_btns={"⬅️","➡️","⬆️"}
+  for i=1,#player_btns do
+    if btn(i-1) then
+    fn=p[player_btns[i]]
+    if (fn) fn(p,btnp(i-1))
+    end
+  end
+  if btnp(🅾️) then
+    focus_next_player()
+  end
+  --if btnp(🅾️) then
+  -- if path.found then
+  --  path:apply()
+  -- else
+  --  path:find(
+  --   players[2],
+  --   players[2],
+  --   player()
+  --  )
+  -- end
+  --end
+
+  --players
+  --path:update()
+  foreach(players,update)
+
+  --mechanics
+  foreach(mcns,update)
+
+  --fxs
+  fire_fxs()
+  update_bg_fxs()
+  update_fxs()
+
+  --camera
+  cam:update()
+ end,
+ 
+ draw=function()
+  cls()
+
+  --fxs
+  draw_bg_fxs()
+  animate_lights()
+  map(0,0)
+  pal()
+  draw_fxs()
+
+  --tiny text
+  for wl in all(wall_labels) do
+    print_tiny(
+    wl[1],wl[2],wl[3],wl[4]
+    )
+  end
+
+  --mechanics
+  foreach(mcns,draw)
+
+  --players
+  foreach(players,draw)
+
+  --dialog_box
+  -- "thank you for saving me!\nlet me help you,i can\ndouble jump!",
+  -- "well,now i feel\ninadequate :|",
+  -- p_colors.red,
+  -- p_colors.yellow
+  --)
+
+  --modals from interactables
+  foreach(mcns,function(m)
+    if m.draw_modal then
+    m:draw_modal()
+    end
+  end)
+
+  --camera
+  cam:draw()
+
+  --debug
+  color(8)
+  cpu=tostring(stat(1)*100\1)
+  print(
+    cpu,
+    peek2(0x5f28)+128-#cpu*4+1,
+    peek2(0x5f2a)
+  )
+  if debug then
+    print(
+    debug,
+    peek2(0x5f28),
+    peek2(0x5f2a)
+    )
+  end
+ end,
+}
+
+-------------------
+---credits scene---
+-------------------
+
+scene_credits={
+ init=function() end,
+ update=function() end,
+ draw=function() end,
+}
 
 ----------
 ---loop---
 ----------
 
+function set_scene(s)
+ _update60=s.update
+ _draw=s.draw
+ s.init()
+end
+
 function _init()
- --btnp never repeats
- poke(0x5f5c,255)
-
- --mechanics
- mcns=init_mechanics()
-
- --players
- players={
-  init_player{
-   ⬆️=double_jump,
-   x=37*8,
-   y=30*8,
-  },
-  init_player{
-   ⬆️=glide,
-   color="green",
-   x=35*8,
-   y=30*8,
-  },
-  init_player{
-   ⬆️=jump,
-   color="yellow",
-   x=65*8,
-   y=28*8,
-  },
- }
-
- --fxs
- init_bg_fxs()
- init_fxs()
-
- --camera
- cam:init()
+ set_scene(scene_game)
 end
 
-
-function update(o)
- return o:update()
-end
-
-function _update60()
- --input
- local p=player()
- player_btns={"⬅️","➡️","⬆️"}
- for i=1,#player_btns do
-  if btn(i-1) then
-   fn=p[player_btns[i]]
-   if (fn) fn(p,btnp(i-1))
-  end
- end
- if btnp(🅾️) then
-  focus_next_player()
- end
- --if btnp(🅾️) then
- -- if path.found then
- --  path:apply()
- -- else
- --  path:find(
- --   players[2],
- --   players[2],
- --   player()
- --  )
- -- end
- --end
-
- --players
- --path:update()
- foreach(players,update)
-
- --mechanics
- foreach(mcns,update)
-
- --fxs
- fire_fxs()
- update_bg_fxs()
- update_fxs()
-
- --camera
- cam:update()
-end
-
-function draw(o)
- return o:draw()
-end
-
-function _draw()
- cls()
-
- --fxs
- draw_bg_fxs()
- animate_lights()
- map(0,0)
- pal()
- draw_fxs()
-
- --tiny text
- for wl in all(wall_labels) do
-  print_tiny(
-   wl[1],wl[2],wl[3],wl[4]
-  )
- end
-
- --mechanics
- foreach(mcns,draw)
-
- --players
- foreach(players,draw)
-
- --dialog_box
- -- "thank you for saving me!\nlet me help you,i can\ndouble jump!",
- -- "well,now i feel\ninadequate :|",
- -- p_colors.red,
- -- p_colors.yellow
- --)
-
- --modals from interactables
- foreach(mcns,function(m)
-  if m.draw_modal then
-   m:draw_modal()
-  end
- end)
-
- --camera
- cam:draw()
-
- --debug
- color(8)
- cpu=tostring(stat(1)*100\1)
- print(
-  cpu,
-  peek2(0x5f28)+128-#cpu*4+1,
-  peek2(0x5f2a)
- )
- if debug then
-  print(
-   debug,
-   peek2(0x5f28),
-   peek2(0x5f2a)
-  )
- end
-end
-
------------
----utils---
------------
+------------
+---camera---
+------------
 
 cam={
  x=0,
@@ -800,6 +827,18 @@ cam={
   )
  end,
 }
+
+-----------
+---utils---
+-----------
+
+function update(o)
+ return o:update()
+end
+
+function draw(o)
+ return o:draw()
+end
 
 function player()
  return players[#players]
