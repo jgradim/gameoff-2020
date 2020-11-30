@@ -938,26 +938,10 @@ function player_standbox(p)
 end
 
 function handle_collisions(p)
- local phb=player_hitbox(p)
-
- --check mechanics
- for mcn in all(mcns) do
-  if mcn.collide
-  and fget(mcn.sp,flag_hits)
-  then
-   local mhbs=sp_hbs(
-    mcn.sp,mcn.x,mcn.y
-   )
-   for mhb in all(mhbs) do
-    if intersects(mhb,phb) then
-     mcn:collide(mhb,p)
-     phb=player_hitbox(p)
-    end
-   end
-  end
- end
-
+ local collisions={}
+ 
  --check map
+ local phb=player_hitbox(p)
  local x1=phb.x
  local x2=phb.x+phb.w-1
  local y1=phb.y
@@ -971,13 +955,57 @@ function handle_collisions(p)
     )
     for mhb in all(mhbs) do
      if intersects(mhb,phb) then
-      block(mhb,mhb,p)
-      phb=player_hitbox(p)
+      local x=intersect(phb,mhb)
+      insert(
+       collisions,
+       {block,mhb,mhb,p},
+       max(x.w,x.h)
+      )
      end
     end
    end
   end
  end
+ 
+ --check mechanics
+ for mcn in all(mcns) do
+  if mcn.collide
+  and fget(mcn.sp,flag_hits)
+  then
+   local mhbs=sp_hbs(
+    mcn.sp,mcn.x,mcn.y
+   )
+   for mhb in all(mhbs) do
+    if intersects(mhb,phb) then
+     local x=intersect(phb,mhb)
+     insert(
+      collisions,
+      {mcn.collide,mcn,mhb,p},
+      max(x.w,x.h)
+     )
+    end
+   end
+  end
+ end
+ 
+ --resolve in order
+ while #collisions>0 do
+  local r=pop(collisions)[1]
+  local r_fn=r[1]
+  del(r,r_fn)
+  r_fn(unpack(r))
+ end
+end
+
+function intersect(a,b)
+ local x=max(a.x,b.x)
+ local y=max(a.y,b.y)
+ return {
+  x=x,
+  y=y,
+  w=min(a.x+a.w,b.x+b.w)-x,
+  h=min(a.y+a.h,b.y+b.h)-y,
+ }
 end
 
 --blocks p from intersecting cl,
@@ -1022,6 +1050,38 @@ function block(cl,clhb,p)
  end
 
  assert(false,"unknown aim")
+end
+
+--insert v in t and sort t by p
+function insert(t,v,p)
+ if #t>=1 then
+  add(t,{})
+  for i=(#t),2,-1 do
+   local n=t[i-1]
+   if p<n[2] then
+    t[i]={v,p}
+    return
+   else
+    t[i]=n
+   end
+  end
+  t[1]={v,p}
+ else
+  add(t,{v,p})
+ end
+end
+
+--pop first element of t
+function pop(t)
+ local top=t[1]
+ for i=1,(#t) do
+  if i==(#t) then
+   del(t,t[i])
+  else
+   t[i]=t[i+1]
+  end
+ end
+ return top
 end
 
 ---[[
@@ -1316,7 +1376,7 @@ path={
   local grid=self.grid
 
   while #open>0 do
-   local cur=popend(open)
+   local cur=popend(open)[1]
 
    --check if done
    if vec2i(cur,grid)==
@@ -1473,42 +1533,10 @@ function prepend(a,b)
  end
 end
 
---insert v in t and sort t by p
-function insert(t,v,p)
- if #t>=1 then
-  add(t,{})
-  for i=(#t),2,-1 do
-   local n=t[i-1]
-   if p<n[2] then
-    t[i]={v,p}
-    return
-   else
-    t[i]=n
-   end
-  end
-  t[1]={v,p}
- else
-  add(t,{v,p})
- end
-end
-
 --pop last element of t
 function popend(t)
  local top=t[#t]
  del(t,top)
- return top[1]
-end
-
---pop first element of t
-function pop(t)
- local top=t[1]
- for i=1,(#t) do
-  if i==(#t) then
-   del(t,t[i])
-  else
-   t[i]=t[i+1]
-  end
- end
  return top
 end
 
