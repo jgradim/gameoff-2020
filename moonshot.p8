@@ -2210,8 +2210,9 @@ rocket=class(base_fx,{
   f.r+=f.dr
   f.c=f:curr_color()
 
-  if flag_on_xy(
-   f.x,f.y,flag_block
+  if fget(mget(
+   (f.x+f.r)/8,(f.y+f.r)/8),
+   flag_block
   ) then
    f.r=0
    f.dx=0
