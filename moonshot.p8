@@ -581,7 +581,7 @@ function init_mechanics()
 
     diag_screen_warn.anim=
      anim_screen_ok
-    diag_plt.on=true
+    diag_plt.moving_since=time()
    end,
   })
 
@@ -645,7 +645,7 @@ function init_mechanics()
     b.active=true
     b.sp_pal=pal_default
 
-    shaft_l1_plt.on=true
+    shaft_l1_plt.moving_since=time()
    end,
   })
 
@@ -1872,7 +1872,7 @@ function init_platform(
   to_y=to_y,
   from_x=x,
   from_y=y,
-  on=on,
+  moving_since=on and time() or false,
   anim_cursor=1,
   anim=anim_platform,
 
@@ -1881,8 +1881,13 @@ function init_platform(
   update=function(p)
    animate(p,8,true)
 
-   if p.on then
-    linear_delta_fn(p.from_x,p.from_y,p.to_x,p.to_y)(p)
+   if p.moving_since then
+    linear_delta_fn(
+      p.from_x,
+      p.from_y,
+      p.to_x,
+      p.to_y
+    )(p, p.moving_since)
     p.x+=p.dx
     p.y+=p.dy
 
@@ -1906,9 +1911,9 @@ function linear_delta_fn(
  x,y,to_x,to_y
 )
  local dx,dy=to_x-x,to_y-y
- return function(plat)
+ return function(plat, st)
   local f=ef_smooth(
-   abs(time()%6-3)/3
+   abs((time()-st)%6-3)/3
   )
   plat.dx=bucket(x+dx*f+0.5-plat.x)
   plat.dy=bucket(y+dy*f+0.5-plat.y)
