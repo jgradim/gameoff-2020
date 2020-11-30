@@ -895,6 +895,7 @@ end
 --have kls "extends" super
 function class(super,kls)
  kls.meta={__index=super}
+ kls.super=super
  return setmetatable(
   kls,kls.meta
  )
@@ -902,6 +903,7 @@ end
 
 ---make o an instance of kls
 function instance(kls,o)
+  o.super=kls
   return setmetatable(
    o,{__index=kls}
   )
