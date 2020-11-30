@@ -589,7 +589,7 @@ end
 ---title scene---
 -----------------
 
-start_game_at=0
+start_game_at=nil
 
 scene_title={
  start_at=nil,
