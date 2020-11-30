@@ -1407,7 +1407,7 @@ function glide(p,_)
  end
 
  p.gliding=true
- p.dy-=gravity+0.25
+ p.dy-=gravity*1.7
 end
 
 ----------
