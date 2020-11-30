@@ -1095,6 +1095,21 @@ function tostring(any)
 end
 --]]
 
+function unpack_custom_hitboxes(ls)
+ local r = {}
+ for l in all(ls) do
+  local derp = split(l,'|')
+  local k=derp[1]
+  local ts=derp[2]
+  r[k]={}
+  for t in all(split(ts, ";")) do
+   add(r[k], split(t))
+  end
+ end
+ return r
+end
+
+
 -->8
 --player
 
