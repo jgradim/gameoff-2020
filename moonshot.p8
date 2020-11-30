@@ -2314,16 +2314,6 @@ bg_fx={
  dx=0,
  colors={1},
 
- add_plane=function(kls)
-  for i=1,50 do
-   kls:add_particle({
-     x=rnd(128)\1,
-     y=rnd(128)\1,
-     life=30+rnd(90)*fps,
-   })
-  end
- end,
-
  add_particle=function(kls,f)
   f.t=1
   f=instance(kls,f)
@@ -2334,6 +2324,18 @@ bg_fx={
   return f.colors[
    ceil(f.t*#f.colors/f.life)
   ]
+ end,
+}
+
+pixel_star=class(bg_fx,{
+ add_plane=function(kls)
+  for i=1,50 do
+   kls:add_particle({
+     x=rnd(128)\1,
+     y=rnd(128)\1,
+     life=30+rnd(90)*fps,
+   })
+  end
  end,
 
  update=function(f)
@@ -2349,14 +2351,14 @@ bg_fx={
    f.c
   )
  end,
-}
+})
 
-far_star=class(bg_fx,{
+far_star=class(pixel_star,{
  colors={5,6},
  dx=-5*1/fps,
 })
 
-near_star=class(bg_fx,{
+near_star=class(pixel_star,{
  colors={7,15},
  dx=-5*6/fps,
 })
