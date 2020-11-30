@@ -185,12 +185,12 @@ wall_labels={
 ------------------
 
 --obstacles that are rigid and
---apply in all directions
-flag_hits=0
+--block in all directions
+flag_block=0
 
---obstacles the player can stand
---on but otherwise move through
-flag_stands=1
+--obstacles that move the player
+--to the last checkpoint
+flag_respawn=1
 
 ---------------------
 ---custom hitboxes---
@@ -441,7 +441,7 @@ function init_mechanics()
    w=5*8,
    h=8,
    on_collide=function(b)
-    checkpoint:restore()
+    chkpt:restore()
    end
   })
 
@@ -1257,9 +1257,9 @@ function init_player(p)
 end
 
 function sp_collisions_iter(
- sp,x,y,phb
+ sp,x,y,phb,flag
 )
- if fget(sp,flag_hits) then
+ if fget(sp,flag) then
   local hbs=sp_hitboxes(sp,x,y)
   local i=0
   return function()
@@ -1289,7 +1289,8 @@ function resolve_collisions(p)
   for y in all({y1,y2}) do
    local sp=mget(x/8,y/8)
    for mhb in sp_collisions_iter(
-    sp,x\8*8,y\8*8,phb
+    sp,x\8*8,y\8*8,phb,
+    flag_block
    ) do
     local x=intersect(phb,mhb)
     insert(
@@ -1305,13 +1306,24 @@ function resolve_collisions(p)
  for mcn in all(mcns) do
   if mcn.collide then
    for mhb in sp_collisions_iter(
-    mcn.sp,mcn.x,mcn.y,phb
+    mcn.sp,mcn.x,mcn.y,phb,
+    flag_block
    ) do
     local x=intersect(phb,mhb)
     insert(
      collisions,
      {mcn.collide,mcn,mhb,p},
      max(x.w,x.h)
+    )
+   end
+   for mhb in sp_collisions_iter(
+    mcn.sp,mcn.x,mcn.y,phb,
+    flag_respawn
+   ) do
+    insert(
+     collisions,
+     {chkpt.restore,chkpt},
+     0
     )
    end
   end
@@ -1813,10 +1825,10 @@ end
 ---checkpoints---
 -----------------
 
-checkpoint={}
+chkpt={}
 
 function set_checkpoint(x,y)
- checkpoint={
+ chkpt={
   x=x,
   y=y,
   restore=function(c)
@@ -1847,8 +1859,8 @@ function init_checkpoint(x,y)
   end,
 
   draw=function(c)
-   local curr=c.x==checkpoint.x
-    and c.y==checkpoint.y
+   local curr=c.x==chkpt.x
+    and c.y==chkpt.y
 
    with_pal(
     curr and pal_checkpoint_on
@@ -2133,7 +2145,7 @@ rocket=class(base_fx,{
   f.c=f:curr_color()
 
   if flag_on_xy(
-   f.x,f.y,flag_hits
+   f.x,f.y,flag_block
   ) then
    f.r=0
    f.dx=0
