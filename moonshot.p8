@@ -662,7 +662,7 @@ function _init()
  init_fxs()
 
  --camera
- cam=init_camera()
+ cam:init()
 end
 
 modal_open=false
@@ -779,6 +779,31 @@ end
 ---utils---
 -----------
 
+cam={
+ x=0,
+ y=0,
+ frms=7.5,
+ 
+ init=function(c)
+  local p=player()
+  c.x+=bucket(p.x-c.x)
+  c.y+=bucket(p.y-c.y)
+ end,
+
+ update=function(c)
+  local p=player()
+  c.x+=bucket((p.x-c.x)/c.frms)
+  c.y+=bucket((p.y-c.y)/c.frms)
+ end,
+
+ draw=function(c)
+  camera(
+   mid(0,c.x-64,map_width-64),
+   mid(0,c.y-64,map_height-128)
+  )
+ end,
+}
+
 function player()
  return players[#players]
 end
@@ -809,27 +834,6 @@ function animate(e,freq,loop,p)
 
  e.anim_cursor=ac
  e[p]=e.anim[e.anim_cursor\1]
-end
-
-function init_camera()
- return {
-  x=0,
-  y=0,
-  frms=7.5,
-
-  update=function(c)
-   local p=player()
-   c.x+=bucket((p.x-c.x)/c.frms)
-   c.y+=bucket((p.y-c.y)/c.frms)
-  end,
-
-  draw=function(c)
-   camera(
-    mid(0,c.x-64,map_width-64),
-    mid(0,c.y-64,map_height-128)
-   )
-  end,
- }
 end
 
 --have kls "extends" super
@@ -1923,7 +1927,7 @@ bg_fx={
  colors={1},
 
  add_plane=function(kls)
-  for i=1,75 do
+  for i=1,50 do
    kls:add_particle({
      x=rnd(128)\1,
      y=rnd(128)\1,
@@ -1951,10 +1955,11 @@ bg_fx={
  end,
 
  draw=function(f)
-  --camera
-  local cmx = %0x5f28
-  local cmy = %0x5f2a
-  pset(cmx+f.x,cmy+f.y,f.c)
+  pset(
+   cam.x-64+(f.x-cam.x%128)%128,
+   cam.y-64+(f.y-cam.y%128)%128,
+   f.c
+  )
  end,
 }
 
