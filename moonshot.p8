@@ -514,9 +514,8 @@ function init_mechanics()
  local diag_plt=
   init_platform(
    60*8,26*8,
-   linear_delta_fn(
-    60*8,26*8-1,60*8,26*8+1
-   )
+   60*8,28*8,
+   false
   )
 
  --buttons
@@ -564,10 +563,7 @@ function init_mechanics()
 
     diag_screen_warn.anim=
      anim_screen_ok
-    diag_plt.delta_fn=
-     linear_delta_fn(
-      60*8,26*8,60*8,28*8
-     )
+    diag_plt.on=true
    end,
   })
 
@@ -608,10 +604,9 @@ function init_mechanics()
 
  local shaft_l1_plt=
   init_platform(
-   59*8,25*8,
-   linear_delta_fn(
-    47*8,26*8,47*8,26*8
-   )
+    47*8,22*8,
+    47*8,27*8,
+    false
   )
 
  local shaft_l1_btn=
@@ -632,10 +627,7 @@ function init_mechanics()
     b.active=true
     b.sp_pal=pal_default
 
-    shaft_l1_plt.delta_fn=
-     linear_delta_fn(
-      47*8,22*8,47*8,27*8
-     )
+    shaft_l1_plt.on=true
    end,
   })
 
@@ -644,9 +636,8 @@ function init_mechanics()
  --------------------------
  dbljmp_plt=init_platform(
    9*8,16*8,
-   linear_delta_fn(
-    9*8,16*8-1,9*8,25*8+1
-   )
+   9*8,25*8,
+   true
  )
 
  dbljmp_door=
@@ -1856,7 +1847,7 @@ end
 ---------------
 
 function init_platform(
- x,y,delta_fn
+ x,y,to_x,to_y,on
 )
  return {
   sp=sp_platform_start,
@@ -1866,27 +1857,32 @@ function init_platform(
   h=8,
   dx=0,
   dy=0,
+  to_x=to_x,
+  to_y=to_y,
+  from_x=x,
+  from_y=y,
+  on=on,
   anim_cursor=1,
   anim=anim_platform,
-
-  delta_fn=delta_fn,
 
   collide=block,
 
   update=function(p)
-   if (p.delta_fn) p:delta_fn()
-   p.x+=p.dx
-   p.y+=p.dy
-
-   foreach(players,function(pl)
-    if intersects(pl:standbox(),p)
-    then
-     pl.x+=p.dx
-     pl.y+=p.dy
-    end
-   end)
-
    animate(p,8,true)
+
+   if p.on then
+    linear_delta_fn(p.from_x,p.from_y,p.to_x,p.to_y)(p)
+    p.x+=p.dx
+    p.y+=p.dy
+
+    foreach(players,function(pl)
+     if intersects(pl:standbox(),p)
+     then
+      pl.x+=p.dx
+      pl.y+=p.dy
+     end
+    end)
+   end
   end,
 
   draw=function(p)
