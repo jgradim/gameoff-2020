@@ -266,7 +266,24 @@ wall_labels={
 -----------------
 ---checkpoints---
 -----------------
-checkpoint={x=59*8,y=25*8}
+
+function set_checkpoint(x,y)
+ checkpoint={
+  x=x,
+  y=y,
+  restore=function(c)
+   local p=player()
+   p.x=x
+   p.y=y
+   p.dx=0
+   p.dy=0
+   cam:shake()
+  end,
+ }
+end
+
+checkpoint={}
+set_checkpoint(59*8,25*8)
 
 function init_checkpoint(x,y)
  return init_interactable({
@@ -277,7 +294,7 @@ function init_checkpoint(x,y)
   anim_cursor=1,
 
   on_collide=function(c)
-   checkpoint={x=c.x,y=c.y}
+   set_checkpoint(c.x,c.y)
   end,
 
   on_update=function(c)
@@ -546,11 +563,7 @@ function init_mechanics()
    w=5*8,
    h=8,
    on_collide=function(b)
-    local p=player()
-    p.x=checkpoint.x
-    p.y=checkpoint.y
-    p.dx=0
-    p.dy=0
+    checkpoint:restore()
    end
   })
 
@@ -689,29 +702,29 @@ scene_game={
   --btnp never repeats
   poke(0x5f5c,255)
 
-  --mechanics
-  mcns=init_mechanics()
-
   --players
   players={
     init_player{
-    ⬆️=double_jump,
-    x=37*8,
-    y=30*8,
+     ⬆️=double_jump,
+     x=37*8,
+     y=30*8,
     },
     init_player{
-    ⬆️=glide,
-    color="green",
-    x=35*8,
-    y=30*8,
+     ⬆️=glide,
+     color="green",
+     x=35*8,
+     y=30*8,
     },
     init_player{
-    ⬆️=jump,
-    color="yellow",
-    x=65*8,
-    y=28*8,
+     ⬆️=jump,
+     color="yellow",
+     x=65*8,
+     y=28*8,
     },
   }
+  
+  --mechanics
+  mcns=init_mechanics()
 
   --fxs
   init_bg_fxs()
@@ -860,6 +873,12 @@ cam={
  x=0,
  y=0,
  frms=7.5,
+ shk=0,
+ 
+ shake=function(c,shk)
+  shk=shk or 1
+  c.shk+=shk
+ end,
  
  init=function(c)
   local p=player()
@@ -871,13 +890,22 @@ cam={
   local p=player()
   c.x+=bucket((p.x-c.x)/c.frms)
   c.y+=bucket((p.y-c.y)/c.frms)
+  
+  c.shk=bucket(c.shk*0.9)
  end,
 
  draw=function(c)
-  camera(
-   mid(0,c.x-64,map_width-64),
-   mid(0,c.y-64,map_height-128)
-  )
+  local x=mid(0,c.x-64,map_width-64)
+  local y=mid(0,c.y-64,map_height-128)
+ 
+  if c.shk>0 then
+   local shkx=16-rnd(32)
+   local shky=16-rnd(32)
+   x+=shkx*c.shk
+   y+=shky*c.shk
+  end
+ 
+  camera(x,y)
  end,
 }
 
