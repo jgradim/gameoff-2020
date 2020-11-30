@@ -986,13 +986,13 @@ end
 function block(cl,clhb,p)
  --get intersection
  local phb=player_hitbox(p)
- local x=max(p.x,cl.x)
- local y=max(p.y,cl.y)
+ local x=max(phb.x,clhb.x)
+ local y=max(phb.y,clhb.y)
  local int={
   x=x,
   y=y,
-  w=min(p.x+p.w,cl.x+cl.w)-x,
-  h=min(p.y+p.h,cl.y+cl.h)-y,
+  w=min(phb.x+phb.w,clhb.x+clhb.w)-x,
+  h=min(phb.y+phb.h,clhb.y+clhb.h)-y,
  }
 
  --resolve using shallowest axis
