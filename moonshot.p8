@@ -655,7 +655,7 @@ function init_mechanics()
  dbljmp_plt=init_platform(
    9*8,16*8,
    9*8,25*8,
-   true
+   false
  )
 
  dbljmp_door=
