@@ -170,11 +170,11 @@ function init_laser(opts)
   end,
 
   draw=function(l)
-   if (l.dir=="h") l:_draw_h()
-   if (l.dir=="v") l:_draw_v()
+   if (l.dir=="h") l:draw_h()
+   if (l.dir=="v") l:draw_v()
   end,
 
-  _draw_h=function(l)
+  draw_h=function(l)
    local x=l.x+4
    local y=l.y+2
    local lhl=rect_laser_h_l
@@ -200,7 +200,7 @@ function init_laser(opts)
    )
   end,
 
-  _draw_v=function(l)
+  draw_v=function(l)
    local x=l.x+4
    local y=l.y+2
    local lvu=rect_laser_v_u
@@ -362,6 +362,10 @@ flag_stands=1
 
 --[sprite]={{x,y,w,h},(...)}
 custom_hitboxes={
+ -------------------
+ ---interactables---
+ -------------------
+
  --doors
  [11]={{1,0,6,8}},
  [12]={{1,0,6,8}},
@@ -375,14 +379,14 @@ custom_hitboxes={
  [26]={{0,0,8,3}},
 
  --horizontal lasers
- [55]={{0,1,4,2},{2,4,4,2}},
- --[56]={{0,1,4,2},{2,4,4,2}},
+ --[55]={{0,1,4,2},{2,4,4,2}},
+ --[56]={{2,0,2,4},{1,4,2,4}},
+ [55]={{0,1,8,3}},
+ [56]={{1,0,3,8}},
 
- --vertical lasers
- [57]={{2,0,2,4},{1,4,2,4}},
- --[57]={{2,0,2,4},{1,4,2,4}},
-
- --map tiles
+ ---------------
+ ---map tiles---
+ ---------------
 
  --left endpiece
  [112]={{1,0,7,6},{0,1,8,4}},
@@ -715,6 +719,7 @@ function init_mechanics()
    from={69*8,22*8},
    to={69*8,29*8},
    dir="h",
+   l=32,
   }),
   init_laser({
    x=69*8,
