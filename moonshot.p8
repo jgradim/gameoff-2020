@@ -77,6 +77,9 @@ anim_checkpoint={
  63,63,63,63,63,62,63,63,
  62,63,63,63,63,63,63,
 }
+anim_player_unlocker={
+ 5,1,5,1,5,1,3,1
+}
 
 ------------------
 ---rect sprites---
@@ -111,138 +114,6 @@ rect_laser_h_r={
 rect_title={
  x=0,y=96,w=121,h=57
 }
-
-function lerp(from,to,perc)
- return (1-perc)*to+perc*from;
-end
-
-function move_smooth(
- e,from,to,spd
-)
- local x=from[1]
- local y=from[2]
- local dx=(to[1]-from[1])+.5
- local dy=(to[2]-from[2])+.5
-
- --TODO: remove t()
- local f=ef_smooth(
-  abs(t()%spd-(spd/2))/(spd/2)
- )
-
- e.x+=bucket(x+dx*f-e.x)
- e.y+=bucket(y+dy*f-e.y)
-end
-
-function init_laser(
- from,to,dir,len
-)
- local s=2
- local m=8
- local h=14
-
- from=from or {0,0}
- to=to or {0,0}
- dir=dir or "h"
- len=len or 0
-
- return init_interactable({
-  sp=dir=="h" and sp_laser_h
-   or sp_laser_v,
-  x=from[1],
-  y=from[2],
-  from=from,
-  to=to,
-  dir=dir,
-  len=len,
-  anim={1,2,3,4,5,6,7,8},--frame
-  anim_cursor=1,
-  frame=1,
-  w=dir=="h" and len or 4,
-  h=dir=="v" and len or 4,
-  pals={
-   [1]={h,m,s,s,s,s,m,h},
-   [2]={h,h,m,s,s,s,s,m},
-   [3]={m,h,h,m,s,s,s,s},
-   [4]={s,m,h,h,m,s,s,s},
-   [5]={s,s,m,h,h,m,s,s},
-   [6]={s,s,s,m,h,h,m,s},
-   [7]={s,s,s,s,m,h,h,m},
-   [9]={m,s,s,s,s,m,h,h},
-  },
-
-  on=true,
-
-  on_collide=function(l)
-   --printh("laser collided"..t())
-  end,
-  --collide=block,
-
-  on_update=function(l)
-   animate(l,1.5,true,"frame")
-
-   move_smooth(
-    l,l.from,l.to,5
-   )
-  end,
-
-  draw=function(l)
-   if (l.dir=="h") l:draw_h()
-   if (l.dir=="v") l:draw_v()
-  end,
-
-  draw_h=function(l)
-   local x=l.x+4
-   local y=l.y+2
-   local lhl=rect_laser_h_l
-   local lhr=rect_laser_h_r
-
-   if l.on then
-    for c1,p in pairs(l.pals) do
-     pal(c1,p[l.anim[l.frame]])
-    end
-    for i=0,l.len\8-1 do
-     spr(sp_laser_h,l.x+i*8,l.y)
-    end
-    pal()
-   end
-
-   sspr(
-    lhl.x,lhl.y,lhl.w,lhl.h,
-    l.x,l.y
-   )
-   sspr(
-    lhr.x,lhr.y,lhr.w,lhr.h,
-    l.x+l.len,l.y
-   )
-  end,
-
-  draw_v=function(l)
-   local x=l.x+4
-   local y=l.y+2
-   local lvu=rect_laser_v_u
-   local lvd=rect_laser_v_d
-
-   if l.on then
-    for c1,p in pairs(l.pals) do
-     pal(c1,p[l.anim[l.frame]])
-    end
-    for i=0,l.len\8-1 do
-     spr(sp_laser_v,l.x,l.y+i*8)
-    end
-    pal()
-   end
-
-   sspr(
-    lvu.x,lvu.y,lvu.w,lvu.h,
-    l.x,l.y
-   )
-   sspr(
-    lvd.x,lvd.y,lvd.w,lvd.h,
-    l.x,l.y+l.len
-   )
-  end,
- })
-end
 
 -------------------
 ---palette swaps---
@@ -308,57 +179,6 @@ wall_labels={
   44*8+4,25*8+4,14
  },
 }
-
------------------
----checkpoints---
------------------
-
-function set_checkpoint(x,y)
- checkpoint={
-  x=x,
-  y=y,
-  restore=function(c)
-   local p=player()
-   p.x=x
-   p.y=y
-   p.dx=0
-   p.dy=0
-   cam:shake()
-  end,
- }
-end
-
-checkpoint={}
-set_checkpoint(59*8,25*8)
-
-function init_checkpoint(x,y)
- return init_interactable({
-  sp=sp_checkpoint,
-  x=x,
-  y=y,
-  anim=anim_checkpoint,
-  anim_cursor=1,
-
-  on_collide=function(c)
-   set_checkpoint(c.x,c.y)
-  end,
-
-  on_update=function(c)
-   animate(c,2,true)
-  end,
-
-  draw=function(c)
-   local curr=c.x==checkpoint.x
-    and c.y==checkpoint.y
-
-   with_pal(
-    curr and pal_checkpoint_on
-     or pal_checkpoint_off,
-    sprfn(c.sp,c.x,c.y)
-   )
-  end,
- },opts)
-end
 
 ------------------
 ---sprite flags---
@@ -500,6 +320,9 @@ function init_mechanics()
  -----------------
  local cp_corridor=
   init_checkpoint(47*8,30*8)
+
+ local cp_dbljmp=
+  init_checkpoint(1*8,18*8)
 
  ---------------
  --diagnostics--
@@ -656,8 +479,8 @@ function init_mechanics()
  --------------------------
  dbljmp_plt=init_platform(
    9*8,16*8,
-   9*8,25*8,
-   false
+   9*8,26*8,
+   true
  )
 
  dbljmp_door=
@@ -670,7 +493,7 @@ function init_mechanics()
    sp=sp_button_left,
    sp_pal=pal_button_off,
    x=7*8,
-   y=18*8,
+   y=15*8,
    tooltip="❎",
 
    active=false,
@@ -689,9 +512,10 @@ function init_mechanics()
   end,
   })
 
- dbljump_btn_broken=
-  init_animated({
-  })
+ dbljmp_player_unlock=
+  init_player_unlocker(
+   3,18,p_colors.yellow
+  )
 
  -------------------
  ---glider unlock---
@@ -704,9 +528,10 @@ function init_mechanics()
  return {
   --checkpoints
   cp_corridor,
+  cp_dbljmp,
 
   -- dianostics
-  diag_jammed_door,
+  --diag_jammed_door,
   diag_screen_warn,
   diag_door,
   diag_plt,
@@ -718,15 +543,15 @@ function init_mechanics()
   shaft_l1_plt,
   shaft_l1_btn,
 
+  -- corridor
+  corridor_hole,
+  corridor_btn,
+
   -- double jumper
   dbljmp_plt,
   dbljmp_door,
   dbljump_btn,
   dbljmp_player_unlock,
-
-  -- corridor
-  corridor_hole,
-  corridor_btn,
 
   --laser
   init_laser(
@@ -747,7 +572,7 @@ end
 ---title scene---
 -----------------
 
-start_game_at=nil
+start_game_at=0
 
 scene_title={
  start_at=nil,
@@ -811,6 +636,8 @@ scene_game={
  init=function()
   --btnp never repeats
   poke(0x5f5c,255)
+
+  set_checkpoint(65*8,28*8)
 
   --players
   players={
@@ -1966,6 +1793,210 @@ function toggle_door(d,open)
    end
 end
 
+-----------------
+---checkpoints---
+-----------------
+
+checkpoint={}
+
+function set_checkpoint(x,y)
+ checkpoint={
+  x=x,
+  y=y,
+  restore=function(c)
+   local p=player()
+   p.x=x
+   p.y=y
+   p.dx=0
+   p.dy=0
+   cam:shake()
+  end,
+ }
+end
+
+function init_checkpoint(x,y)
+ return init_interactable({
+  sp=sp_checkpoint,
+  x=x,
+  y=y,
+  anim=anim_checkpoint,
+  anim_cursor=1,
+
+  on_collide=function(c)
+   set_checkpoint(c.x,c.y)
+  end,
+
+  on_update=function(c)
+   animate(c,2,true)
+  end,
+
+  draw=function(c)
+   local curr=c.x==checkpoint.x
+    and c.y==checkpoint.y
+
+   with_pal(
+    curr and pal_checkpoint_on
+     or pal_checkpoint_off,
+    sprfn(c.sp,c.x,c.y)
+   )
+  end,
+ },opts)
+end
+
+---------------------
+---player unlocker---
+---------------------
+function init_player_unlocker(
+ tx,ty,sp_pal
+)
+ return init_interactable({
+  x=tx*8,
+  y=ty*8,
+  sp=5,
+  sp_pal=sp_pal,
+  anim=anim_player_unlocker,
+  anim_cursor=1,
+
+  unlocked=false,
+
+  on_collide=function(u)
+   u.tooltip="⬆️"
+  end,
+ })
+end
+
+------------
+---lasers---
+------------
+
+function move_smooth(
+ e,from,to,spd
+)
+ local x=from[1]
+ local y=from[2]
+ local dx=(to[1]-from[1])+.5
+ local dy=(to[2]-from[2])+.5
+
+ --TODO: remove t()
+ local f=ef_smooth(
+  abs(t()%spd-(spd/2))/(spd/2)
+ )
+
+ e.x+=bucket(x+dx*f-e.x)
+ e.y+=bucket(y+dy*f-e.y)
+end
+
+function init_laser(
+ from,to,dir,len
+)
+ local s=2
+ local m=8
+ local h=14
+
+ from=from or {0,0}
+ to=to or {0,0}
+ dir=dir or "h"
+ len=len or 0
+
+ return init_interactable({
+  sp=dir=="h" and sp_laser_h
+   or sp_laser_v,
+  x=from[1],
+  y=from[2],
+  from=from,
+  to=to,
+  dir=dir,
+  len=len,
+  anim={1,2,3,4,5,6,7,8},--frame
+  anim_cursor=1,
+  frame=1,
+  w=dir=="h" and len or 4,
+  h=dir=="v" and len or 4,
+  pals={
+   [1]={h,m,s,s,s,s,m,h},
+   [2]={h,h,m,s,s,s,s,m},
+   [3]={m,h,h,m,s,s,s,s},
+   [4]={s,m,h,h,m,s,s,s},
+   [5]={s,s,m,h,h,m,s,s},
+   [6]={s,s,s,m,h,h,m,s},
+   [7]={s,s,s,s,m,h,h,m},
+   [9]={m,s,s,s,s,m,h,h},
+  },
+
+  on=true,
+
+  on_collide=function(l)
+   --printh("laser collided"..t())
+  end,
+  --collide=block,
+
+  on_update=function(l)
+   animate(l,1.5,true,"frame")
+
+   move_smooth(
+    l,l.from,l.to,5
+   )
+  end,
+
+  draw=function(l)
+   if (l.dir=="h") l:draw_h()
+   if (l.dir=="v") l:draw_v()
+  end,
+
+  draw_h=function(l)
+   local x=l.x+4
+   local y=l.y+2
+   local lhl=rect_laser_h_l
+   local lhr=rect_laser_h_r
+
+   if l.on then
+    for c1,p in pairs(l.pals) do
+     pal(c1,p[l.anim[l.frame]])
+    end
+    for i=0,l.len\8-1 do
+     spr(sp_laser_h,l.x+i*8,l.y)
+    end
+    pal()
+   end
+
+   sspr(
+    lhl.x,lhl.y,lhl.w,lhl.h,
+    l.x,l.y
+   )
+   sspr(
+    lhr.x,lhr.y,lhr.w,lhr.h,
+    l.x+l.len,l.y
+   )
+  end,
+
+  draw_v=function(l)
+   local x=l.x+4
+   local y=l.y+2
+   local lvu=rect_laser_v_u
+   local lvd=rect_laser_v_d
+
+   if l.on then
+    for c1,p in pairs(l.pals) do
+     pal(c1,p[l.anim[l.frame]])
+    end
+    for i=0,l.len\8-1 do
+     spr(sp_laser_v,l.x,l.y+i*8)
+    end
+    pal()
+   end
+
+   sspr(
+    lvu.x,lvu.y,lvu.w,lvu.h,
+    l.x,l.y
+   )
+   sspr(
+    lvd.x,lvd.y,lvd.w,lvd.h,
+    l.x,l.y+l.len
+   )
+  end,
+ })
+end
+
 -->8
 --fxs:player,bg,lights
 
@@ -2941,7 +2972,7 @@ b2434040404351797979797979797979797979797979797979797979797979797979797979797979
 a257797c795850797979797979797979797979797979797979797979797979797979797979797979797979507979797a79507979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979a3
 a27b4749477b5271797979797979797979797979797979797979797979797979797979797979797979797950796a797979507979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979a3
 a27747477c785079797979797979797979797979797979797979797979797979797979797979797979797950795779797950797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979798493
-a209057958797979797979797979797979797979797979797979797979797979797979797979797979797950795879797950797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797984a49300
+a279797958797979797979797979797979797979797979797979797979797979797979797979797979797950795879797950797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797984a49300
 92a4a4a4a4a4b07179797950797979797979797979797979797979797979797979797979797979797979795079577979795079797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797984a493000000
 00000000008295797979795079797979797979797979797979797979797979797979797979797979797979507957797979507979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797984a4930000000000
 0000000082957979797979507979797979797979797979797979797979797979797979797979797979797950797a79797950797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797979797984a49300000000000000
@@ -2952,7 +2983,7 @@ a2090579587979797979797979797979797979797979797979797979797979797979797979797979
 0000000092857979797979797979797979795b5c5c5c5c5c5d79797979797979797979898a8a8a8b79797954484848697979a98d9a9a9c8b505b5c5d79797040404043405179797979797979797979797979797979797979797979797979797979797979797979797979797984a4930000000000000000000000000000000000
 0000000000928579797979797979797979795b5c5c5c5c5c5d79707179797071797979999a9a9a9b797040737979797a7979899d9a9a8cab506b6c6d7979797c477b4948537979797979797979797979797979797979797979797979797979797979797979797979797984a49300000000000000000000000000000000000000
 00000000000092a4a4a4a4857979797979795b5cb4a4b55c5d79797979797979797979a98d8caaab79797979797979797979999a9a9a9c8b79797979797979587979797950797979797979797979797979797979797979797979797979797979797979797979797984a493000000000000000000000000000000000000000000
-000000000000000000000092a485797979796b6c6c6c6c6c6d79797979797979797979899d9c8b7979797979797979797984afbfbfbfaea4a4857979796748787979797d7979797979797979797979797979797979797979797979797979797979797979797984a4930000000000000000000000000000000000000000000000
+000000000000000000000092a485797979796b6c6c6c6c6c6d79797979797979797979899d9c8b7979797979797979797984a4afbfbfaea4a4857979796748787979797d7979797979797979797979797979797979797979797979797979797979797979797984a4930000000000000000000000000000000000000000000000
 0000000000000000000000000092a485797979797979797979797979797979797979899d9a9a9c8b797979797979797984930000000000000092a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a49300000000000000000000000000000000000000000000000000
 00000000000000000000000000000092a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a49300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
