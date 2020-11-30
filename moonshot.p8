@@ -978,21 +978,21 @@ function sp_coords(tile)
 end
 
 function sp_hitboxes(sp,x,y)
-  local hbs=custom_hitboxes[sp]
-  if hbs then
-   local r={}
-   for hb in all(hbs) do
-    add(r,{
-     x=hb[1]+x,
-     y=hb[2]+y,
-     w=hb[3],
-     h=hb[4],
-    })
-   end
-   return r
-  else
-   return {{x=x,y=y,w=8,h=8}}
+ local hbs=custom_hitboxes[sp]
+ if hbs then
+  local r={}
+  for hb in all(hbs) do
+   add(r,{
+    x=hb[1]+x,
+    y=hb[2]+y,
+    w=hb[3],
+    h=hb[4],
+   })
   end
+  return r
+ else
+  return {{x=x,y=y,w=8,h=8}}
+ end
 end
 
 --insert v in t and sort t by p
@@ -1103,13 +1103,13 @@ end
 --]]
 
 function unpack_custom_hitboxes(ls)
- local r = {}
+ local r={}
  for l in all(ls) do
-  local derp = split(l,'|')
+  local derp=split(l,"|")
   local k=derp[1]
   local ts=derp[2]
   r[k]={}
-  for t in all(split(ts, ";")) do
+  for t in all(split(ts,";")) do
    add(r[k], split(t))
   end
  end
