@@ -12,13 +12,13 @@ __lua__
 ---constants---
 ---------------
 
-fps=30
+fps=60
 
 map_width=1024
 map_height=256
 
 --downward movement per cycle
-gravity=0.2
+gravity=0.1
 
 --movement multiplier per cycle
 inertia=0.75
@@ -671,7 +671,7 @@ function update(o)
  return o:update()
 end
 
-function _update()
+function _update60()
  --input
  if not modal_open then
   local p=player()
@@ -1018,8 +1018,8 @@ end
 ---player---
 ------------
 
-run_accel=0.55
-jump_accel=2.55
+run_accel=0.29
+jump_accel=1.9
 
 function init_player(p)
  return instance({
