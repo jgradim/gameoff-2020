@@ -2219,12 +2219,12 @@ bg_fx={
 
 far_star=class(bg_fx,{
  colors={5,6},
- dx=-1/fps,
+ dx=-5*1/fps,
 })
 
 near_star=class(bg_fx,{
  colors={7,15},
- dx=-6/fps,
+ dx=-5*6/fps,
 })
 
 ----------------
