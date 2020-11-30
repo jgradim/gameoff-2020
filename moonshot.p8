@@ -665,7 +665,6 @@ function _init()
  cam:init()
 end
 
-modal_open=false
 
 function update(o)
  return o:update()
@@ -673,30 +672,28 @@ end
 
 function _update60()
  --input
- if not modal_open then
-  local p=player()
-  player_btns={"⬅️","➡️","⬆️"}
-  for i=1,#player_btns do
-   if btn(i-1) then
-    fn=p[player_btns[i]]
-    if (fn) fn(p,btnp(i-1))
-   end
+ local p=player()
+ player_btns={"⬅️","➡️","⬆️"}
+ for i=1,#player_btns do
+  if btn(i-1) then
+   fn=p[player_btns[i]]
+   if (fn) fn(p,btnp(i-1))
   end
-  if btnp(🅾️) then
-   focus_next_player()
-  end
-  --if btnp(🅾️) then
-  -- if path.found then
-  --  path:apply()
-  -- else
-  --  path:find(
-  --   players[2],
-  --   players[2],
-  --   player()
-  --  )
-  -- end
-  --end
  end
+ if btnp(🅾️) then
+  focus_next_player()
+ end
+ --if btnp(🅾️) then
+ -- if path.found then
+ --  path:apply()
+ -- else
+ --  path:find(
+ --   players[2],
+ --   players[2],
+ --   player()
+ --  )
+ -- end
+ --end
 
  --players
  --path:update()
