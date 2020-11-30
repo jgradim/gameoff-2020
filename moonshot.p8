@@ -133,18 +133,27 @@ function move_smooth(
  e.y+=bucket(y+dy*f-e.y)
 end
 
-function init_laser(opts)
+function init_laser(
+ from,to,dir,len
+)
  local s=2
  local m=8
  local h=14
 
- return instance({
-  x=0,
-  y=0,
-  from={0,0},
-  to={0,0},
-  dir="h",
-  l=0,
+ from=from or {0,0}
+ to=to or {0,0}
+ dir=dir or "h"
+ len=len or 0
+
+ return init_interactable({
+  sp=dir=="h" and sp_laser_h
+   or sp_laser_v,
+  x=from[1],
+  y=from[2],
+  from=from,
+  to=to,
+  dir=dir,
+  l=len,
   anim={1,2,3,4,5,6,7,8},--frame
   anim_cursor=1,
   frame=1,
@@ -161,7 +170,12 @@ function init_laser(opts)
 
   on=true,
 
-  update=function(l)
+  on_collide=function(l)
+   printh("laser collided")
+  end,
+  --collide=block,
+
+  on_update=function(l)
    animate(l,1.5,true,"frame")
 
    move_smooth(
@@ -225,7 +239,7 @@ function init_laser(opts)
     l.x,l.y+l.l
    )
   end,
- },opts)
+ })
 end
 
 -------------------
@@ -713,22 +727,14 @@ function init_mechanics()
   corridor_btn,
 
   --laser
-  init_laser({
-   x=69*8,
-   y=22*8,
-   from={69*8,22*8},
-   to={69*8,29*8},
-   dir="h",
-   l=32,
-  }),
-  init_laser({
-   x=69*8,
-   y=22*8,
-   from={69*8,22*8},
-   to={76*8,22*8},
-   dir="v",
-   l=32,
-  }),
+  init_laser(
+   {69*8,25*8},{69*8,29*8},
+   "h",32
+  ),
+  init_laser(
+   {69*8,25*8},{76*8,25*8},
+   "v",32
+  ),
  }
 end
 
