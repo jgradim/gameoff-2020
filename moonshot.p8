@@ -701,7 +701,7 @@ function _update()
 
  --players
  --path:update()
- foreach(players,update_player)
+ foreach(players,update)
 
  --mechanics
  foreach(mcns,update)
@@ -740,7 +740,7 @@ function _draw()
  foreach(mcns,draw)
 
  --players
- foreach(players,draw_player)
+ foreach(players,draw)
 
  --dialog_box
  -- "thank you for saving me!\nlet me help you,i can\ndouble jump!",
@@ -872,6 +872,18 @@ function intersects(a,b)
  and a.y+a.h>b.y
 end
 
+--intersection of a and b
+function intersect(a,b)
+ local x=max(a.x,b.x)
+ local y=max(a.y,b.y)
+ return {
+  x=x,
+  y=y,
+  w=min(a.x+a.w,b.x+b.w)-x,
+  h=min(a.y+a.h,b.y+b.h)-y,
+ }
+end
+
 --todo:document
 function bucket(v,step)
  step=step or 0x0.01
@@ -901,7 +913,7 @@ function sp_coords(tile)
  }
 end
 
-function sp_hbs(sp,x,y)
+function sp_hitboxes(sp,x,y)
   local hbs=custom_hitboxes[sp]
   if hbs then
    local r={}
@@ -917,139 +929,6 @@ function sp_hbs(sp,x,y)
   else
    return {{x=x,y=y,w=8,h=8}}
   end
-end
-
-function player_hitbox(p)
- return {
-  x=p.x+1,
-  y=p.y+1,
-  w=p.w-2,
-  h=p.h-1,
- }
-end
-
-function player_standbox(p)
- return {
-  x=p.x+2,
-  w=4,
-  y=p.y+p.h,
-  h=1,
- }
-end
-
-function handle_collisions(p)
- local collisions={}
- 
- --check map
- local phb=player_hitbox(p)
- local x1=phb.x
- local x2=phb.x+phb.w-1
- local y1=phb.y
- local y2=phb.y+phb.h-1
- for x in all({x1,x2}) do
-  for y in all({y1,y2}) do
-   local sp=mget(x/8,y/8)
-   if fget(sp,flag_hits) then
-    local mhbs=sp_hbs(
-     sp,x\8*8,y\8*8
-    )
-    for mhb in all(mhbs) do
-     if intersects(mhb,phb) then
-      local x=intersect(phb,mhb)
-      insert(
-       collisions,
-       {block,mhb,mhb,p},
-       max(x.w,x.h)
-      )
-     end
-    end
-   end
-  end
- end
- 
- --check mechanics
- for mcn in all(mcns) do
-  if mcn.collide
-  and fget(mcn.sp,flag_hits)
-  then
-   local mhbs=sp_hbs(
-    mcn.sp,mcn.x,mcn.y
-   )
-   for mhb in all(mhbs) do
-    if intersects(mhb,phb) then
-     local x=intersect(phb,mhb)
-     insert(
-      collisions,
-      {mcn.collide,mcn,mhb,p},
-      max(x.w,x.h)
-     )
-    end
-   end
-  end
- end
- 
- --resolve in order
- while #collisions>0 do
-  local r=pop(collisions)[1]
-  local r_fn=r[1]
-  del(r,r_fn)
-  r_fn(unpack(r))
- end
-end
-
-function intersect(a,b)
- local x=max(a.x,b.x)
- local y=max(a.y,b.y)
- return {
-  x=x,
-  y=y,
-  w=min(a.x+a.w,b.x+b.w)-x,
-  h=min(a.y+a.h,b.y+b.h)-y,
- }
-end
-
---blocks p from intersecting cl,
---adjusting for specific hitboxes
---returns block direction
-function block(cl,clhb,p)
- --get intersection
- local phb=player_hitbox(p)
- local x=max(phb.x,clhb.x)
- local y=max(phb.y,clhb.y)
- local int={
-  x=x,
-  y=y,
-  w=min(phb.x+phb.w,clhb.x+clhb.w)-x,
-  h=min(phb.y+phb.h,clhb.y+clhb.h)-y,
- }
-
- --resolve using shallowest axis
- local aim=nil
- if int.w<int.h then
-  aim=phb.x<cl.x and "⬅️" or "➡️"
- else
-  aim=phb.y>cl.y and "⬆️" or "⬇️"
- end
-
- if aim=="⬅️" then
-  p.dx=max(p.dx,0)
-  p.x+=clhb.x-phb.x-phb.w
-  return aim
- elseif aim=="➡️" then
-  p.dx=min(p.dx,0)
-  p.x+=clhb.x+clhb.w-phb.x
-  return aim
- elseif aim=="⬆️" then
-  p.dy=max(p.dy,0)
-  p.y+=clhb.y+clhb.h-phb.y
-  return aim
- elseif aim=="⬇️" then
-  p.dy=min(p.dy,0)
-  p.y+=clhb.y-phb.y-phb.h
-  return aim
- end
-
- assert(false,"unknown aim")
 end
 
 --insert v in t and sort t by p
@@ -1084,7 +963,41 @@ function pop(t)
  return top
 end
 
----[[
+--blocks p from intersecting cl,
+--adjusting for specific hitboxes
+--returns block direction
+function block(cl,clhb,p)
+ local phb=p:hitbox()
+ local x=intersect(phb,clhb)
+
+ --resolve using shallowest axis
+ local aim=nil
+ if x.w<x.h then
+  aim=phb.x<cl.x and "⬅️" or "➡️"
+ else
+  aim=phb.y>cl.y and "⬆️" or "⬇️"
+ end
+
+ if aim=="⬅️" then
+  p.dx=max(p.dx,0)
+  p.x+=clhb.x-phb.x-phb.w
+  return aim
+ elseif aim=="➡️" then
+  p.dx=min(p.dx,0)
+  p.x+=clhb.x+clhb.w-phb.x
+  return aim
+ elseif aim=="⬆️" then
+  p.dy=max(p.dy,0)
+  p.y+=clhb.y+clhb.h-phb.y
+  return aim
+ elseif aim=="⬇️" then
+  p.dy=min(p.dy,0)
+  p.y+=clhb.y-phb.y-phb.h
+  return aim
+ end
+end
+
+--[[
 --to use,prepend "-" above
 function tostring(any)
  if type(any)!="table" then
@@ -1132,86 +1045,192 @@ function init_player(p)
   sp=sp_player_idle,
   flpx=false,
   flpy=false,
+  
+  hitbox=function(p)
+   return {
+    x=p.x+1,
+    y=p.y+1,
+    w=p.w-2,
+    h=p.h-1,
+   }
+  end,
+  standbox=function(p)
+   return {
+    x=p.x+2,
+    w=4,
+    y=p.y+p.h,
+    h=1,
+   }
+  end,
 
   ⬅️=run_left,
   ➡️=run_right,
   ⬆️=glide,
- }, p)
+
+  update=function(p)
+   local old_y=p.y\1
+   local old_x=p.x\1
+
+   --move horizontally
+   p.dx*=inertia
+   p.dx=clamp(p.dx,p.max_dx,0x.08)
+   p.x+=p.dx
+   resolve_collisions(p)
+
+   --move vertically
+   if p.flpy then
+    p.dy-=gravity
+   else
+    p.dy+=gravity
+   end
+   p.dy=clamp(p.dy,p.max_dy,0x.08)
+   p.y+=p.dy
+   local was_falling=
+    p.flpy and p.dy<0 or p.dy>0
+   resolve_collisions(p)
+   local ground_hit=
+    was_falling and p.dy==0
+
+   --state
+   local was_ground=p.ground
+   --running:x changes after dx
+   --and collisions
+   p.running=p.x\1!=old_x
+   --ground:ground hit or no y
+   --changes while on ground
+   p.ground=ground_hit or
+    (p.ground and p.y\1==old_y)
+   --landed:newly on ground
+   p.landed=p.ground
+    and not was_ground
+   if p.ground then
+    p.falling=false
+    p.jumping=false
+    p.gliding=false
+   else
+    --falling:moving downwards
+    --(mini gravity movements
+    --excluded since ground=true)
+    p.falling=not p.gliding
+     and (
+      p.flpy and p.dy<0 or p.dy>0
+     )
+    if p.falling then
+     p.jumping=false
+     p.gliding=false
+    end
+   end
+   --glided:glided this cycle
+   p.glided=p.gliding
+   --gliding:true on user input
+   p.gliding=false
+
+   --sprite
+   if p.glided then
+    p.sp=sp_player_glide
+   elseif p.jumping then
+    p.sp=sp_player_jump
+   elseif p.falling then
+    p.sp=sp_player_idle
+   elseif p.running then
+    p.sp=sp_player_run_start+
+     (t()*10)%sp_player_run_length
+    play_sfx("walk")
+   else
+    p.sp=sp_player_idle
+   end  
+  end,
+  
+  draw=function(p)
+   local cm=p_colors[p.color]
+   for c1,c2 in pairs(cm) do
+    pal(c1,c2)
+   end
+   spr(
+    p.sp,
+    p.x,p.y,
+    1,1,
+    p.flpx,p.flpy
+   )
+   pal()
+  end,
+ },p)
 end
 
-function update_player(p)
- local old_y=p.y\1
- local old_x=p.x\1
-
- --move horizontally
- p.dx*=inertia
- p.dx=clamp(p.dx,p.max_dx,0x.08)
- p.x+=p.dx
- handle_collisions(p)
-
- --move vertically
- if p.flpy then
-  p.dy-=gravity
+function sp_collisions_iter(
+ sp,x,y,phb
+)
+ if fget(sp,flag_hits) then
+  local hbs=sp_hitboxes(sp,x,y)
+  local i=0
+  return function()
+   while i<#hbs do
+    i+=1
+    local hb=hbs[i]
+    if intersects(phb,hb) then
+     return hb
+    end
+   end
+  end
  else
-  p.dy+=gravity
+  return function() end
  end
- p.dy=clamp(p.dy,p.max_dy,0x.08)
- p.y+=p.dy
- local was_falling=
-  p.flpy and p.dy<0 or p.dy>0
- handle_collisions(p)
- local ground_hit=
-  was_falling and p.dy==0
+end
 
- --state
- local was_ground=p.ground
- --running:x changes after dx
- --and collisions
- p.running=p.x\1!=old_x
- --ground:ground hit or no y
- --changes while on ground
- p.ground=ground_hit or
-  (p.ground and p.y\1==old_y)
- --landed:newly on ground
- p.landed=p.ground
-  and not was_ground
- if p.ground then
-  p.falling=false
-  p.jumping=false
-  p.gliding=false
- else
-  --falling:moving downwards
-  --(mini gravity movements
-  --excluded since ground=true)
-  p.falling=not p.gliding
-   and (
-    p.flpy and p.dy<0 or p.dy>0
-   )
-  if p.falling then
-   p.jumping=false
-   p.gliding=false
+function resolve_collisions(p)
+ local collisions={}
+ 
+ --check colliding map tiles
+ local phb=p:hitbox()
+ local x1=phb.x
+ local x2=phb.x+phb.w-1
+ local y1=phb.y
+ local y2=phb.y+phb.h-1
+ for x in all({x1,x2}) do
+  for y in all({y1,y2}) do
+   local sp=mget(x/8,y/8)
+   for mhb in sp_collisions_iter(
+    sp,x\8*8,y\8*8,phb
+   ) do
+    local x=intersect(phb,mhb)
+    insert(
+     collisions,
+     {block,mhb,mhb,p},
+     max(x.w,x.h)
+    )
+   end
   end
  end
- --glided:glided this cycle
- p.glided=p.gliding
- --gliding:true on user input
- p.gliding=false
-
- --sprite
- if p.glided then
-  p.sp=sp_player_glide
- elseif p.jumping then
-  p.sp=sp_player_jump
- elseif p.falling then
-  p.sp=sp_player_idle
- elseif p.running then
-  p.sp=sp_player_run_start+
-   (t()*10)%sp_player_run_length
-  play_sfx("walk")
- else
-  p.sp=sp_player_idle
+ 
+ --check colliding mechanics
+ for mcn in all(mcns) do
+  if mcn.collide then
+   for mhb in sp_collisions_iter(
+    mcn.sp,mcn.x,mcn.y,phb
+   ) do
+    local x=intersect(phb,mhb)
+    insert(
+     collisions,
+     {mcn.collide,mcn,mhb,p},
+     max(x.w,x.h)
+    )
+   end
+  end
+ end
+ 
+ --resolve collisions from the
+ --most to least colliding
+ while #collisions>0 do
+  local r=pop(collisions)[1]
+  local r_fn=r[1]
+  del(r,r_fn)
+  r_fn(unpack(r))
  end
 end
+
+--------------------
+---player actions---
+--------------------
 
 function run_left(p)
  p.dx-=run_accel
@@ -1238,7 +1257,7 @@ end
 function grav_boots(p,first)
  if (not first) return
 
- p.flpy= not p.flpy
+ p.flpy=not p.flpy
 end
 
 function double_jump(p,first)
@@ -1271,20 +1290,6 @@ function glide(p,_)
 
  p.gliding=true
  p.dy-=gravity+0.25
-end
-
-function draw_player(p)
- local cm=p_colors[p.color]
- for c1,c2 in pairs(cm) do
-   pal(c1,c2)
- end
- spr(
-  p.sp,
-  p.x,p.y,
-  1,1,
-  p.flpx,p.flpy
- )
- pal()
 end
 
 ----------
@@ -1625,11 +1630,9 @@ function init_platform(
    p.x+=p.dx
    p.y+=p.dy
 
-   foreach(all_players, function(pl)
-    if intersects(
-     player_standbox(pl),
-     p
-    ) then
+   foreach(players,function(pl)
+    if intersects(pl:standbox(),p)
+    then
      pl.x+=p.dx
      pl.y+=p.dy
     end
