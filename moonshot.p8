@@ -1197,24 +1197,24 @@ function block(cl,clhb,p)
  if x.w<x.h then
   aim=phb.x<cl.x and "⬅️" or "➡️"
  else
-  aim=phb.y>cl.y and "⬆️" or "⬇️"
+  aim=phb.y<cl.y and "⬆️" or "⬇️"
  end
 
  if aim=="⬅️" then
-  p.dx=max(p.dx,0)
-  p.x+=max(clhb.x-phb.x-phb.w,0)
+  p.dx=min(p.dx,0)
+  p.x+=min(clhb.x-phb.x-phb.w,0)
   return aim
  elseif aim=="➡️" then
-  p.dx=min(p.dx,0)
-  p.x+=min(clhb.x+clhb.w-phb.x,0)
+  p.dx=max(p.dx,0)
+  p.x+=max(clhb.x+clhb.w-phb.x,0)
   return aim
  elseif aim=="⬆️" then
-  p.dy=max(p.dy,0)
-  p.y+=max(clhb.y+clhb.h-phb.y,0)
-  return aim
- elseif aim=="⬇️" then
   p.dy=min(p.dy,0)
   p.y+=min(clhb.y-phb.y-phb.h,0)
+  return aim
+ elseif aim=="⬇️" then
+  p.dy=max(p.dy,0)
+  p.y+=max(clhb.y+clhb.h-phb.y,0)
   return aim
  end
 end
