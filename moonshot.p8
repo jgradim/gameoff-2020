@@ -1206,19 +1206,19 @@ function block(cl,clhb,p)
 
  if aim=="⬅️" then
   p.dx=max(p.dx,0)
-  p.x+=clhb.x-phb.x-phb.w
+  p.x+=max(clhb.x-phb.x-phb.w,0)
   return aim
  elseif aim=="➡️" then
   p.dx=min(p.dx,0)
-  p.x+=clhb.x+clhb.w-phb.x
+  p.x+=min(clhb.x+clhb.w-phb.x,0)
   return aim
  elseif aim=="⬆️" then
   p.dy=max(p.dy,0)
-  p.y+=clhb.y+clhb.h-phb.y
+  p.y+=max(clhb.y+clhb.h-phb.y,0)
   return aim
  elseif aim=="⬇️" then
   p.dy=min(p.dy,0)
-  p.y+=clhb.y-phb.y-phb.h
+  p.y+=min(clhb.y-phb.y-phb.h,0)
   return aim
  end
 end
