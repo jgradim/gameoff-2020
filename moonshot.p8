@@ -645,7 +645,7 @@ start_game_at=0
 scene_title={
  init=function()
   start_game_at=nil
-  
+
   --background fx
   add_bg_fxs()
  end,
@@ -929,7 +929,7 @@ scene_credits={
    end
   else
    --show credits
-   
+
    if show_credits_at>t() then
     fadepal(show_credits_at-t(),0)
    end
@@ -982,11 +982,11 @@ cam={
  fixed_y=function(c,y)
   return c.y+y
  end,
- 
+
  inv_x=function(c,x)
   return c.x+(x-c.x%128)
  end,
- 
+
  inv_y=function(c,y)
   return c.y+(y-c.y%128)
  end,
