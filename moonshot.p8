@@ -1481,6 +1481,7 @@ end
 ---path---
 ----------
 
+--[[
 path={
  player=nil,
  from=nil,
@@ -1738,6 +1739,7 @@ function vec2i(v,grid)
   (v.x\grid)+
   (map_width/grid)*(v.y\grid)
 end
+]]
 
 -->8
 --mechanics:platforms,doors,etc
