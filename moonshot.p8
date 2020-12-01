@@ -594,13 +594,14 @@ end
 start_game_at=nil
 
 scene_title={
- start_at=nil,
-
- init=function() end,
+ init=function()
+  start_game_at=nil
+ end,
 
  update=function()
   local s=scene_title
-  if btnp(❎) then
+  if btnp(❎)
+  and not start_game_at then
    play_sfx("start_game")
    start_game_at=t()+1
   end
