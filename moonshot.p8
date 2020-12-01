@@ -500,6 +500,35 @@ function init_mechanics()
   end
  )
 
+ local shaft_l2_plt=
+  init_platform(
+    45*8,16*8,
+    45*8,21*8,
+    false
+  )
+
+ local shaft_l2_btn=init_button(
+  sp_button_right,42*8,15*8,
+  true,false,function()
+    play_sfx("platform_on")
+    shaft_l2_plt.moving_since=t()
+  end
+ )
+
+ local shaft_l2_laser=
+  init_laser(
+   {41*8+2,12*8+1},{41*8+2,12*8+1},
+   "v",4
+  )
+
+ local shaft_l2_screen=
+  init_animated({
+   x=38*8,
+   y=18*8,
+   anim=anim_screen_ok,
+   anim_freq=8,
+  })
+
  --------------------------
  ---double jumper unlock---
  --------------------------
@@ -646,10 +675,10 @@ repeat_music_at=nil
 scene_title={
  init=function()
   start_game_at=nil
-  
+
   --background fx
   add_bg_fxs()
-  
+
   --music
   music(0,5000)
   repeat_music_at=t()+17
@@ -679,7 +708,7 @@ scene_title={
   then
    set_scene(scene_game)
   end
-  
+
   --music
   if repeat_music_at<=t() then
    music(0)
@@ -941,7 +970,7 @@ scene_credits={
    end
   else
    --show credits
-   
+
    if show_credits_at>t() then
     fadepal(show_credits_at-t(),0)
    end
@@ -994,11 +1023,11 @@ cam={
  fixed_y=function(c,y)
   return c.y+y
  end,
- 
+
  inv_x=function(c,x)
   return c.x+(x-c.x%128)
  end,
- 
+
  inv_y=function(c,y)
   return c.y+(y-c.y%128)
  end,
@@ -1586,7 +1615,7 @@ function init_player(p)
    else
     p.sp=sp_player_idle
    end
-   
+
    --sfx
    if p.landed then
     play_sfx("land")
