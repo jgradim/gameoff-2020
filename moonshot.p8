@@ -676,29 +676,27 @@ scene_title={
  end,
 
  draw=function()
-  cls()
+  cls(2)
   pal()
 
   --fxs
   foreach(bg_particles,draw)
   draw_fxs()
 
-  --top left
-  --spr(192,10,12,8,4)
+  --top left title
   ssprrect(rect_title, 8,8)
 
-  --center
-  local txt="press ❎/x to play"
+  --center text
+  local t="press ❎/x to play"
   print(
-   txt,
-   64-#txt*2,
-   68,
+   t,hcenter(t),72,
    time()%0.4<0.2 and 7 or 10
   )
 
-  --bottom
-  txt=" ⬅️➡️:move  ❎/x:jump  🅾️/z:use"
-  print(txt,0,122,5)
+  --bottom commands
+  print_footer(
+   "⬅️➡️:run   ❎/x:jump   🅾️/z:use    "
+  )
 
   --fade out if starting game
   if start_game_at then
@@ -930,6 +928,7 @@ scene_credits={
    end
   else
    --show credits
+   
    if show_credits_at>t() then
     fadepal(show_credits_at-t(),0)
    end
@@ -946,23 +945,20 @@ scene_credits={
    local abandoned=
     #players-#saved_players
    if abandoned>0 then
-    add(
-     txt,
-     "crew left behind: "..abandoned
-    )
+    add(txt,"crew saved:     "..#saved_players)
+    add(txt,"crew abandoned: "..abandoned)
+   else
+    add(txt,"all crew saved! ♥")
    end
    add(txt,"")
    add(txt,"press ❎/x to restart")
    for i,t in ipairs(txt) do
-    print(t,hcenter(t),61+i*6,7)
+    print(t,hcenter(t),56+i*6,7)
    end
 
    --bottom
-   local txt="by goncalossilva, jgradim, pkoch"
-   print(
-    txt,
-    hcenter(txt),
-    122,5
+   print_footer(
+    "by goncalossilva, jgradim, pkoch"
    )
   end
  end,
@@ -1046,6 +1042,10 @@ function add_bg_fxs()
  near_star:add_plane()
  ship:add_all()
  moon:add()
+end
+
+function print_footer(t)
+ print(t,hcenter(t),122,5)
 end
 
 function update(o)
