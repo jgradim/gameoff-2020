@@ -133,6 +133,11 @@ rect_ship_l=xywh(
 0,8,31,19
 )
 
+
+function ssprrect(box,dx,dy)
+ sspr(box.x,box.y,box.w,box.h,dx,dy)
+end
+
 -------------------
 ---palette swaps---
 -------------------
@@ -652,11 +657,7 @@ scene_title={
 
   --top left
   --spr(192,10,12,8,4)
-  sspr(
-   rect_title.x,rect_title.y,
-   rect_title.w,rect_title.h,
-   8,8
-  )
+  ssprrect(rect_title, 8,8)
 
   --center
   local txt="press ❎/x to play"
@@ -889,11 +890,7 @@ scene_credits={
      pal(c1,c2)
     end
 
-    sspr(
-     rect_ship_l.x,rect_ship_l.y,
-     rect_ship_l.w,rect_ship_l.h,
-     p.x,p.y
-    )
+    ssprrect(rect_ship_l,p.x,p.y)
 
     ships=ships or p.x<128
    end
@@ -907,11 +904,7 @@ scene_credits={
    end
 
    --title
-   sspr(
-    rect_title.x,rect_title.y,
-    rect_title.w,rect_title.h,
-    8,8
-   )
+   ssprrect(rect_title,8,8)
 
    --center
    local txt={
@@ -2298,14 +2291,8 @@ function init_laser(
     pal()
    end
 
-   sspr(
-    lhl.x,lhl.y,lhl.w,lhl.h,
-    l.x,l.y
-   )
-   sspr(
-    lhr.x,lhr.y,lhr.w,lhr.h,
-    l.x+l.len*8,l.y
-   )
+   ssprrect(lhl,l.x,l.y)
+   ssprrect(lhr,l.x+l.len*8,l.y)
   end,
 
   draw_v=function(l)
@@ -2324,14 +2311,8 @@ function init_laser(
     pal()
    end
 
-   sspr(
-    lvu.x,lvu.y,lvu.w,lvu.h,
-    l.x,l.y
-   )
-   sspr(
-    lvd.x,lvd.y,lvd.w,lvd.h,
-    l.x,l.y+l.len*8
-   )
+   ssprrect(lvu,l.x,l.y)
+   ssprrect(lvd,l.x,l.y+l.len*8)
   end,
  })
 end
@@ -2678,9 +2659,8 @@ moon=class(bg_fx,{
  update=function(m) end,
 
  draw=function(m)
-  sspr(
-   rect_moon.x,rect_moon.y,
-   rect_moon.w,rect_moon.h,
+  ssprrect(
+   rect_moon,
    cam:fixed_x(86),
    cam:fixed_y(8)
   )
@@ -2728,11 +2708,10 @@ ship=class(bg_fx,{
  end,
 
  draw=function(s)
-  sspr(
-   s.r.x,s.r.y,
-   s.r.w,s.r.h,
-   cam:fixed_x(s.x),
-   cam:fixed_y(s.y)
+  ssprrect(
+    s.r,
+    cam:fixed_x(s.x),
+    cam:fixed_y(s.y)
   )
  end
 })
@@ -2777,7 +2756,7 @@ function speech_bubble(x,y,l,c)
   local dy=y-12+cos(t()/2)+.5
 
   pal(11,c)
-  sspr(r.x,r.y,r.w,r.h,dx,dy)
+  ssprrect(r,dx,dy)
   pal()
   print(l,dx+3,dy+2,7)
 end
