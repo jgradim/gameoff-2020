@@ -760,7 +760,6 @@ scene_game={
   foreach(bg_particles, draw)
   animate_map()
   map(0,0)
-  pal()
   draw_fxs()
 
   --tiny text
