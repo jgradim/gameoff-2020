@@ -758,27 +758,17 @@ scene_game={
  update=function()
   --input
   local p=player()
-  player_btns={"⬅️","➡️","🅾️"}
-  for i=1,#player_btns do
-    if btn(i-1) then
-    fn=p[player_btns[i]]
-    if (fn) fn(p,btnp(i-1))
+  player_btns={[0]="⬅️",[1]="➡️",[4]="🅾️"}
+  for n, b in pairs(player_btns) do
+    if btn(n) then
+     fn=p[b]
+     if (fn) fn(p,btnp(n))
     end
   end
-  if btnp(🅾️) then
+
+  if btnp(⬆️) then
     focus_next_player()
   end
-  --if btnp(🅾️) then
-  -- if path.found then
-  --  path:apply()
-  -- else
-  --  path:find(
-  --   players[2],
-  --   players[2],
-  --   player()
-  --  )
-  -- end
-  --end
 
   --players
   --path:update()
@@ -794,10 +784,6 @@ scene_game={
 
   --camera
   cam:move(p)
-
-  if btnp(🅾️) then
-   set_scene(scene_credits)
-  end
  end,
 
  draw=function()
@@ -1488,7 +1474,7 @@ function init_player(p)
 
   ⬅️=run_left,
   ➡️=run_right,
-  ⬆️=glide,
+  🅾️=glide,
 
   update=function(p)
    local old_y=p.y\1
@@ -1816,11 +1802,11 @@ path={
   local prev_btns=nil
   for btns in all({
    "",--do nothing
-   "⬅️",--press left
-   "➡️",--press right
-   "⬆️",--press up
-   "⬆️⬅️",--press up/left
-   "⬆️➡️",--press up/right
+   "⬅️",
+   "➡️",
+   "🅾️",
+   "🅾️⬅️",
+   "🅾️➡️",
   }) do
    local cur={
     --player data
@@ -1836,7 +1822,7 @@ path={
     --player btns functions
     ⬅️=n.⬅️,
     ➡️=n.➡️,
-    ⬆️=n.⬆️,
+    🅾️=n.🅾️,
 
     --pathfinding data
     prev=n,
@@ -2161,7 +2147,7 @@ function init_player_unlocker(
     x=u.x,
     y=u.y,
     color=u.color,
-    ⬆️=u.ability,
+    🅾️=u.ability,
    }))
    u.tooltip="⬆️"
    u.anim={0}
