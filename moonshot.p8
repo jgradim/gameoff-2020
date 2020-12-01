@@ -2043,6 +2043,7 @@ function init_laser(
   on=true,
 
   on_collide=function(l)
+   chkpt:restore()
   end,
 
   on_update=function(l)
