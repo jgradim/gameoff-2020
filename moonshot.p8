@@ -675,6 +675,8 @@ scene_game={
   init_fxs()
   far_star:add_plane()
   near_star:add_plane()
+  thruster:add(1, 22.5)
+  thruster:add(1, 8.5)
 
   --camera
   cam:init()
@@ -2313,6 +2315,78 @@ bg_fx={
   f.t%=f.life
  end,
 }
+
+circle_bg_fx=class(bg_fx,{
+ r=4,
+ life=fps/6,
+
+ draw=function(f)
+  circfill(f.x,f.y,f.r,f:curr_color())
+ end,
+})
+
+thruster={
+ add=function(_, x, y)
+  x*=8 y*=8
+  thr_dark:add(x-6,y+4)
+  thr_mid:add(x-3,y+2)
+  thr_bright:add(x,y)
+ end
+}
+
+thr_bright=class(circle_bg_fx, {
+ colors={7,12},
+
+ add=function(kls, x, y)
+  kls:add_particle{
+   x=x, y=y
+  }
+  kls:add_particle{
+   x=x, y=y+7
+  }
+  kls:add_particle{
+   x=x, y=y+14
+  }
+  kls:add_particle{
+   x=x, y=y+20
+  }
+ end,
+})
+
+
+thr_mid=class(circle_bg_fx, {
+ colors={12,1},
+
+ add=function(kls, x, y)
+  kls:add_particle{
+   x=x, y=y
+  }
+  kls:add_particle{
+   x=x, y=y+6
+  }
+  kls:add_particle{
+   x=x, y=y+12
+  }
+  kls:add_particle{
+   x=x, y=y+16
+  }
+ end,
+})
+thr_dark=class(circle_bg_fx, {
+ colors={1,0},
+
+ add=function(kls, x, y)
+  kls:add_particle{
+   x=x, y=y
+  }
+  kls:add_particle{
+   x=x, y=y+7
+  }
+  kls:add_particle{
+   x=x, y=y+12
+  }
+ end
+})
 
 pixel_star=class(bg_fx,{
  add_plane=function(kls)
