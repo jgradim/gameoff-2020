@@ -450,7 +450,7 @@ function init_mechanics()
    sp=sp_screen,
    x=65*8,
    y=25*8,
-   tooltip="❎",
+   tooltip="🅾️",
    msg=
     "> status report:\n\n"..
     "-heavy damage to hull\n"..
@@ -502,7 +502,7 @@ function init_mechanics()
    sp_pal=pal_button_off,
    x=7*8,
    y=15*8,
-   tooltip="❎",
+   tooltip="🅾️",
 
    active=false,
 
@@ -666,7 +666,7 @@ scene_title={
   )
 
   --bottom
-  txt="⬅️➡️:move   🅾️/z:jump   ❎/x:use"
+  txt="⬅️➡️:move   ❎/z:jump   🅾️/x:use"
   print(txt,0,122,5)
 
   --fade out if starting game
@@ -717,7 +717,7 @@ scene_game={
   local p=player()
 
   if player_input then
-    player_btns={[0]="⬅️",[1]="➡️",[4]="🅾️"}
+    player_btns={[0]="⬅️",[1]="➡️",[5]="❎"}
     for n, b in pairs(player_btns) do
       if btn(n) then
        fn=p[b]
@@ -1455,7 +1455,7 @@ function init_player(p)
 
   ⬅️=run_left,
   ➡️=run_right,
-  🅾️=glide,
+  ❎=jump,
 
   update=function(p)
    local old_y=p.y\1
@@ -2068,8 +2068,6 @@ function init_checkpoint(x,y)
   anim=anim_checkpoint,
   anim_cursor=1,
 
-
-
   on_collide=function(c)
    set_checkpoint(c.x,c.y)
   end,
@@ -2110,7 +2108,7 @@ function init_button(
    once=once,
    active=active,
 
-   tooltip="❎",
+   tooltip="🅾️",
 
    on_button_press=function(b)
     if b.once and b.active != active then
@@ -2143,7 +2141,7 @@ function init_player_unlocker(
   sp_pal=p_colors[color],
   anim=anim_player_unlocker,
   anim_cursor=1,
-  tooltip="❎",
+  tooltip="🅾️",
 
   color=color or "red",
   ability=ability or jump,
@@ -2165,7 +2163,7 @@ function init_player_unlocker(
     x=u.x,
     y=u.y,
     color=u.color,
-    🅾️=u.ability,
+    ❎=u.ability,
    }))
    u.tooltip="⬆️"
    u.anim={0}
@@ -2982,7 +2980,7 @@ function init_interactable(opts)
    end
 
    local interacted=
-    collided and btnp(❎)
+    collided and btnp(🅾️)
 
    if interacted then
     s:on_button_press()
