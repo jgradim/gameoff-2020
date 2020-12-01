@@ -58,34 +58,32 @@ sp_ship_l=16
 -----------------------
 ---sprite animations---
 -----------------------
-anim_platform={
- 23,24,25,26
-}
-anim_door_open={
- 11,12,13,14,15,0
-}
-anim_door_close={
- 0,15,14,13,12,11
-}
-anim_door_jammed={
- 11,11,11,12,11,12
-}
-anim_bolt={
- 39,40,41,42
-}
-anim_screen_warn={
- 57,58
-}
-anim_screen_ok={
- 59
-}
-anim_checkpoint={
- 63,63,63,63,63,62,63,63,
- 62,63,63,63,63,63,63,
-}
-anim_player_unlocker={
- 5,1,5,1,5,1,3,1
-}
+anim_platform=split(
+"23,24,25,26"
+)
+anim_door_open=split(
+"11,12,13,14,15,0"
+)
+anim_door_close=split(
+"0,15,14,13,12,11"
+)
+anim_door_jammed=split(
+"11,11,11,12,11,12"
+)
+anim_bolt=split(
+"39,40,41,42"
+)
+anim_screen_warn=split(
+"57,58"
+)
+anim_screen_ok={59}
+anim_checkpoint=split(
+ "63,63,63,63,63,62,63,63,"..
+ "62,63,63,63,63,63,63"
+)
+anim_player_unlocker=split(
+ "5,1,5,1,5,1,3,1"
+)
 
 ------------------
 ---rect sprites---
