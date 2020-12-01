@@ -143,10 +143,8 @@ pal_button_off={
  [3]=8,
  [11]=14
 }
-pal_button_disabled={
- [3]=9,
- [11]=10
-}
+
+--[[
 pal_checkpoint_on={
  [14]=12,
  [15]=13,
@@ -170,6 +168,11 @@ pal_screen_ok={
  [8]=1,
  [10]=3,
 }
+pal_button_disabled={
+ [3]=9,
+ [11]=10
+}
+--]]
 
 p_colors={
  red={[8]=8},
@@ -193,6 +196,7 @@ msg_dbljmp=
  "     great! we can switch\n"..
  "   between us with ⬆️/⬇️!"
 
+--[[
 msg_glider=
  "check out my sweet jetpack!"..
  "not a fire hazard"..
@@ -200,7 +204,7 @@ msg_glider=
  "\n\n\n\n"..
  "that's nice. don't burn"..
  "your ankles, dearie"
-
+--]]
 -----------------
 ---wall labels---
 -----------------
@@ -357,7 +361,6 @@ custom_hitboxes={
 
  --floor
  "64|0,0,8,6",
- "66|0,0,8,6",
  "67|0,0,8,6",
  "68|0,0,8,6",
  "69|0,0,8,6",
@@ -836,9 +839,7 @@ scene_game={
 
   --tiny text
   for wl in all(wall_labels) do
-   print_tiny(
-    wl[1],wl[2],wl[3],wl[4]
-   )
+   print_tiny(unpack(wl))
   end
 
   --mechanics
@@ -1162,18 +1163,6 @@ function instance(kls,o)
   )
 end
 
---check if a contains b
-function contains(a,b)
- --[[
- a={x,y,w,h}
- b={x,y,w,h}
- ]]
- return a.x<=b.x
- and a.y<=b.y
- and a.x+a.w>=b.x+b.w
- and a.y+a.h>=b.y+b.h
-end
-
 --check if a intersects b
 function intersects(a,b)
  --[[
@@ -1229,9 +1218,7 @@ end
 function sp_hitboxes(sp,x,y)
  local hbs=custom_hitboxes[sp]
 
- if not hbs then
-  return {{x=x,y=y,w=8,h=8}}
- end
+ if(not hbs) return {{x=x,y=y,w=8,h=8}}
 
  local r={}
  for hb in all(hbs) do
@@ -2883,6 +2870,7 @@ end
 ---escape pods---
 -----------------
 
+--[[
 function escape_pod(x,y,l,cm)
   local sx=8*(sp_e_pod%16)
   local sy=8*(sp_e_pod/16\1)
@@ -2894,6 +2882,7 @@ function escape_pod(x,y,l,cm)
   pal()
   print_tiny(l,x+11,y+15,9)
 end
+--]]
 
 ---------------
 ---tiny text---
