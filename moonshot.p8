@@ -2117,9 +2117,6 @@ function init_button(
      return
     end
 
-    printh(b.once)
-    printh(b.once and nil or b.tooltip)
-
     if (b.once) b.tooltip=nil
     b.active=not b.active
     b.sp_pal=b.active
