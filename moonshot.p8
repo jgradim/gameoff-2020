@@ -891,6 +891,11 @@ scene_credits={
     i+=1
    end
   end
+
+  bg_particles={}
+  far_star:add_plane()
+  near_star:add_plane()
+  moon:add()
  end,
 
  update=function()
