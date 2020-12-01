@@ -14,10 +14,10 @@ map_width=1024
 map_height=256
 
 --downward movement per cycle
-gravity=0.1
+gravity=.1
 
 --movement multiplier per cycle
-inertia=1/8
+inertia=.125
 
 -------------
 ---sprites---
@@ -89,45 +89,49 @@ anim_player_unlocker=split(
 ---rect sprites---
 ------------------
 
-rect_tooltip={
- x=112,y=8,w=12,h=11
-}
-rect_escape_pod_l={
- x=0,y=8,w=32,h=20
-}
-rect_escape_pod_m={
- x=96,y=7,w=23,h=15
-}
-rect_escale_pod_s={
- x=48,y=64,w=11,h=8
-}
-rect_laser_v_u={
- x=96,y=28,w=5,h=4
-}
-rect_laser_v_d={
- x=101,y=28,w=5,h=4
-}
-rect_laser_h_l={
- x=96,y=23,w=4,h=5
-}
-rect_laser_h_r={
- x=100,y=23,w=4,h=5
-}
-rect_title={
- x=0,y=96,w=58,h=26
-}
-rect_moon={
- x=96,y=96,w=32,h=32
-}
-rect_ship_s={
- x=56,y=24,w=10,h=7
-}
-rect_ship_m={
- x=88,y=8,w=22,h=14
-}
-rect_ship_l={
- x=0,y=8,w=31,h=19
-}
+function xywh(x,y,w,h)
+ return {x=x,y=y,w=w,h=h}
+end
+
+rect_tooltip=xywh(
+ 112,8,12,11
+)
+rect_escape_pod_l=xywh(
+0,8,32,20
+)
+rect_escape_pod_m=xywh(
+96,7,23,15
+)
+rect_escale_pod_s=xywh(
+48,64,11,8
+)
+rect_laser_v_u=xywh(
+96,28,5,4
+)
+rect_laser_v_d=xywh(
+101,28,5,4
+)
+rect_laser_h_l=xywh(
+96,23,4,5
+)
+rect_laser_h_r=xywh(
+100,23,4,5
+)
+rect_title=xywh(
+0,96,58,26
+)
+rect_moon=xywh(
+96,96,32,32
+)
+rect_ship_s=xywh(
+56,24,10,7
+)
+rect_ship_m=xywh(
+88,8,22,14
+)
+rect_ship_l=xywh(
+0,8,31,19
+)
 
 -------------------
 ---palette swaps---
@@ -2801,47 +2805,47 @@ end
 
 --https://www.1001fonts.com/tinier-font.html
 tiny_font={
- a={0,0,3,3},
- b={0,3,3,3},
- c={0,6,3,3},
- d={0,9,3,3},
- e={0,12,3,3},
- f={0,15,3,3},
- g={0,18,3,3},
- h={0,21,3,3},
- i={3,0,1,3},
- j={3,3,2,3},
- k={3,6,3,3},
- l={3,9,2,3},
- m={3,12,5,3},
- n={3,15,4,3},
- o={3,18,3,3},
- p={3,21,2,3},
- q={8,0,3,3},
- r={8,3,3,3},
- s={8,6,3,3},
- t={8,9,3,3},
- u={8,12,3,3},
- v={8,15,3,3},
- w={8,18,5,3},
- x={8,21,3,3},
- y={11,0,3,3},
- z={11,3,3,3},
- [1]={11,6,2,3},
- [2]={11,3,3,3}, --z
- [3]={11,9,3,3},
- [4]={11,12,3,3},
- [5]={8,6,3,3}, --s
- [6]={11,15,3,3},
- [7]={13,18,3,3},
- [8]={11,21,3,3},
- [9]={13,2,3,3},
- [0]={13,6,3,3},
+ a=split("0,0,3,3"),
+ b=split("0,3,3,3"),
+ c=split("0,6,3,3"),
+ d=split("0,9,3,3"),
+ e=split("0,12,3,3"),
+ f=split("0,15,3,3"),
+ g=split("0,18,3,3"),
+ h=split("0,21,3,3"),
+ i=split("3,0,1,3"),
+ j=split("3,3,2,3"),
+ k=split("3,6,3,3"),
+ l=split("3,9,2,3"),
+ m=split("3,12,5,3"),
+ n=split("3,15,4,3"),
+ o=split("3,18,3,3"),
+ p=split("3,21,2,3"),
+ q=split("8,0,3,3"),
+ r=split("8,3,3,3"),
+ s=split("8,6,3,3"),
+ t=split("8,9,3,3"),
+ u=split("8,12,3,3"),
+ v=split("8,15,3,3"),
+ w=split("8,18,5,3"),
+ x=split("8,21,3,3"),
+ y=split("11,0,3,3"),
+ z=split("11,3,3,3"),
+ [1]=split("11,6,2,3"),
+ [2]=split("11,3,3,3"), --z
+ [3]=split("11,9,3,3"),
+ [4]=split("11,12,3,3"),
+ [5]=split("8,6,3,3"), --s
+ [6]=split("11,15,3,3"),
+ [7]=split("13,18,3,3"),
+ [8]=split("11,21,3,3"),
+ [9]=split("13,2,3,3"),
+ [0]=split("13,6,3,3"),
 
 
- ["<"]={3,18,2,3},
- [">"]={4,18,2,3},
- [" "]={5,9,3,3},
+ ["<"]=split("3,18,2,3"),
+ [">"]=split("4,18,2,3"),
+ [" "]=split("5,9,3,3"),
 }
 
 function print_tiny(str,x,y,c)
