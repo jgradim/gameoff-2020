@@ -425,53 +425,24 @@ function init_mechanics()
   )
 
  --buttons
- local diag_btn_door=
-  init_interactable({
-   sp=sp_button_right,
-   sp_pal=pal_button_off,
-   x=67*8,
-   y=25*8,
-   tooltip="❎",
+ local diag_door_btn=init_button(
+   sp_button_right,67*8,25*8,
+   false,false,
+   function(b)
+    toggle_door(diag_door,b.active)
+   end
+ )
 
-   active=false,
-
-   on_button_press=function(b)
-    b.tooltip=nil
-    b.active=not b.active
-    b.sp_pal=b.active
-     and pal_default
-     or pal_button_off
-
-    toggle_door(
-     diag_door,
-     b.active
-    )
-  end,
- })
-
- local diag_btn_plt=
-  init_interactable({
-   sp=sp_button_left,
-   sp_pal=pal_button_off,
-   x=58*8,
-   y=29*8,
-   tooltip="❎",
-
-   active=false,
-
-   on_button_press=function(b)
-    if (b.active) return
-
-    play_sfx("platform_on")
-    b.tooltip=nil
-    b.active=true
-    b.sp_pal=pal_button_on
-
-    diag_screen_warn.anim=
-     anim_screen_ok
-    diag_plt.moving_since=time()
-   end,
-  })
+ local diag_plt_btn=init_button(
+  sp_button_left, 58*8,29*8,
+  true,false,
+  function()
+   play_sfx("platform_on")
+   diag_screen_warn.anim=
+    anim_screen_ok
+   diag_plt.moving_since=t()
+  end
+ )
 
  --screens
  local diag_screen_high=
@@ -503,27 +474,13 @@ function init_mechanics()
     false
   )
 
- local shaft_l1_btn=
-  init_interactable({
-   sp=sp_button_right,
-   sp_pal=pal_button_off,
-   x=42*8,
-   y=26*8,
-   tooltip="❎",
-
-   active=false,
-
-   on_button_press=function(b)
-    if (b.active) return
-
+ local shaft_l1_btn=init_button(
+  sp_button_right,42*8,26*8,
+  true,false,function()
     play_sfx("platform_on")
-    b.tooltip=nil
-    b.active=true
-    b.sp_pal=pal_default
-
-    shaft_l1_plt.moving_since=time()
-   end,
-  })
+    shaft_l1_plt.moving_since=t()
+  end
+ )
 
  --------------------------
  ---double jumper unlock---
@@ -590,13 +547,13 @@ function init_mechanics()
   cp_dbljmp,
 
   -- dianostics
-  --diag_jammed_door,
+  diag_jammed_door,
   diag_screen_warn,
-  diag_door,
-  diag_plt,
-  diag_btn_door,
-  diag_btn_plt,
   diag_screen_high,
+  diag_door,
+  diag_door_btn,
+  diag_plt,
+  diag_plt_btn,
 
   --shaft
   shaft_l1_plt,
@@ -2132,6 +2089,46 @@ function init_checkpoint(x,y)
    )
   end,
  },opts)
+end
+
+-------------
+---buttons---
+-------------
+
+function init_button(
+ sp,x,y,once,active,on_change
+)
+ local sp_pal=active
+  and pal_default
+  or pal_button_off
+
+ return init_interactable({
+   sp=sp,
+   sp_pal=sp_pal,
+   x=x,
+   y=y,
+   once=once,
+   active=active,
+
+   tooltip="❎",
+
+   on_button_press=function(b)
+    if b.once and b.active != active then
+     return
+    end
+
+    printh(b.once)
+    printh(b.once and nil or b.tooltip)
+
+    if (b.once) b.tooltip=nil
+    b.active=not b.active
+    b.sp_pal=b.active
+     and pal_default
+     or pal_button_off
+
+    on_change(b)
+   end
+ })
 end
 
 ---------------------
