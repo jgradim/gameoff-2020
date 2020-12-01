@@ -1524,27 +1524,9 @@ end
 custom_hitboxes=unpack_custom_hitboxes(custom_hitboxes)
 
 function hcenter(s)
- --screen center minus the
- --string length times the
- --pixels in a char's width,
- --cut in half
  return 64-#s*2
 end
 
---[[
---to use,prepend "-" above
-function tostring(any)
- if type(any)!="table" then
-  return tostr(any)
- end
- local str="{"
- for k,v in pairs(any) do
-  if (str!="{") str=str..","
-  str..=tostring(k).."="..tostring(v)
- end
- return str.."}"
-end
---]]
 
 -->8
 --player
