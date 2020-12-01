@@ -948,7 +948,7 @@ scene_credits={
     add(txt,"crew saved:     "..#saved_players)
     add(txt,"crew abandoned: "..abandoned)
    else
-    add(txt,"all crew saved! ♥")
+    add(txt,"crew saved: all ♥")
    end
    add(txt,"")
    add(txt,"press ❎/x to restart")
