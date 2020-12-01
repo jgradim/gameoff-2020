@@ -1118,8 +1118,7 @@ end
 
 --todo:document
 function bucket(v,step)
- step=step or 0x0.01
- v-=sgn(v)*(v%step)
+ v-=(sgn(v)*v)%step
  if (abs(v)<step) v=0
  return v
 end
