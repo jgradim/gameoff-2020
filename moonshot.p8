@@ -1209,9 +1209,7 @@ end
 function sp_collisions_iter(
  sp,x,y,phb,flag
 )
- if not fget(sp,flag) then
-  return function() end
- end
+ if(not fget(sp,flag)) return function() end
 
  local hbs=all(sp_hitboxes(sp,x,y))
  return function()
