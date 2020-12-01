@@ -130,6 +130,9 @@ rect_ship_s={
 rect_ship_m={
  x=88,y=8,w=22,h=14
 }
+rect_ship_l={
+ x=0,y=8,w=31,h=19
+}
 
 -------------------
 ---palette swaps---
@@ -215,6 +218,29 @@ wall_labels={
   15*8,29*8+2,14
  }
 }
+
+-----------------------
+---credits formation---
+-----------------------
+credits_formation={
+ [1]={
+  -rect_ship_l.w-16,
+  64-rect_ship_l.h/2
+ },
+ [2]={
+  (-rect_ship_l.w-16)*2,
+  64-rect_ship_l.h/2-32
+ },
+ [3]={
+  (-rect_ship_l.w-16)*2,
+  64-rect_ship_l.h/2+32
+ },
+ [4]={
+  (-rect_ship_l.w-16)*3,
+  64-rect_ship_l.h/2
+ }
+}
+
 
 ------------------
 ---sprite flags---
@@ -662,6 +688,7 @@ scene_title={
 
  draw=function()
   cls()
+  pal()
   
   --fxs
   foreach(bg_particles,draw)
@@ -676,7 +703,7 @@ scene_title={
   )
 
   --center
-  local txt="press ❎/x to start"
+  local txt="press ❎/x to play"
   print(
    txt,
    64-#txt*2,
@@ -688,8 +715,9 @@ scene_title={
   txt="⬅️➡️:move   🅾️/z:jump   ❎/x:use"
   print(txt,0,122,5)
 
+  --fade out if starting game
   if start_game_at then
-   fadepal(1-(start_game_at-t()))
+   fadepal(1-(start_game_at-t()),1)
   end
  end,
 }
@@ -727,7 +755,7 @@ scene_game={
   mcns=init_mechanics()
   
   --camera
-  cam:init()
+  cam:init(player())
  end,
 
  update=function()
@@ -768,17 +796,22 @@ scene_game={
   update_fxs()
 
   --camera
-  cam:update()
+  cam:move(p)
+  
+  if btnp(🅾️) then
+   set_scene(scene_credits)
+  end
  end,
 
  draw=function()
   cls()
+  pal()
 
   --fxs
   foreach(bg_particles, draw)
   animate_lights()
-  map(0,0)
   pal()
+  map(0,0)
   draw_fxs()
 
   --tiny text
@@ -806,8 +839,8 @@ scene_game={
 
   --start game fade-in effect
   if start_game_at
-  and start_game_at<t()+1 then
-   fadepal(1-(t()-start_game_at))
+  and start_game_at+1>t() then
+   fadepal(1-(t()-start_game_at),1)
   end
 
   --debug
@@ -832,12 +865,129 @@ scene_game={
 ---credits scene---
 -------------------
 
+saved_players={}
+show_credits_at=nil
+
 scene_credits={
- init=function() end,
+ init=function()
+  show_credits_at=nil
+  
+  --reset draw state
+  pal()
+  
+  --reset camera
+  cam:init()
+  cam:draw()
+  
+  --gather saved players
+  saved_players={}
+  local i=1
+  for p in all(players) do
+   if p.saved then
+    add(
+     saved_players,
+     instance(p,{
+      x=credits_formation[i][1],
+      y=credits_formation[i][2],
+      dx=0.25,
+     })
+    )
+    i+=1
+   end
+  end
+ end,
 
- update=function() end,
+ update=function()
+  --handle input
+  if btnp(❎) then
+   set_scene(scene_title)
+   return
+  end
+  
+  --fxs
+  foreach(bg_particles,update)
+  update_fxs()
+ 
+  --player ships
+  for i,p in ipairs(saved_players) do
+   p.x+=p.dx
+   if p.x>(32-i*8) then
+    p.dx+=rnd(0.3)
+   end
+  end
+ end,
 
- draw=function() end,
+ draw=function()
+  cls()
+  pal()
+  
+  --fxs
+  foreach(bg_particles,draw)
+  draw_fxs()
+
+  if not show_credits_at then
+   --animate player ships
+   
+   local ships=false
+   for p in all(saved_players) do
+    local cm=p_colors[p.color]
+    for c1,c2 in pairs(cm) do
+     pal(c1,c2)
+    end
+   
+    sspr(
+     rect_ship_l.x,rect_ship_l.y,
+     rect_ship_l.w,rect_ship_l.h,
+     p.x,p.y
+    )
+   
+    ships=ships or p.x<128
+   end
+   if not ships then
+    show_credits_at=t()+1
+   end
+  else
+   --show credits
+   if show_credits_at>t() then
+    fadepal(show_credits_at-t(),0)
+   end
+   
+   --title
+   sspr(
+    rect_title.x,rect_title.y,
+    rect_title.w,rect_title.h,
+    8,8
+   )
+   
+   --center
+   local txt={
+    "congratulations!",
+    "you're on the way to the moon.",
+    "",
+   }
+   local abandoned=
+    #players-#saved_players
+   if abandoned>0 then
+    add(
+     txt,
+     "crew left behind: "..abandoned
+    )
+   end
+   add(txt,"")
+   add(txt,"press ❎/x to restart")
+   for i,t in ipairs(txt) do
+    print(t,hcenter(t),61+i*6,7)
+   end
+
+   --bottom
+   local txt="by goncalossilva, jgradim, pkoch"
+   print(
+    txt,
+    hcenter(txt),
+    122,5
+   )
+  end
+ end,
 }
 
 ------------
@@ -849,11 +999,6 @@ cam={
  y=0,
  frms=7.5,
  shk=0,
-
- shake=function(c,shk)
-  shk=shk or 1
-  c.shk+=shk
- end,
  
  fixed_x=function(c,x)
   return c.x+x
@@ -862,15 +1007,24 @@ cam={
  fixed_y=function(c,y)
   return c.y+y
  end,
-
- init=function(c)
-  local p=player()
-  c.x+=bucket(p.x-c.x-64)
-  c.y+=bucket(p.y-c.y-64)
+ 
+ shake=function(c,shk)
+  shk=shk or 1
+  c.shk+=shk
  end,
 
- update=function(c)
-  local p=player()
+ init=function(c,p)
+  if p then
+   c.x+=bucket(p.x-c.x-64)
+   c.y+=bucket(p.y-c.y-64)
+  else
+   c.x=0
+   c.y=0
+  end
+  c.shk=0
+ end,
+
+ move=function(c,p)
   c.x+=bucket((p.x-64-c.x)/c.frms)
   c.x=mid(-64,c.x,map_width+64)
   
@@ -1180,7 +1334,7 @@ function block(cl,clhb,p)
  end
 end
 
-function fadepal(perc)
+function fadepal(perc,pal_p)
  --perc:0 normal,
  --     1 is completely dark
 
@@ -1202,7 +1356,7 @@ function fadepal(perc)
    col=dpal[col]
   end
 
-  pal(j,col,1)
+  pal(j,col,pal_p)
  end
 end
 
@@ -1253,6 +1407,14 @@ function unpack_custom_hitboxes(ls)
 end
 custom_hitboxes=unpack_custom_hitboxes(custom_hitboxes)
 
+function hcenter(s)
+ --screen center minus the
+ --string length times the 
+ --pixels in a char's width,
+ --cut in half
+ return 64-#s*2
+end
+
 --[[
 --to use,prepend "-" above
 function tostring(any)
@@ -1288,6 +1450,11 @@ function init_player(p)
   dy=0,
   max_dx=2,
   max_dy=3,
+  
+  color="red",
+  sp=sp_player_idle,
+  flpx=false,
+  flpy=false,
 
   running=false,
   jumping=false,
@@ -1297,10 +1464,7 @@ function init_player(p)
   ground=false,
   landed=false,
 
-  color="red",
-  sp=sp_player_idle,
-  flpx=false,
-  flpy=false,
+  saved=false,
 
   hitbox=function(p)
    return {
@@ -3001,7 +3165,7 @@ __gfx__
 000066666666667d6611c6d56666666766666666666666666666670000000000000000000000000000000000006666666665555566665000000557b700000000
 000099999999997d661116d5999999946666666666666ddd6666d7000000a0000000a0000000a000000070000656666666666666666500000000057000000000
 000099999999997dd6666dd599999940665666666666d555d66d5600000a7000000aa000000aa0000007a0005565666666666666655000000000000000000000
-000666666666667dd33b3dd56666650066666d66666d55555d6d560000a7a90000aa790000aaa900007aa9000555566565555555500000000000000000000000
+000666666666667dd88a8dd56666650066666d66666d55555d6d560000a7a90000aa790000aaa900007aa9000555566565555555500000000000000000000000
 00565666666666677777777666665000d6666666666d55555d666600000a900000079000000a9000000a90000055555555555000000000000000000000000000
 056566666666666666666666666500000d556667666d55555d666000000900000009000000090000000900000000555550000000000000000000000000000000
 555656566666666666666666665000000dd5566d7666d555d666d000000000000000000000000000000000000000000007700770000000000000000000000000
