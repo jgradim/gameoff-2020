@@ -46,8 +46,14 @@ sp_tiny_font=128
 
 sp_laser_h=182
 sp_laser_v=186
+
 sp_checkpoint=63
+
 sp_hole=190
+
+sp_ship_s=55
+sp_ship_m=27
+sp_ship_l=16
 
 -----------------------
 ---sprite animations---
@@ -84,6 +90,7 @@ anim_player_unlocker={
 ------------------
 ---rect sprites---
 ------------------
+
 rect_tooltip={
  x=112,y=8,w=12,h=11
 }
@@ -112,7 +119,16 @@ rect_laser_h_r={
  x=100,y=23,w=4,h=5
 }
 rect_title={
- x=0,y=96,w=121,h=57
+ x=0,y=96,w=106,h=25
+}
+rect_moon={
+ x=32,y=8,w=22,h=22
+}
+rect_ship_s={
+ x=56,y=24,w=10,h=7
+}
+rect_ship_m={
+ x=88,y=8,w=22,h=14
 }
 
 -------------------
@@ -596,16 +612,28 @@ start_game_at=nil
 scene_title={
  init=function()
   start_game_at=nil
+  
+  --fxs
+  far_star:add_plane()
+  near_star:add_plane()
+  moon:add()
+  ship:add_all()
  end,
 
  update=function()
+  --handle input
   local s=scene_title
   if btnp(❎)
   and not start_game_at then
    play_sfx("start_game")
    start_game_at=t()+1
   end
+  
+  --fxs
+  foreach(bg_particles, update)
+  update_fxs()
 
+  --start game when ready
   if start_game_at
   and t()>=start_game_at
   then
@@ -615,18 +643,18 @@ scene_title={
 
  draw=function()
   cls()
+  
+  --fxs
+  foreach(bg_particles, draw)
+  draw_fxs()
 
   --top left
+  --spr(192,10,12,8,4)
   sspr(
    rect_title.x,rect_title.y,
    rect_title.w,rect_title.h,
-   10,12
+   8,8
   )
-  --print("shoot for",8,8,9)
-  --print("the moon",8,16,9)
-
-  --top right
-  spr(20,96,15,3,3)
 
   --center
   local txt="press ❎/x to start"
@@ -641,7 +669,6 @@ scene_title={
   txt="⬅️➡️:move   🅾️/z:jump   ❎/x:use"
   print(txt,0,122,5)
 
-  local s=scene_title
   if start_game_at then
    fadepal(1-(start_game_at-t()))
   end
@@ -675,11 +702,12 @@ scene_game={
   mcns=init_mechanics()
 
   --fxs
-  init_fxs()
   far_star:add_plane()
   near_star:add_plane()
-  thruster:add(1, 22.5)
-  thruster:add(1, 8.5)
+  moon:add()
+  ship:add_all()
+  thruster:add(1,22.5)
+  thruster:add(1,8.5)
 
   --camera
   cam:init()
@@ -815,8 +843,8 @@ end
 ------------
 
 cam={
- x=0,
- y=0,
+ x=64,
+ y=64,
  frms=7.5,
  shk=0,
 
@@ -2121,9 +2149,7 @@ end
 ---player fxs---
 ----------------
 
-function init_fxs()
- particles={}
-end
+particles={}
 
 function fire_fxs()
  foreach(
@@ -2377,7 +2403,6 @@ thr_bright=class(circle_bg_fx, {
  end,
 })
 
-
 thr_mid=class(circle_bg_fx, {
  colors={12,1},
 
@@ -2396,6 +2421,7 @@ thr_mid=class(circle_bg_fx, {
   }
  end,
 })
+
 thr_dark=class(circle_bg_fx, {
  colors={1,0},
 
@@ -2448,6 +2474,70 @@ far_star=class(pixel_star,{
 near_star=class(pixel_star,{
  colors={7,15},
  dx=-5*6/fps,
+})
+
+moon=class(bg_fx,{
+ add=function(m)
+  m:add_particle(m)
+ end,
+ 
+ update=function(m) end,
+ 
+ draw=function(m)
+  --spr(20,96,15,3,3)
+  sspr(
+   rect_moon.x,rect_moon.y,
+   rect_moon.w,rect_moon.h,
+   86,8,34,34
+  )
+ end
+})
+
+ship=class(bg_fx,{
+ add_all=function(s)
+  --small ship
+  for i=1,7 do
+   local sp,r
+   
+   --5 small ships
+   --2 medium ships
+   if i<=5 then
+    sp=sp_ship_s
+    r=rect_ship_s
+   else
+    sp=sp_ship_m
+    r=rect_ship_m
+   end
+   
+   s:add_particle{
+    sp=sp,
+    r=r,
+    x=-rnd(96)-32,
+    y=64+rnd(48),
+    dx=0.5+rnd(1.1)^2,
+    dy=0,
+   }
+  end
+ end,
+ 
+ update=function(s)
+  s.dy+=rnd(0.01)-0.005
+  s.dy=sgn(s.dy)*min(
+   abs(s.dy),s.dx)
+  
+  s.x+=s.dx
+  s.y+=s.dy
+   
+  if (s.x>192) s.x-=384
+ end,
+ 
+ draw=function(s)
+  sspr(
+   s.r.x,s.r.y,
+   s.r.w,s.r.h,
+   s.x,s.y
+  )
+ end
 })
 
 ----------------
