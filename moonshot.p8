@@ -770,6 +770,10 @@ scene_game={
     focus_next_player()
   end
 
+  if btnp(⬇️) then
+    focus_prev_player()
+  end
+
   --players
   --path:update()
   foreach(players,update)
@@ -1059,6 +1063,13 @@ function focus_next_player()
   players,
   deli(players,#players),
   1
+ )
+end
+
+function focus_prev_player()
+ add(
+  players,
+  deli(players,1)
  )
 end
 
