@@ -646,7 +646,7 @@ function _init()
  moon:add()
  ship:add_all()
 
- --starting scene 
+ --starting scene
  set_scene(scene_title)
 end
 
@@ -673,7 +673,7 @@ scene_title={
     start_game_at-=2
    end
   end
-  
+
   --fxs
   foreach(bg_particles,update)
   update_fxs()
@@ -689,7 +689,7 @@ scene_title={
  draw=function()
   cls()
   pal()
-  
+
   --fxs
   foreach(bg_particles,draw)
   draw_fxs()
@@ -738,7 +738,7 @@ scene_game={
   --players
   players={
    init_player{
-    ⬆️=jump,
+    🅾️=jump,
     color="red",
     x=65*8,
     y=28*8,
@@ -746,14 +746,14 @@ scene_game={
     --y=12*8,
    },
   }
-  
+
   --thrusters
   thruster:add(1,22.5)
   thruster:add(1,8.5)
 
   --mechanics
   mcns=init_mechanics()
-  
+
   --camera
   cam:init(player())
  end,
@@ -761,7 +761,7 @@ scene_game={
  update=function()
   --input
   local p=player()
-  player_btns={"⬅️","➡️","⬆️"}
+  player_btns={"⬅️","➡️","🅾️"}
   for i=1,#player_btns do
     if btn(i-1) then
     fn=p[player_btns[i]]
@@ -797,7 +797,7 @@ scene_game={
 
   --camera
   cam:move(p)
-  
+
   if btnp(🅾️) then
    set_scene(scene_credits)
   end
@@ -871,14 +871,14 @@ show_credits_at=nil
 scene_credits={
  init=function()
   show_credits_at=nil
-  
+
   --reset draw state
   pal()
-  
+
   --reset camera
   cam:init()
   cam:draw()
-  
+
   --gather saved players
   saved_players={}
   local i=1
@@ -903,11 +903,11 @@ scene_credits={
    set_scene(scene_title)
    return
   end
-  
+
   --fxs
   foreach(bg_particles,update)
   update_fxs()
- 
+
   --player ships
   for i,p in ipairs(saved_players) do
    p.x+=p.dx
@@ -920,27 +920,27 @@ scene_credits={
  draw=function()
   cls()
   pal()
-  
+
   --fxs
   foreach(bg_particles,draw)
   draw_fxs()
 
   if not show_credits_at then
    --animate player ships
-   
+
    local ships=false
    for p in all(saved_players) do
     local cm=p_colors[p.color]
     for c1,c2 in pairs(cm) do
      pal(c1,c2)
     end
-   
+
     sspr(
      rect_ship_l.x,rect_ship_l.y,
      rect_ship_l.w,rect_ship_l.h,
      p.x,p.y
     )
-   
+
     ships=ships or p.x<128
    end
    if not ships then
@@ -951,14 +951,14 @@ scene_credits={
    if show_credits_at>t() then
     fadepal(show_credits_at-t(),0)
    end
-   
+
    --title
    sspr(
     rect_title.x,rect_title.y,
     rect_title.w,rect_title.h,
     8,8
    )
-   
+
    --center
    local txt={
     "congratulations!",
@@ -999,15 +999,15 @@ cam={
  y=0,
  frms=7.5,
  shk=0,
- 
+
  fixed_x=function(c,x)
   return c.x+x
  end,
- 
+
  fixed_y=function(c,y)
   return c.y+y
  end,
- 
+
  shake=function(c,shk)
   shk=shk or 1
   c.shk+=shk
@@ -1027,7 +1027,7 @@ cam={
  move=function(c,p)
   c.x+=bucket((p.x-64-c.x)/c.frms)
   c.x=mid(-64,c.x,map_width+64)
-  
+
   c.y+=bucket((p.y-64-c.y)/c.frms)
   c.y=mid(0,c.y,map_height-128)
 
@@ -1409,7 +1409,7 @@ custom_hitboxes=unpack_custom_hitboxes(custom_hitboxes)
 
 function hcenter(s)
  --screen center minus the
- --string length times the 
+ --string length times the
  --pixels in a char's width,
  --cut in half
  return 64-#s*2
@@ -1450,7 +1450,7 @@ function init_player(p)
   dy=0,
   max_dx=2,
   max_dy=3,
-  
+
   color="red",
   sp=sp_player_idle,
   flpx=false,
@@ -2665,9 +2665,9 @@ moon=class(bg_fx,{
  add=function(m)
   m:add_particle(m)
  end,
- 
+
  update=function(m) end,
- 
+
  draw=function(m)
   --spr(20,96,15,3,3)
   sspr(
@@ -2685,7 +2685,7 @@ ship=class(bg_fx,{
   --small ship
   for i=1,7 do
    local sp,r
-   
+
    --5 small ships
    --2 medium ships
    if i<=5 then
@@ -2695,7 +2695,7 @@ ship=class(bg_fx,{
     sp=sp_ship_m
     r=rect_ship_m
    end
-   
+
    s:add_particle{
     sp=sp,
     r=r,
@@ -2706,18 +2706,18 @@ ship=class(bg_fx,{
    }
   end
  end,
- 
+
  update=function(s)
   s.dy+=rnd(0.01)-0.005
   s.dy=sgn(s.dy)*min(
    abs(s.dy),s.dx)
-  
+
   s.x+=s.dx
   s.y+=s.dy
-   
+
   if (s.x>192) s.x-=320
  end,
- 
+
  draw=function(s)
   sspr(
    s.r.x,s.r.y,
