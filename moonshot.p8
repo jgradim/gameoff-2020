@@ -553,7 +553,7 @@ function init_mechanics()
   cp_dbljmp,
 
   -- dianostics
-  diag_jammed_door,
+  --diag_jammed_door,
   diag_screen_warn,
   diag_door,
   diag_plt,
@@ -2020,7 +2020,7 @@ function init_laser(
   and sp_laser_h+len-1
   or sp_laser_v+len-1
 
- printh("laser len: "..len..", sp: "..sp)
+ printh("laser "..dir.." len: "..len..", sp: "..sp)
 
  return init_interactable({
   sp=sp,
@@ -2030,7 +2030,6 @@ function init_laser(
   to=to,
   dir=dir,
   len=len,
-  len=mid(1,len,4)\1,
   anim={1,2,3,4,5,6,7,8},--frame
   anim_cursor=1,
   frame=1,
@@ -2075,7 +2074,7 @@ function init_laser(
      pal(c1,p[l.anim[l.frame]])
     end
     for i=0,l.len-1 do
-     spr(sp_laser_h,l.x+i*8,l.y)
+     spr(l.sp,l.x+i*8,l.y)
     end
     pal()
    end
@@ -2101,7 +2100,7 @@ function init_laser(
      pal(c1,p[l.anim[l.frame]])
     end
     for i=0,l.len-1 do
-     spr(sp_laser_v,l.x,l.y+i*8)
+     spr(l.sp,l.x,l.y+i*8)
     end
     pal()
    end
