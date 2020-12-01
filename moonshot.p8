@@ -17,7 +17,7 @@ map_height=256
 gravity=0.1
 
 --movement multiplier per cycle
-inertia=0.75
+inertia=1/2
 
 -------------
 ---sprites---
@@ -968,8 +968,8 @@ cam={
 
  init=function(c,p)
   if p then
-   c.x+=bucket(p.x-c.x-64)
-   c.y+=bucket(p.y-c.y-64)
+   c.x+=p.x-c.x-64
+   c.y+=p.y-c.y-64
   else
    c.x=0
    c.y=0
@@ -978,13 +978,13 @@ cam={
  end,
 
  move=function(c,p)
-  c.x+=bucket((p.x-64-c.x)/c.frms)
+  c.x+=(p.x-64-c.x)/c.frms
   c.x=mid(-64,c.x,map_width+64)
 
-  c.y+=bucket((p.y-64-c.y)/c.frms)
+  c.y+=(p.y-64-c.y)/c.frms
   c.y=mid(0,c.y,map_height-128)
 
-  c.shk=bucket(c.shk*0.9)
+  c.shk=c.shk*0.9
  end,
 
  draw=function(c)
@@ -1988,8 +1988,8 @@ function linear_delta_fn(
   local f=ef_smooth(
    abs((time()-st+3)%6-3)/3
   )
-  plat.dx=bucket(x+dx*f+0.5-plat.x)
-  plat.dy=bucket(y+dy*f+0.5-plat.y)
+  plat.dx=x+dx*f+0.5-plat.x
+  plat.dy=y+dy*f+0.5-plat.y
  end
 end
 
@@ -2217,8 +2217,8 @@ function move_smooth(
   abs(t()%spd-(spd/2))/(spd/2)
  )
 
- e.x+=bucket(x+dx*f-e.x)
- e.y+=bucket(y+dy*f-e.y)
+ e.x+=x+dx*f-e.x
+ e.y+=y+dy*f-e.y
 end
 
 function init_laser(
