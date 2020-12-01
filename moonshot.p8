@@ -612,12 +612,6 @@ start_game_at=nil
 scene_title={
  init=function()
   start_game_at=nil
-  
-  --fxs
-  far_star:add_plane()
-  near_star:add_plane()
-  moon:add()
-  ship:add_all()
  end,
 
  update=function()
@@ -645,7 +639,7 @@ scene_title={
   cls()
   
   --fxs
-  foreach(bg_particles, draw)
+  foreach(bg_particles,draw)
   draw_fxs()
 
   --top left
@@ -697,18 +691,14 @@ scene_game={
     --y=12*8,
    },
   }
-
-  --mechanics
-  mcns=init_mechanics()
-
-  --fxs
-  far_star:add_plane()
-  near_star:add_plane()
-  moon:add()
-  ship:add_all()
+  
+  --thrusters
   thruster:add(1,22.5)
   thruster:add(1,8.5)
 
+  --mechanics
+  mcns=init_mechanics()
+  
   --camera
   cam:init()
  end,
@@ -835,6 +825,13 @@ function set_scene(s)
 end
 
 function _init()
+ --init common fxs
+ far_star:add_plane()
+ near_star:add_plane()
+ moon:add()
+ ship:add_all()
+
+ --starting scene 
  set_scene(scene_title)
 end
 
