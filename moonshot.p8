@@ -672,8 +672,9 @@ scene_game={
   mcns=init_mechanics()
 
   --fxs
-  init_bg_fxs()
   init_fxs()
+  far_star:add_plane()
+  near_star:add_plane()
 
   --camera
   cam:init()
@@ -713,7 +714,7 @@ scene_game={
 
   --fxs
   fire_fxs()
-  update_bg_fxs()
+  foreach(bg_particles, update)
   update_fxs()
 
   --camera
@@ -724,7 +725,7 @@ scene_game={
   cls()
 
   --fxs
-  draw_bg_fxs()
+  foreach(bg_particles, draw)
   animate_lights()
   map(0,0)
   pal()
@@ -2287,26 +2288,7 @@ fx_respwan_darker=class(fx_respwan,{
 ---background fxs---
 --------------------
 
-function init_bg_fxs()
- bg_particles={}
- far_star:add_plane()
- near_star:add_plane()
-end
-
-function update_bg_fxs()
- for f in all(bg_particles) do
-  f.t+=1
-  f.t%=f.life
-
-  f:update()
- end
-end
-
-function draw_bg_fxs()
- for f in all(bg_particles) do
-  f:draw()
- end
-end
+bg_particles={}
 
 bg_fx={
  t=0,
@@ -2325,6 +2307,11 @@ bg_fx={
    ceil(f.t*#f.colors/f.life)
   ]
  end,
+
+ update=function(f)
+  f.t+=1
+  f.t%=f.life
+ end,
 }
 
 pixel_star=class(bg_fx,{
@@ -2339,6 +2326,8 @@ pixel_star=class(bg_fx,{
  end,
 
  update=function(f)
+  bg_fx.update(f)
+
   f.x+=f.dx
   f.x%=128
   f.c=f:curr_color()
