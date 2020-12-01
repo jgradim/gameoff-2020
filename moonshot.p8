@@ -979,11 +979,11 @@ end
 
 function sp_hitboxes(sp,x,y)
  local hbs=custom_hitboxes[sp]
- 
+
  if not hbs then
   return {{x=x,y=y,w=8,h=8}}
  end
- 
+
  local r={}
  for hb in all(hbs) do
   add(r,{
@@ -1002,7 +1002,7 @@ function sp_collisions_iter(
  if not fget(sp,flag) then
   return function() end
  end
- 
+
  local hbs=sp_hitboxes(sp,x,y)
  local i=0
  return function()
@@ -1020,7 +1020,7 @@ function resolve_collisions(p)
  --p:{x,y,hitbox():{x,y,w,h}}
 
  local collisions={}
- 
+
  local function add_colliding(
   sp,x,y,
   flag,phb,
@@ -1051,7 +1051,7 @@ function resolve_collisions(p)
    local sp=mget(x/8,y/8)
    local tilex=x\8*8
    local tiley=y\8*8
-   
+
    --block when colliding with
    --tiles that have flag_block
    add_colliding(
@@ -1062,7 +1062,7 @@ function resolve_collisions(p)
      return block,{mhb,mhb,p}
     end
    )
-   
+
    --respawn when colliding with
    --tiles that have flag_spawn
    add_colliding(
@@ -1079,7 +1079,7 @@ function resolve_collisions(p)
  --check colliding mechanics
  for mcn in all(mcns) do
   if mcn.collide then
-  
+
    --invoke the mechanics'
    --collide() when flag_block
    add_colliding(
