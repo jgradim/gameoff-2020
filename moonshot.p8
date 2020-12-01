@@ -2661,7 +2661,7 @@ near_star=class(pixel_star,{
 
 moon=class(bg_fx,{
  add=function(m)
-  m:add_particle(m)
+  m:add_particle({})
  end,
 
  update=function(m) end,
