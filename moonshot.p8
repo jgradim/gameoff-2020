@@ -2018,8 +2018,6 @@ function init_laser(
   and sp_laser_h+len-1
   or sp_laser_v+len-1
 
- printh("laser "..dir.." len: "..len..", sp: "..sp)
-
  return init_interactable({
   sp=sp,
   x=from[1],
@@ -2045,7 +2043,6 @@ function init_laser(
   on=true,
 
   on_collide=function(l)
-   printh("collided "..dir.." at "..t())
   end,
 
   on_update=function(l)
