@@ -603,6 +603,27 @@ end
 -->8
 --scenes,loop,camera,utils
 
+----------
+---loop---
+----------
+
+function set_scene(s)
+ _update60=s.update
+ _draw=s.draw
+ s.init()
+end
+
+function _init()
+ --init common fxs
+ far_star:add_plane()
+ near_star:add_plane()
+ moon:add()
+ ship:add_all()
+
+ --starting scene 
+ set_scene(scene_title)
+end
+
 -----------------
 ---title scene---
 -----------------
@@ -818,27 +839,6 @@ scene_credits={
 
  draw=function() end,
 }
-
-----------
----loop---
-----------
-
-function set_scene(s)
- _update60=s.update
- _draw=s.draw
- s.init()
-end
-
-function _init()
- --init common fxs
- far_star:add_plane()
- near_star:add_plane()
- moon:add()
- ship:add_all()
-
- --starting scene 
- set_scene(scene_title)
-end
 
 ------------
 ---camera---
