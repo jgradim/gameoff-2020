@@ -1571,9 +1571,15 @@ function init_player(p)
    elseif p.running then
     p.sp=sp_player_run_start+
      (t()*10)%sp_player_run_length
-    play_sfx("walk")
    else
     p.sp=sp_player_idle
+   end
+   
+   --sfx
+   if p.landed then
+    play_sfx("land")
+   elseif p.running then
+    play_sfx("walk")
    end
   end,
 
