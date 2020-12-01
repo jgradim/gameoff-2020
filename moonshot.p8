@@ -94,9 +94,6 @@ anim_player_unlocker={
 rect_tooltip={
  x=112,y=8,w=12,h=11
 }
-rect_moon={
- x=40,y=8,w=22,h=22
-}
 rect_escape_pod_l={
  x=0,y=8,w=32,h=20
 }
