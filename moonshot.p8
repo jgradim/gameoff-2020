@@ -2687,13 +2687,15 @@ moon=class(bg_fx,{
 
 ship=class(bg_fx,{
  add_all=function(s)
+  local max_ships=4
+
   --small ship
-  for i=1,7 do
+  for i=1,max_ships do
    local sp,r
 
-   --5 small ships
-   --2 medium ships
-   if i<=5 then
+   --max_ships-1 small ships
+   --1 medium ship
+   if i<=max_ships-1 then
     sp=sp_ship_s
     r=rect_ship_s
    else
