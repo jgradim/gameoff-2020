@@ -637,7 +637,6 @@ scene_title={
 
  update=function()
   --handle input
-  local s=scene_title
   if btnp(❎) then
    if not start_game_at then
     --crossfade scenes and start
@@ -650,7 +649,7 @@ scene_title={
   end
   
   --fxs
-  foreach(bg_particles, update)
+  foreach(bg_particles,update)
   update_fxs()
 
   --start game when ready
@@ -698,6 +697,8 @@ scene_title={
 ----------------
 ---game scene---
 ----------------
+
+players={}
 
 scene_game={
  init=function()
@@ -763,7 +764,7 @@ scene_game={
 
   --fxs
   fire_fxs()
-  foreach(bg_particles, update)
+  foreach(bg_particles,update)
   update_fxs()
 
   --camera
@@ -782,9 +783,9 @@ scene_game={
 
   --tiny text
   for wl in all(wall_labels) do
-    print_tiny(
+   print_tiny(
     wl[1],wl[2],wl[3],wl[4]
-    )
+   )
   end
 
   --mechanics
@@ -793,12 +794,11 @@ scene_game={
   --players
   foreach(players,draw)
 
-
   --modals from interactables
   foreach(mcns,function(m)
-    if m.draw_modal then
+   if m.draw_modal then
     m:draw_modal()
-    end
+   end
   end)
 
   --camera
@@ -814,16 +814,16 @@ scene_game={
   color(8)
   cpu=tostring(stat(1)*100\1)
   print(
-    cpu,
-    peek2(0x5f28)+128-#cpu*4+1,
-    peek2(0x5f2a)
+   cpu,
+   peek2(0x5f28)+128-#cpu*4+1,
+   peek2(0x5f2a)
   )
   if debug then
-    print(
+   print(
     debug,
     peek2(0x5f28),
     peek2(0x5f2a)
-    )
+   )
   end
  end,
 }
@@ -2857,40 +2857,39 @@ function init_interactable(opts)
   end
  end,
 
-  draw=function(s)
-   with_pal(
-    s.sp_pal,
-    sprfn(s.sp,s.x,s.y)
-   )
+ draw=function(s)
+  with_pal(
+   s.sp_pal,
+   sprfn(s.sp,s.x,s.y)
+  )
 
-   if s.tooltip
-   and not s.msg_open
-   and s.collided_prev
-   then
+  if s.tooltip
+  and not s.msg_open
+  and s.collided_prev
+  then
    local c=
     p_colors[player().color][8]
 
-    speech_bubble(
-     s.x+2,s.y-2,s.tooltip,c
-    )
-   end
-  end,
+   speech_bubble(
+    s.x+2,s.y-2,s.tooltip,c
+   )
+  end
+ end,
 
-  draw_modal=function(s)
-   if s.msg_open then
-     local x=s.msg_x+peek2(0x5f28)
-     local y=s.msg_y+peek2(0x5f2a)
+ draw_modal=function(s)
+  if s.msg_open then
+   local x=s.msg_x+peek2(0x5f28)
+   local y=s.msg_y+peek2(0x5f2a)
+   modal(x,y,s.msg_w,s.msg_h)
 
-     modal(x,y,s.msg_w,s.msg_h)
-
-     print(
-      sub(s.msg,1,s.msg_cursor),
-      x+4,y+5,
-      s.msg_color
-     )
-   end
-  end,
- }, opts)
+   print(
+    sub(s.msg,1,s.msg_cursor),
+    x+4,y+5,
+    s.msg_color
+   )
+  end
+ end,
+ },opts)
 end
 
 function sprfn(s,x,y)
