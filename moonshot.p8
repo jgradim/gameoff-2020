@@ -758,20 +758,23 @@ scene_game={
  update=function()
   --input
   local p=player()
-  player_btns={[0]="⬅️",[1]="➡️",[4]="🅾️"}
-  for n, b in pairs(player_btns) do
-    if btn(n) then
-     fn=p[b]
-     if (fn) fn(p,btnp(n))
+
+  if player_input then
+    player_btns={[0]="⬅️",[1]="➡️",[4]="🅾️"}
+    for n, b in pairs(player_btns) do
+      if btn(n) then
+       fn=p[b]
+       if (fn) fn(p,btnp(n))
+      end
     end
-  end
 
-  if btnp(⬆️) then
-    focus_next_player()
-  end
+    if btnp(⬆️) then
+      focus_next_player()
+    end
 
-  if btnp(⬇️) then
-    focus_prev_player()
+    if btnp(⬇️) then
+      focus_prev_player()
+    end
   end
 
   --players
@@ -1071,6 +1074,16 @@ function focus_prev_player()
   players,
   deli(players,1)
  )
+end
+
+player_input=true
+
+function enable_player_input()
+player_input=true
+end
+
+function disable_player_input()
+player_input=false
 end
 
 function animate(e,freq,loop,p)
@@ -2992,6 +3005,7 @@ function init_interactable(opts)
      s.msg_open=true
      s.msg_cursor=0
      just_opened=true
+     disable_player_input()
     end
 
     if s.msg_open then
@@ -3016,6 +3030,7 @@ function init_interactable(opts)
       if interacted then
        s.msg_freq=original_freq
        s.msg_open=false
+       enable_player_input()
        s:on_msg_end()
      end
     end
