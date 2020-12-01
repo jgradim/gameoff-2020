@@ -632,12 +632,6 @@ function set_scene(s)
 end
 
 function _init()
- --init common fxs
- far_star:add_plane()
- near_star:add_plane()
- moon:add()
- ship:add_all()
-
  --starting scene
  set_scene(scene_title)
 end
@@ -651,6 +645,9 @@ start_game_at=0
 scene_title={
  init=function()
   start_game_at=nil
+  
+  --background fx
+  add_bg_fxs()
  end,
 
  update=function()
@@ -739,7 +736,8 @@ scene_game={
    },
   }
 
-  --thrusters
+  --background fx and thrusters
+  add_bg_fxs()
   thruster:add(1,22.5)
   thruster:add(1,8.5)
 
@@ -879,10 +877,8 @@ scene_credits={
    end
   end
 
-  bg_particles={}
-  far_star:add_plane()
-  near_star:add_plane()
-  moon:add()
+  --background fx
+  add_bg_fxs()
  end,
 
  update=function()
@@ -1043,6 +1039,14 @@ cam={
 -----------
 ---utils---
 -----------
+
+function add_bg_fxs()
+ bg_particles={}
+ far_star:add_plane()
+ near_star:add_plane()
+ ship:add_all()
+ moon:add()
+end
 
 function update(o)
  return o:update()
