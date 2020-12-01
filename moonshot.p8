@@ -1213,15 +1213,10 @@ function sp_collisions_iter(
   return function() end
  end
 
- local hbs=sp_hitboxes(sp,x,y)
- local i=0
+ local hbs=all(sp_hitboxes(sp,x,y))
  return function()
-  while i<#hbs do
-   i+=1
-   local hb=hbs[i]
-   if intersects(phb,hb) then
-    return hb
-   end
+  for hb in hbs do
+   if(intersects(phb,hb)) return hb
   end
  end
 end
