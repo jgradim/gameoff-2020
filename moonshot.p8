@@ -617,10 +617,15 @@ scene_title={
  update=function()
   --handle input
   local s=scene_title
-  if btnp(❎)
-  and not start_game_at then
-   play_sfx("start_game")
-   start_game_at=t()+1
+  if btnp(❎) then
+   if not start_game_at then
+    --crossfade scenes and start
+    play_sfx("start_game")
+    start_game_at=t()+1
+   else
+    --start immediately
+    start_game_at-=2
+   end
   end
   
   --fxs
