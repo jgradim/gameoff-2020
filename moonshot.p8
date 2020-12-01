@@ -712,7 +712,7 @@ scene_game={
   mcns=init_mechanics()
 
   --camera
-  cam:init(player())
+  cam:move(player(),true)
  end,
 
  update=function()
@@ -825,7 +825,7 @@ scene_credits={
   pal()
 
   --reset camera
-  cam:init()
+  cam:move()
 
   --gather saved players
   saved_players={}
@@ -954,42 +954,51 @@ cam={
  fixed_y=function(c,y)
   return c.y+y
  end,
+ 
+ inv_x=function(c,x)
+  return c.x+(x-c.x%128)
+ end,
+ 
+ inv_y=function(c,y)
+  return c.y+(y-c.y%128)
+ end,
 
  shake=function(c,shk)
   shk=shk or 1
   c.shk+=shk
  end,
 
- init=function(c,p)
+ move=function(c,p,now)
   if p then
-   c.x+=p.x-c.x-64
-   c.y+=p.y-c.y-64
+   local f=now and 1 or c.frms
+   c.x=mid(
+    -64,
+    c.x+(p.x-c.x-64)/f,
+    map_width+64
+   )
+   c.y=mid(
+    0,
+    c.y+(p.y-c.y-64)/f,
+    map_height-128
+   )
+   c.shk*=0.9
   else
    c.x=0
    c.y=0
+   c.shk=0
   end
-  c.shk=0
- end,
-
- move=function(c,p)
-  c.x+=(p.x-64-c.x)/c.frms
-  c.x=mid(-64,c.x,map_width+64)
-
-  c.y+=(p.y-64-c.y)/c.frms
-  c.y=mid(0,c.y,map_height-128)
-
-  c.shk=c.shk*0.9
  end,
 
  draw=function(c)
   local x=c.x
   local y=c.y
+  local shk=c.shk
 
-  if c.shk>0 then
+  if shk>0 then
    local shkx=16-rnd(32)
    local shky=16-rnd(32)
-   x+=shkx*c.shk
-   y+=shky*c.shk
+   x+=shkx*shk
+   y+=shky*shk
   end
 
   camera(x,y)
@@ -2615,10 +2624,10 @@ thr_dark=class(circle_bg_fx, {
 
 pixel_star=class(bg_fx,{
  add_plane=function(kls)
-  for i=1,50 do
+  for i=1,100 do
    kls:add_particle({
-     x=rnd(128)\1,
-     y=rnd(128)\1,
+     x=rnd(256)\1,
+     y=rnd(256)\1,
      life=30+rnd(90)*fps,
    })
   end
@@ -2628,14 +2637,14 @@ pixel_star=class(bg_fx,{
   bg_fx.update(f)
 
   f.x+=f.dx
-  f.x%=128
+  f.x%=256
   f.c=f:curr_color()
  end,
 
  draw=function(f)
   pset(
-   cam:fixed_x(f.x),
-   cam:fixed_y(f.y),
+   cam:inv_x(f.x),
+   cam:inv_y(f.y),
    f.c
   )
  end,
@@ -2704,14 +2713,14 @@ ship=class(bg_fx,{
   s.x+=s.dx
   s.y+=s.dy
 
-  if (s.x>192) s.x-=320
+  if (s.x>256) s.x-=384
  end,
 
  draw=function(s)
   ssprrect(
     s.r,
-    cam:fixed_x(s.x),
-    cam:fixed_y(s.y)
+    cam:inv_x(s.x),
+    cam:inv_y(s.y)
   )
  end
 })
