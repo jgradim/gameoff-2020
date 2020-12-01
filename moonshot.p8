@@ -840,8 +840,8 @@ end
 ------------
 
 cam={
- x=64,
- y=64,
+ x=0,
+ y=0,
  frms=7.5,
  shk=0,
 
@@ -849,24 +849,35 @@ cam={
   shk=shk or 1
   c.shk+=shk
  end,
+ 
+ fixed_x=function(c,x)
+  return c.x+x
+ end,
+ 
+ fixed_y=function(c,y)
+  return c.y+y
+ end,
 
  init=function(c)
   local p=player()
-  c.x+=bucket(p.x-c.x)
-  c.y+=bucket(p.y-c.y)
+  c.x+=bucket(p.x-c.x-64)
+  c.y+=bucket(p.y-c.y-64)
  end,
 
  update=function(c)
   local p=player()
-  c.x+=bucket((p.x-c.x)/c.frms)
-  c.y+=bucket((p.y-c.y)/c.frms)
+  c.x+=bucket((p.x-64-c.x)/c.frms)
+  c.x=mid(-64,c.x,map_width+64)
+  
+  c.y+=bucket((p.y-64-c.y)/c.frms)
+  c.y=mid(0,c.y,map_height-128)
 
   c.shk=bucket(c.shk*0.9)
  end,
 
  draw=function(c)
-  local x=mid(-64,c.x-64,map_width)
-  local y=mid(0,c.y-64,map_height-128)
+  local x=c.x
+  local y=c.y
 
   if c.shk>0 then
    local shkx=16-rnd(32)
@@ -2456,8 +2467,8 @@ pixel_star=class(bg_fx,{
 
  draw=function(f)
   pset(
-   cam.x-64+(f.x-cam.x%128)%128,
-   cam.y-64+(f.y-cam.y%128)%128,
+   cam:fixed_x(f.x),
+   cam:fixed_y(f.y),
    f.c
   )
  end,
@@ -2485,7 +2496,9 @@ moon=class(bg_fx,{
   sspr(
    rect_moon.x,rect_moon.y,
    rect_moon.w,rect_moon.h,
-   86,8,34,34
+   cam:fixed_x(86),
+   cam:fixed_y(8),
+   34,34
   )
  end
 })
@@ -2525,14 +2538,15 @@ ship=class(bg_fx,{
   s.x+=s.dx
   s.y+=s.dy
    
-  if (s.x>192) s.x-=384
+  if (s.x>192) s.x-=320
  end,
  
  draw=function(s)
   sspr(
    s.r.x,s.r.y,
    s.r.w,s.r.h,
-   s.x,s.y
+   cam:fixed_x(s.x),
+   cam:fixed_y(s.y)
   )
  end
 })
