@@ -687,9 +687,10 @@ scene_title={
   ssprrect(rect_title, 8,8)
 
   --center text
-  local t="press ❎/x to play"
+  local txt=
+   "press ❎/x to play"
   print(
-   t,hcenter(t),72,
+   txt,hcenter(txt),72,
    time()%0.4<0.2 and 7 or 10
   )
 
