@@ -874,7 +874,6 @@ scene_credits={
 
   --reset camera
   cam:init()
-  cam:draw()
 
   --gather saved players
   saved_players={}
@@ -917,6 +916,8 @@ scene_credits={
  draw=function()
   cls()
   pal()
+
+  cam:draw()
 
   --fxs
   foreach(bg_particles,draw)
