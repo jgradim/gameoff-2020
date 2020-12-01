@@ -966,9 +966,6 @@ scene_credits={
   --reset draw state
   pal()
 
-  --reset camera
-  cam:move()
-
   --gather saved players
   saved_players={}
   local i=1
@@ -1008,6 +1005,9 @@ scene_credits={
     p.dx+=rnd(0.3)
    end
   end
+  
+  --reset camera
+  cam:move()
  end,
 
  draw=function()
