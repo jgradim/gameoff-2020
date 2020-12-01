@@ -837,7 +837,7 @@ cam={
  end,
 
  draw=function(c)
-  local x=mid(0,c.x-64,map_width-64)
+  local x=mid(-64,c.x-64,map_width)
   local y=mid(0,c.y-64,map_height-128)
 
   if c.shk>0 then
