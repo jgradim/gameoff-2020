@@ -676,7 +676,7 @@ scene_title={
  end,
 
  draw=function()
-  cls(2)
+  cls()
   pal()
 
   --fxs
