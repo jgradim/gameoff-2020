@@ -426,8 +426,8 @@ function init_mechanics()
  --platforms
  local diag_plt=
   init_platform(
-   60*8,26*8,
-   60*8,28*8,
+   60,26,
+   60,28,
    false
   )
 
@@ -476,8 +476,8 @@ function init_mechanics()
  -------------------
  local shaft_l1_plt=
   init_platform(
-    47*8,22*8,
-    47*8,28*8,
+    47,22,
+    47,28,
     false
   )
 
@@ -493,8 +493,8 @@ function init_mechanics()
  ---double jumper unlock---
  --------------------------
  dbljmp_plt=init_platform(
-   9*8,16*8,
-   9*8,26*8,
+   9,16,
+   9,26,
    true
  )
 
@@ -1939,6 +1939,8 @@ end
 function init_platform(
  x,y,to_x,to_y,on
 )
+ x*=8
+ y*=8
  return {
   sp=sp_platform_start,
   x=x,
@@ -1947,8 +1949,8 @@ function init_platform(
   h=8,
   dx=0,
   dy=0,
-  to_x=to_x,
-  to_y=to_y,
+  to_x=to_x*8,
+  to_y=to_y*8,
   from_x=x,
   from_y=y,
   moving_since=on and time() or false,
