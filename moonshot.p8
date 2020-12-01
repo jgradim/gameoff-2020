@@ -389,10 +389,10 @@ function init_mechanics()
  ---checkpoints---
  -----------------
  local cp_corridor=
-  init_checkpoint(45*8,29*8)
+  init_checkpoint(45,29)
 
  local cp_dbljmp=
-  init_checkpoint(1*8,18*8)
+  init_checkpoint(1,18)
 
  ---------------
  --diagnostics--
@@ -2060,8 +2060,8 @@ end
 function init_checkpoint(x,y)
  return init_interactable({
   sp=sp_checkpoint,
-  x=x,
-  y=y,
+  x=x*8,
+  y=y*8,
   anim=anim_checkpoint,
   anim_cursor=1,
 
