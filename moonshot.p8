@@ -17,7 +17,7 @@ map_height=256
 gravity=0.1
 
 --movement multiplier per cycle
-inertia=1/2
+inertia=1/8
 
 -------------
 ---sprites---
@@ -1406,7 +1406,7 @@ end
 ---player---
 ------------
 
-run_accel=0.29
+run_accel=1/4
 jump_accel=1.9
 
 function init_player(p)
@@ -1461,8 +1461,12 @@ function init_player(p)
    local old_x=p.x\1
 
    --move horizontally
-   p.dx*=inertia
-   p.dx=clamp(p.dx,p.max_dx,0x.08)
+   p.dx=mid(-p.max_dx,p.dx,p.max_dx)
+   if abs(p.dx) > inertia then
+     p.dx+=-1*sgn(p.dx)*inertia
+   else
+    p.dx=0
+   end
    p.x+=p.dx
    resolve_collisions(p)
 
