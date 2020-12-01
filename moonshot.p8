@@ -1761,9 +1761,15 @@ function init_spark(
    if aim=="⬅️" or aim=="➡️"
    then
     p.dx=-old_dx*10
+    p.dy=p.flpy
+     and abs(p.dx)
+     or -abs(p.dx)
    elseif aim=="⬆️" or aim=="⬇️"
    then
     p.dy=-old_dy*10
+    p.dx=p.flpx
+     and -abs(p.dx)
+     or abs(p.dx)
    end
    spark_aura:on_player(p)
   end,
