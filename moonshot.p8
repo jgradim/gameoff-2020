@@ -206,7 +206,7 @@ flag_block=0
 
 --obstacles that move the player
 --to the last checkpoint
-flag_respawn=1
+flag_spawn=1
 
 ---------------------
 ---custom hitboxes---
@@ -1017,7 +1017,28 @@ function sp_collisions_iter(
 end
 
 function resolve_collisions(p)
+ --p:{x,y,hitbox():{x,y,w,h}}
+
  local collisions={}
+ 
+ local function add_colliding(
+  sp,x,y,
+  flag,phb,
+  resolve_fn_args
+ )
+  for mhb in sp_collisions_iter(
+   sp,x,y,phb,flag
+  ) do
+   local res_fn,res_args=
+    resolve_fn_args(mhb)
+   local x=intersect(phb,mhb)
+   insert(
+    collisions,
+    {res_fn,res_args},
+    x.w+x.h
+   )
+  end
+ end
 
  --check colliding map tiles
  local phb=p:hitbox()
@@ -1028,44 +1049,47 @@ function resolve_collisions(p)
  for x in all({x1,x2}) do
   for y in all({y1,y2}) do
    local sp=mget(x/8,y/8)
-   for mhb in sp_collisions_iter(
-    sp,x\8*8,y\8*8,phb,
-    flag_block
-   ) do
-    local x=intersect(phb,mhb)
-    insert(
-     collisions,
-     {block,mhb,mhb,p},
-     max(x.w,x.h)
-    )
-   end
-   for mhb in sp_collisions_iter(
-    sp,x\8*8,y\8*8,phb,
-    flag_respawn
-   ) do
-    insert(
-     collisions,
-     {chkpt.restore,chkpt},
-     0
-    )
-   end
+   local tilex=x\8*8
+   local tiley=y\8*8
+   
+   --block when colliding with
+   --tiles that have flag_block
+   add_colliding(
+    sp,tilex,tiley,
+    flag_block,
+    phb,
+    function(mhb)
+     return block,{mhb,mhb,p}
+    end
+   )
+   
+   --respawn when colliding with
+   --tiles that have flag_spawn
+   add_colliding(
+    sp,tilex,tiley,
+    flag_spawn,
+    phb,
+    function(mhb)
+     return chkpt.restore,{chkpt}
+    end
+   )
   end
  end
 
  --check colliding mechanics
  for mcn in all(mcns) do
   if mcn.collide then
-   for mhb in sp_collisions_iter(
-    mcn.sp,mcn.x,mcn.y,phb,
-    flag_block
-   ) do
-    local x=intersect(phb,mhb)
-    insert(
-     collisions,
-     {mcn.collide,mcn,mhb,p},
-     max(x.w,x.h)
-    )
-   end
+  
+   --invoke the mechanics'
+   --collide() when flag_block
+   add_colliding(
+    mcn.sp,mcn.x,mcn.y,
+    flag_block,
+    phb,
+    function(mhb)
+     return mcn.collide,{mcn,mhb,p}
+    end
+   )
   end
  end
 
@@ -1074,8 +1098,7 @@ function resolve_collisions(p)
  while #collisions>0 do
   local r=pop(collisions)[1]
   local r_fn=r[1]
-  del(r,r_fn)
-  r_fn(unpack(r))
+  r_fn(unpack(r[2]))
  end
 end
 
